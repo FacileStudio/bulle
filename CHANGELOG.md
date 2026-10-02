@@ -1,10 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [0.81.0] - 2026-10-02
 
 ### Changed
 
 - refactor: rename the project from `kori` to `bulle` — binary, module path, config directory (`~/.bulle.yml`), environment variables (`BULLE_*`), install script, Homebrew cask, GoReleaser project name and every remaining `kori` reference in docs and tests (`main.go`, `cmd`, `internal`, `docs`, `README.md`, `ROADMAP.md`, `filet.yml`, `.goreleaser.yml`, `install.sh`, `.gitignore`)
+
+### Fixed
+
+- fix(settings): the start banner's old three-line glyph block left `Defaults` one line over filet's 35-line function limit, and the new five-line `bulle` wordmark pushed it further. The default's own `maxConcurrency` is now grouped with the other `Defaults` locals on the same line, so the banner is the only change in the function and the body lands at 35 lines exactly (`internal/settings`, `filet.yml`)
 
 ## [0.79.0] - 2026-09-25
 

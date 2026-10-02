@@ -11,6 +11,10 @@ goreleaser = "latest"
 [hooks]
 postinstall = "lefthook install"
 
+[tasks.build]
+description = "Build the bulle binary"
+run = "go build -tags goolm -o bulle ."
+
 [tasks.check]
 description = "Run the full quality gate: gofmt, vet, test, lint"
 run = "sh ./scripts/check.sh"
