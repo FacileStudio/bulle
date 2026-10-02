@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -58,7 +58,7 @@ func peekSessionRoot(path string) string {
 // matchProjectRoot reports whether a session file belongs to projectRoot.
 // Target-labeled roots ("target:<name>", written by remote and sandbox
 // sessions with no configured workdir) are compared as identity strings on
-// both sides: resolving either would fold them into the host directory kori
+// both sides: resolving either would fold them into the host directory bulle
 // was launched from, and a target session must match its target, not the
 // launch directory.
 func matchProjectRoot(path, projectRoot string) bool {

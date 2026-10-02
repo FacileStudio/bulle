@@ -54,7 +54,7 @@ func ParseGuardOutput(output string) (*GuardResult, error) {
 // VerifyIsolation ensures that user identity and directory match expectations.
 //
 // Root is not refused. Connecting as root to a host you own is a deliberate
-// choice, and it is the user's to make: kori runs their tools on their machine.
+// choice, and it is the user's to make: bulle runs their tools on their machine.
 // The expected-user check is the real floor, because it pins the login to the
 // user the target actually asked for — a boite VM that silently answered as
 // root still fails, since its target names `boite`.

@@ -7,13 +7,13 @@ import (
 
 func TestLegacyNacelleEnvStillResolves(t *testing.T) {
 	t.Setenv("NACELLE_BACKEND", "legacy")
-	t.Setenv("KORI_BACKEND", "current")
+	t.Setenv("BULLE_BACKEND", "current")
 	if got := envGet("BACKEND"); got != "current" {
-		t.Fatalf("KORI_ must win over NACELLE_: got %q", got)
+		t.Fatalf("BULLE_ must win over NACELLE_: got %q", got)
 	}
 
-	t.Setenv("KORI_BACKEND", "")
-	if err := os.Unsetenv("KORI_BACKEND"); err != nil {
+	t.Setenv("BULLE_BACKEND", "")
+	if err := os.Unsetenv("BULLE_BACKEND"); err != nil {
 		t.Fatal(err)
 	}
 	if got := providerEnv().Backend; got != "legacy" {

@@ -50,7 +50,7 @@ func testOverMergeConfig() Config {
 
 func TestSandboxRemovedKeysRepointed(t *testing.T) {
 	yamlData := "sandbox:\n  targets:\n    old:\n      backend: ssh\n      host: old.host\n"
-	tmp := filepath.Join(t.TempDir(), ".kori.yml")
+	tmp := filepath.Join(t.TempDir(), ".bulle.yml")
 	if err := os.WriteFile(tmp, []byte(yamlData), 0o644); err != nil {
 		t.Fatalf("writing tmp config: %v", err)
 	}
@@ -138,7 +138,7 @@ remote:
 }
 
 func TestSandboxLoadYAMLWithTargets(t *testing.T) {
-	tmp := filepath.Join(t.TempDir(), ".kori.yml")
+	tmp := filepath.Join(t.TempDir(), ".bulle.yml")
 	if err := os.WriteFile(tmp, []byte(testSandboxTargetYAML()), 0o644); err != nil {
 		t.Fatalf("writing tmp config: %v", err)
 	}

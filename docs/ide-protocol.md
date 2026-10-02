@@ -1,26 +1,26 @@
-# kori IDE protocol
+# bulle IDE protocol
 
-The contract between a running `kori` session and an editor plugin (first
-consumer: `kori.nvim`). A session that nobody is watching pays nothing: the
-whole thing is off unless `--ide` is passed or `$KORI_IDE` is set.
+The contract between a running `bulle` session and an editor plugin (first
+consumer: `bulle.nvim`). A session that nobody is watching pays nothing: the
+whole thing is off unless `--ide` is passed or `$BULLE_IDE` is set.
 
 This file is the frozen interface. Both sides implement it as written.
 
 ## Discovery
 
-While `kori` runs with the IDE surface on, it writes one file per process:
+While `bulle` runs with the IDE surface on, it writes one file per process:
 
 ```
-~/.kori/ide/<pid>.json
+~/.bulle/ide/<pid>.json
 ```
 
 ```json
 {
   "v": 1,
   "pid": 12345,
-  "root": "/home/yann/Code/Facile/kori",
-  "socket": "/run/user/1000/kori/12345.sock",
-  "session": "/home/yann/.kori/sessions/20260924T160000Z-12345.jsonl",
+  "root": "/home/yann/Code/Facile/bulle",
+  "socket": "/run/user/1000/bulle/12345.sock",
+  "session": "/home/yann/.bulle/sessions/20260924T160000Z-12345.jsonl",
   "started": "2026-09-24T16:00:00Z",
   "version": "0.76.0"
 }
@@ -38,8 +38,8 @@ directory, and falls back to the newest `started` when several match.
 
 A unix socket, same machine only. No TCP, no TLS, no ports.
 
-- Default path `$XDG_RUNTIME_DIR/kori/<pid>.sock`, falling back to
-  `$TMPDIR/kori-<uid>/<pid>.sock` when `XDG_RUNTIME_DIR` is unset.
+- Default path `$XDG_RUNTIME_DIR/bulle/<pid>.sock`, falling back to
+  `$TMPDIR/bulle-<uid>/<pid>.sock` when `XDG_RUNTIME_DIR` is unset.
 - Newline-delimited JSON: one object per line, `\n` terminated, no literal
   newline inside an object.
 - Every object carries `"v": 1` and a `"t"` naming its type.
@@ -58,7 +58,7 @@ A receiver that reads a `v` it does not support replies
 | `hello` | `pid`, `root`, `session`, `model`, `version` | First line after a client connects. |
 | `turn` | `n` | A model turn started. `n` counts from 1, within the run. |
 | `tool` | `id`, `name`, `status` (`start`/`done`), `ok`, `path` | A tool call started or finished. `path` only for file tools; `ok` only on `done`, since whether a call worked is unknowable before it runs. |
-| `edit` | `id`, `path`, `tool`, `first`, `last`, `added`, `removed`, `diff` | A file changed. `first`/`last` are 1-based inclusive line numbers in the **new** file. `diff` is optional and kori does not currently send it, so a receiver must not depend on it. |
+| `edit` | `id`, `path`, `tool`, `first`, `last`, `added`, `removed`, `diff` | A file changed. `first`/`last` are 1-based inclusive line numbers in the **new** file. `diff` is optional and bulle does not currently send it, so a receiver must not depend on it. |
 | `approval` | `id`, `tool`, `input` | A tool is waiting for the user's yes or no. `input` is the raw tool JSON, verbatim, so the editor can show exactly what is about to run. |
 | `done` | `reason`, `cost` | The run finished. `reason` is `end_turn`, `max_iterations`, `cancelled` or `error`. `cost` is US dollars, zero when the backend reported none. |
 | `error` | `reason` | Protocol level problem. The connection closes after it. |
@@ -73,7 +73,7 @@ reading the file.
 |---|---|---|
 | `hello` | `root`, `pid` | First line after connecting. |
 | `send` | `text`, `path`, `line`, `branch` | Run `text` as a prompt, with the editor context attached. |
-| `open` | `path`, `line` | Ask kori to scroll its own view to that place. |
+| `open` | `path`, `line` | Ask bulle to scroll its own view to that place. |
 | `approve` | `id`, `allow` | Answer an `approval`. `allow` false is a refusal. |
 | `stop` | | Cancel the current run. |
 
@@ -97,13 +97,13 @@ so a receiver that offers "always allow" is deciding that itself, outside the
 wire.
 
 **No editor attached is not a refusal.** A session that has published a socket
-nobody has dialled asks nobody, and its own approval surface — for `kori`, the
+nobody has dialled asks nobody, and its own approval surface — for `bulle`, the
 terminal prompt — decides the call. A client must therefore not read a missing
 `approval` as "the session has no approvals": it is asked only about the calls
 that arrive while it is attached.
 
 ## Why not MCP
 
-kori consumes MCP; the editor is a second client of the same session, and the
-session lives in kori's process. An IDE socket is a session attachment, not a
+bulle consumes MCP; the editor is a second client of the same session, and the
+session lives in bulle's process. An IDE socket is a session attachment, not a
 tool the model can call.

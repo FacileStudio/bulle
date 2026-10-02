@@ -9,7 +9,7 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/theme"
+	"github.com/FacileStudio/bulle/internal/theme"
 	"github.com/FacileStudio/nacelle"
 )
 

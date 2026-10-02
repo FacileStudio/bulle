@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // TrustFile is where a decision to load a project's skills is remembered,
@@ -14,11 +14,11 @@ import (
 const TrustFile = "trust.json"
 
 // trustDir is where TrustFile lives — the first thing this package puts
-// under ~/.kori/, which stays otherwise empty until something needs it.
+// under ~/.bulle/, which stays otherwise empty until something needs it.
 // A trust decision does not belong in ~/.agents/, the shared cross-vendor
 // path skills.go also reads from: that path is common ground between every
-// AGENTS.md-aware tool, and what kori has chosen to trust on this
-// machine is kori's own state, not something another tool should read
+// AGENTS.md-aware tool, and what bulle has chosen to trust on this
+// machine is bulle's own state, not something another tool should read
 // or overwrite.
 func trustDir() (string, error) {
 	return settings.HomeDir()
@@ -53,7 +53,7 @@ func loadTrust() (map[string]trustRecord, error) {
 	return store, nil
 }
 
-// saveTrust writes every decision back, creating ~/.kori/ the first time
+// saveTrust writes every decision back, creating ~/.bulle/ the first time
 // anything is trusted.
 func saveTrust(store map[string]trustRecord) error {
 	dir, err := trustDir()

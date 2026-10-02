@@ -5,15 +5,15 @@ import (
 	"os"
 )
 
-// Template is the scaffold written to ~/.kori.yml on first boot: every
+// Template is the scaffold written to ~/.bulle.yml on first boot: every
 // setting present, every value the default. The point is discoverability —
 // someone opening the file sees the whole surface with names to grep for,
 // instead of an empty file and a docs page.
 //
-// example.kori.yml in the repo root is this same text, byte for byte, and
+// example.bulle.yml in the repo root is this same text, byte for byte, and
 // TestExampleConfigIsTheScaffoldTemplate fails when the two drift apart: the
 // README promises the example is what a first boot writes.
-const Template = `# kori settings — every setting, every default, explicit.
+const Template = `# bulle settings — every setting, every default, explicit.
 # Written here on first boot; delete this file and it is written again.
 provider:
   backend: anthropic
@@ -30,7 +30,7 @@ provider:
 session:
   root: .
   # system_prompt replaces the built-in harness prompt outright; leave it empty
-  # to keep kori's own tool and safety guidance.
+  # to keep bulle's own tool and safety guidance.
   system_prompt: ""
   # additional_prompt is appended after the base prompt and everything layered
   # onto it: the place for a specialist persona that must not cost the harness
@@ -144,11 +144,11 @@ sources:
   mcp: {}
 
 hooks: []
-# Scheduled jobs live under ~/.kori/jobs/ (trusted with: kori cron trust <name>)
+# Scheduled jobs live under ~/.bulle/jobs/ (trusted with: bulle cron trust <name>)
 gates: []
 
 # Chat is the inbound surface: one long-lived process holding a platform
-# connection, turning a message from an allowlisted identity into one kori run.
+# connection, turning a message from an allowlisted identity into one bulle run.
 # Its allowlist is the security boundary of the feature.
 chat:
   matrix:
@@ -164,18 +164,18 @@ chat:
     access_token: ""
     # access_token_command prints the token on stdout, the same arrangement
     # provider.api_key_command has.
-    # access_token_command: tiroir get KORI_MATRIX_TOKEN
-    # password is the alternative to a token: kori logs in and creates the
+    # access_token_command: tiroir get BULLE_MATRIX_TOKEN
+    # password is the alternative to a token: bulle logs in and creates the
     # device itself, the easier first run because there is no device to name.
     password: ""
-    # password_command: tiroir get KORI_MATRIX_PASSWORD
+    # password_command: tiroir get BULLE_MATRIX_PASSWORD
     # pickle_key encrypts the stored device keys. Losing it, or the database
     # beside it, means a new device, which Element shows as unverified.
     pickle_key: ""
-    # pickle_key_command: tiroir get KORI_MATRIX_PICKLE_KEY
+    # pickle_key_command: tiroir get BULLE_MATRIX_PICKLE_KEY
     # recovery_key verifies the bot against account cross-signing keys.
     # recovery_key: ""
-    # recovery_key_command: tiroir get KORI_MATRIX_RECOVERY_KEY
+    # recovery_key_command: tiroir get BULLE_MATRIX_RECOVERY_KEY
     # allow lists the MXIDs that may start a session; rooms limits which rooms
     # are read. Both empty refuses every message, which is the safe default.
     allow: []
@@ -191,7 +191,7 @@ chat:
     # daemon's working directory, which is what the systemd unit sets.
     # workdir: ~/Code
 
-# Sandbox: the sandbox command runs kori on the host and sends every tool
+# Sandbox: the sandbox command runs bulle on the host and sends every tool
 # call into a local boite microVM over SSH. Uncomment targets: to name one.
 sandbox:
   default: ""
@@ -209,7 +209,7 @@ sandbox:
   #     root: ""
   #     auto_snapshot: false
 
-# Remote: the remote command runs kori on the host and sends every tool call
+# Remote: the remote command runs bulle on the host and sends every tool call
 # to an SSH host. A bare user@host:port argument works without an entry here.
 remote:
   default: ""

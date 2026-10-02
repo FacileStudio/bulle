@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/chat"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/chat"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -40,10 +40,10 @@ func newChatCmd() *cobra.Command {
 		Short: "Run the inbound chat daemon and manage it",
 		Long: `Hold the configured chat adapters open and answer inbound messages.
 
-With no subcommand, kori chat runs the daemon: it connects each adapter,
+With no subcommand, bulle chat runs the daemon: it connects each adapter,
 checks every message against the allowlist, runs one headless session per
 conversation, and answers back in the room it came from. Every message is
-untrusted text, so the allowlist and the tool policy stay in kori.`,
+untrusted text, so the allowlist and the tool policy stay in bulle.`,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return runChatDaemon()
 		},
@@ -89,7 +89,7 @@ func runChatDaemon() error {
 		return errors.Join(err, adapter.Close())
 	}
 	router := chat.Router{Allow: m.allow, Rooms: m.rooms, MaxAge: m.maxAge}
-	fmt.Fprintf(os.Stderr, "kori chat: %s listening as %s on %s\n", adapter.Name(), m.userID, m.homeserver)
+	fmt.Fprintf(os.Stderr, "bulle chat: %s listening as %s on %s\n", adapter.Name(), m.userID, m.homeserver)
 	return errors.Join(chat.Run(ctx, adapter, chatResponder(config), router), adapter.Close())
 }
 
@@ -125,7 +125,7 @@ func chatResponder(config settings.Config) chat.Responder {
 // without one has already accepted the messages it would need to refuse.
 func validateChatMatrix(m settings.Matrix) error {
 	if !settings.DerefBool(m.Enabled) {
-		return errors.New("chat.matrix is not enabled: set `enabled: true` under chat in ~/.kori.yml")
+		return errors.New("chat.matrix is not enabled: set `enabled: true` under chat in ~/.bulle.yml")
 	}
 	if m.Homeserver == "" {
 		return errors.New("chat.matrix.homeserver is empty: set the homeserver base URL")

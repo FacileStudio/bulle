@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -16,12 +16,12 @@ func newSessionsCmd(version string) *cobra.Command {
 		Use:     "sessions [command]",
 		Aliases: []string{"session"},
 		Short:   "Manage background and interactive agent sessions",
-		Long: `Manage background and interactive kori agent sessions.
+		Long: `Manage background and interactive bulle agent sessions.
 
-Use 'kori sessions list' (or 'kori list') to view active and past sessions.
-Use 'kori sessions attach [id]' to resume an interactive session.
-Use 'kori sessions kill <id>' to terminate a running background session.
-Use 'kori sessions rm <id>' to delete a session.`,
+Use 'bulle sessions list' (or 'bulle list') to view active and past sessions.
+Use 'bulle sessions attach [id]' to resume an interactive session.
+Use 'bulle sessions kill <id>' to terminate a running background session.
+Use 'bulle sessions rm <id>' to delete a session.`,
 		RunE: func(c *cobra.Command, args []string) error {
 			return c.Help()
 		},

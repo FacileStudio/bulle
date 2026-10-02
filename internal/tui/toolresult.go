@@ -5,8 +5,8 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/toolview"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
 // finished is a tool call reaching its end, which is where its line is finally

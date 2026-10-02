@@ -16,7 +16,7 @@ import (
 // `hooks:` entries in the user's own config. The legacy .nacelle/ name is
 // still read when the new one is absent, so a project configured before the
 // rename keeps its hooks.
-const HooksFile = ".kori/hooks.yml"
+const HooksFile = ".bulle/hooks.yml"
 
 const legacyHooksFile = ".nacelle/hooks.yml"
 
@@ -88,7 +88,7 @@ func SessionHooks(config Config) (map[nacelle.HookPoint][]nacelle.Hook, string, 
 	return hooks, notice, nil
 }
 
-// LoadProjectHooks reads <root>/.kori/hooks.yml through the trust gate,
+// LoadProjectHooks reads <root>/.bulle/hooks.yml through the trust gate,
 // falling back to the legacy .nacelle/hooks.yml.
 func LoadProjectHooks(root string, trustNew bool) (map[nacelle.HookPoint][]nacelle.Hook, string, error) {
 	path := filepath.Join(root, HooksFile)

@@ -7,7 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 )
 
 // compactBeforeSend is the pre-flight half of the trigger: when the context the

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/FacileStudio/kori/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/herdr"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -17,9 +17,9 @@ func (m *Model) detachCmd() tea.Cmd {
 		id = strings.TrimSuffix(filepath.Base(m.session.Path()), ".jsonl")
 	}
 	if id != "" {
-		m.detachedMsg = fmt.Sprintf("detached session %s\nrunning in background — resume with: kori sessions attach %s", id, id)
+		m.detachedMsg = fmt.Sprintf("detached session %s\nrunning in background — resume with: bulle sessions attach %s", id, id)
 	} else {
-		m.detachedMsg = "session detached — running in background\nresume with: kori sessions list"
+		m.detachedMsg = "session detached — running in background\nresume with: bulle sessions list"
 	}
 	return tea.Quit
 }

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/FacileStudio/kori/internal/ide"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/ide"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
 // ideAdapter hands a started IDE socket to the terminal as the surface it

@@ -7,21 +7,21 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 
 // chatServiceName is the systemd user unit this command owns. One daemon per
 // machine, because a Matrix account allows exactly one /sync consumer and a
 // second unit sharing the account would fight it for the connection.
-const chatServiceName = "kori-chat.service"
+const chatServiceName = "bulle-chat.service"
 
 func newChatInstallCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "install",
 		Short: "Write the systemd user unit and start the daemon",
-		Long: `Write ~/.config/systemd/user/kori-chat.service, reload systemd, and
+		Long: `Write ~/.config/systemd/user/bulle-chat.service, reload systemd, and
 enable the unit now so it also starts at boot. Idempotent: rerunning it
 rewrites the unit and leaves the service running.`,
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -34,7 +34,7 @@ func newChatUninstallCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "uninstall",
 		Short: "Stop the daemon and remove its unit",
-		Long:  "Disable and stop kori-chat.service, then delete its unit file. The chat database and the conversation files are left in place.",
+		Long:  "Disable and stop bulle-chat.service, then delete its unit file. The chat database and the conversation files are left in place.",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return runChatUninstall()
 		},
@@ -47,7 +47,7 @@ func newChatUninstallCmd() *cobra.Command {
 func runChatInstall() error {
 	self, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("locating kori: %w", err)
+		return fmt.Errorf("locating bulle: %w", err)
 	}
 	workdir, err := chatWorkingDirectory()
 	if err != nil {
@@ -70,7 +70,7 @@ func runChatInstall() error {
 	if err := runSystemctl("enable", "--now", chatServiceName); err != nil {
 		return err
 	}
-	fmt.Printf("kori chat installed: %s\n", unit)
+	fmt.Printf("bulle chat installed: %s\n", unit)
 	return nil
 }
 
@@ -120,7 +120,7 @@ func chatUnitPath() string {
 // instead of exporting secrets still starts.
 func chatUnitBody(self, workdir string) string {
 	return fmt.Sprintf(`[Unit]
-Description=kori chat daemon
+Description=bulle chat daemon
 After=network-online.target
 Wants=network-online.target
 

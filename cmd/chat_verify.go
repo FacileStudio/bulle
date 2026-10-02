@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/chat"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/chat"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ func newChatVerifyCmd() *cobra.Command {
 		Short: "Verify the Matrix bot device with cross-signing",
 		Long: `Verify this bot device using your Matrix account's recovery key.
 
-With --recovery-key (or recovery_key set in ~/.kori.yml), kori
+With --recovery-key (or recovery_key set in ~/.bulle.yml), bulle
 fetches the cross-signing keys from SSSS and signs the device directly.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runChatVerify(cmd.Context(), recoveryKey)
@@ -88,7 +88,7 @@ func openVerifyAdapter(m chatMatrix) (*chat.Matrix, func(), error) {
 	}
 	cleanup := func() {
 		if closeErr := adapter.Close(); closeErr != nil {
-			fmt.Fprintf(os.Stderr, "kori chat: closing adapter: %v\n", closeErr)
+			fmt.Fprintf(os.Stderr, "bulle chat: closing adapter: %v\n", closeErr)
 		}
 	}
 	return adapter, cleanup, nil
@@ -100,11 +100,11 @@ func executeVerify(ctx context.Context, adapter *chat.Matrix, key string) error 
 		return fmt.Errorf("checking verification status: %w", err)
 	}
 	if isVerified {
-		fmt.Println("kori chat: device is already verified")
+		fmt.Println("bulle chat: device is already verified")
 		return nil
 	}
 	if key == "" {
-		return errors.New("kori chat: no recovery key provided; set recovery_key in config or pass --recovery-key")
+		return errors.New("bulle chat: no recovery key provided; set recovery_key in config or pass --recovery-key")
 	}
 	if err := adapter.VerifyWithRecoveryKey(ctx, key); err != nil {
 		return fmt.Errorf("verifying with recovery key: %w", err)
@@ -112,6 +112,6 @@ func executeVerify(ctx context.Context, adapter *chat.Matrix, key string) error 
 	if err := saveRecoveryKey(key); err != nil {
 		return fmt.Errorf("saving recovery key: %w", err)
 	}
-	fmt.Println("kori chat: device verified successfully with recovery key")
+	fmt.Println("bulle chat: device verified successfully with recovery key")
 	return nil
 }

@@ -115,7 +115,7 @@ func TestSetSessionUpdatesTheDiscoveryFile(t *testing.T) {
 
 func TestSocketPathFollowsTheRuntimeDirectory(t *testing.T) {
 	t.Setenv("XDG_RUNTIME_DIR", "/run/user/1000")
-	want := "/run/user/1000/kori/42.sock"
+	want := "/run/user/1000/bulle/42.sock"
 	if got, err := SocketPath(42); err != nil || got != want {
 		t.Errorf("SocketPath = %q, %v, want %q", got, err, want)
 	}
@@ -126,7 +126,7 @@ func TestSocketPathFollowsTheRuntimeDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SocketPath without a runtime directory: %v", err)
 	}
-	want = filepath.Join("/tmp", "kori-"+strconv.Itoa(os.Getuid()), "42.sock")
+	want = filepath.Join("/tmp", "bulle-"+strconv.Itoa(os.Getuid()), "42.sock")
 	if fallback != want {
 		t.Errorf("SocketPath fell back to %q, want %q", fallback, want)
 	}

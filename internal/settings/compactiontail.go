@@ -3,7 +3,7 @@ package settings
 import (
 	"fmt"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 )
 
 // validateTail rejects a tail bound or a window figure that cannot work. It runs
@@ -47,7 +47,7 @@ func validateTail(c Compaction, compactAt *int64) error {
 	}{{"keep_tokens", c.KeepTokens}, {"reserve_tokens", c.ReserveTokens}, {"window_tokens", c.WindowTokens}} {
 		if bound.value != nil && *bound.value < 1 {
 			return &ParseError{Path: "limits.compaction." + bound.key, Err: fmt.Errorf(
-				"want a positive token count, got %d — leave it out and kori derives it", *bound.value)}
+				"want a positive token count, got %d — leave it out and bulle derives it", *bound.value)}
 		}
 	}
 	if c.ReserveTokens != nil && c.WindowTokens != nil && *c.ReserveTokens > *c.WindowTokens/2 {

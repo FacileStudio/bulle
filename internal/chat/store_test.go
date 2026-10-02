@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// storePath builds a path shaped like ~/.kori/chat/crypto.db whose parent does
+// storePath builds a path shaped like ~/.bulle/chat/crypto.db whose parent does
 // not exist yet, so OpenStore has to create it and its mode is part of what
 // the tests check.
 func storePath(t *testing.T) string {

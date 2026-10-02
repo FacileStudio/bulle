@@ -1,4 +1,4 @@
-// Package compaction owns kori's context-management strategy: how a long
+// Package compaction owns bulle's context-management strategy: how a long
 // conversation is partitioned into zones, which region is eligible for
 // tombstoning or pruning, and how the surviving turns are reassembled around a
 // persistent state ledger.

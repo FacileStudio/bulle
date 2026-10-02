@@ -1,6 +1,6 @@
 package agent
 
-import "github.com/FacileStudio/kori/internal/settings"
+import "github.com/FacileStudio/bulle/internal/settings"
 
 func mergeJobProvider(cfg *settings.Config, p settings.Provider, model string) {
 	if p.Backend != "" {

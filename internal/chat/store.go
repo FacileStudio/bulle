@@ -17,7 +17,7 @@ import (
 // what the file holds is the account's identity keys.
 //
 // The driver is modernc.org/sqlite rather than mattn/go-sqlite3 because every
-// kori release is built with CGO_ENABLED=0. The database is handed to the
+// bulle release is built with CGO_ENABLED=0. The database is handed to the
 // caller unopened rather than upgraded here: cryptohelper.Upgrade registers a
 // child table on it at construction time, so any upgrade before that would be
 // the parent's table and none of the crypto tables.

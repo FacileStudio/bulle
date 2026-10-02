@@ -76,7 +76,7 @@ func declareFlags(fallback Config) declared {
 		sourceFlags: declareSources(fallback),
 		backend:     flag.String("backend", fallback.Backend, "anthropic, google, openai, or openrouter"),
 		model:       flag.String("model", fallback.Model, "model id, defaulting to the backend's own"),
-		profile:     flag.String("profile", fallback.Profile, "profile name from ~/.kori/profiles/"),
+		profile:     flag.String("profile", fallback.Profile, "profile name from ~/.bulle/profiles/"),
 		root:        flag.String("root", fallback.Root, "directory the file tools may reach"),
 		system:      flag.String("system-prompt", fallback.System, "system prompt"),
 		additional:  flag.String("additional-prompt", fallback.Additional, "text appended after the base system prompt"),
@@ -86,7 +86,7 @@ func declareFlags(fallback Config) declared {
 			mode:           flag.String("mode", *fallback.Mode, "inline or tui rendering"),
 			transparent:    flag.Bool("transparent-blocks", *fallback.TransparentBlocks, "drop the backdrop on tool result and diff panes"),
 			json:           flag.Bool("json", *fallback.JSON, "print cron list as one JSON document"),
-			noConfig:       flag.Bool("no-config", false, "start with default settings, ignoring ~/.kori.yml"),
+			noConfig:       flag.Bool("no-config", false, "start with default settings, ignoring ~/.bulle.yml"),
 			showHooks:      flag.Bool("show-hooks", *fallback.ShowHooks, "show hook execution in conversation"),
 			showHookOutput: flag.Bool("show-hook-output", *fallback.ShowHookOutput, "show hook output preview in conversation"),
 		},
@@ -104,7 +104,7 @@ func declareFlags(fallback Config) declared {
 			projectContext: flag.Bool("project-context", *fallback.ProjectContext, "read CLAUDE.md and AGENTS.md from root upward into the system prompt"),
 			skills:         flag.Bool("skills", *fallback.Skills, "tell the model about skills found in ~/.agents/skills and trusted .agents/skills directories"),
 			trustSkills:    flag.Bool("trust-skills", *fallback.TrustSkills, "trust every .agents/skills directory found under root this run, and remember the decision"),
-			trustHooks:     flag.Bool("trust-hooks", *fallback.TrustHooks, "trust this project's .kori/hooks.yml as it reads right now, and remember that version"),
+			trustHooks:     flag.Bool("trust-hooks", *fallback.TrustHooks, "trust this project's .bulle/hooks.yml as it reads right now, and remember that version"),
 		},
 	}
 }
@@ -176,7 +176,7 @@ func resolveGates(resolved Config, path string) (Config, error) {
 	return resolved, nil
 }
 
-// processFlags declares kori's flags on the process's command line the first
+// processFlags declares bulle's flags on the process's command line the first
 // time it is asked and returns that same declaration every time after: the flag
 // package holds one CommandLine for the process and panics when a name is
 // declared on it twice, which is what a test binary running these tests twice —

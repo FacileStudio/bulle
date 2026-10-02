@@ -98,7 +98,7 @@ func (p *joinProbe) deliver(t *testing.T, stateKey id.UserID, membership event.M
 // that the handler still sees it, and that the room id is passed through with
 // the sigils a room id carries escaped into a valid path.
 func TestAnInviteMakesTheBotJoin(t *testing.T) {
-	self := id.UserID("@kori:example.org")
+	self := id.UserID("@bulle:example.org")
 	p := newJoinProbe(t, self)
 	p.deliver(t, self, event.MembershipInvite)
 
@@ -116,7 +116,7 @@ func TestAnInviteMakesTheBotJoin(t *testing.T) {
 // carries membership events for other people, so a handler that joined on any
 // invite would pull the bot into rooms nobody asked it into.
 func TestOnlyTheBotsOwnInviteIsJoined(t *testing.T) {
-	self := id.UserID("@kori:example.org")
+	self := id.UserID("@bulle:example.org")
 	p := newJoinProbe(t, self)
 
 	p.deliver(t, "@someone-else:example.org", event.MembershipInvite)

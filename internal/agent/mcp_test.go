@@ -42,7 +42,7 @@ func TestTheBannerSaysNothingAboutMCPWhenNoneIsConfigured(t *testing.T) {
 func TestAServerThatWillNotStartEndsTheRun(t *testing.T) {
 	config := defaults()
 	config.MCP = map[string]client.ServerDef{
-		"ledger": {Command: "/nonexistent/kori-mcp"},
+		"ledger": {Command: "/nonexistent/bulle-mcp"},
 	}
 
 	_, _, err := mcpTools(config, nil)
@@ -63,7 +63,7 @@ func TestAnUnreadableMCPFileEndsTheRun(t *testing.T) {
 	}
 }
 
-func TestMCPFromKoriYmlIsInlineAndTheFlagNamesFiles(t *testing.T) {
+func TestMCPFromBulleYmlIsInlineAndTheFlagNamesFiles(t *testing.T) {
 	written(t, "sources:\n  mcp:\n    mycelium:\n      command: mycelium\n      args: [mcp]\n")
 
 	config, err := resolveSettings(Config{Sources: Sources{MCPFiles: []string{"/from/the/flag.json"}}})

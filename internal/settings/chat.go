@@ -5,7 +5,7 @@ import (
 )
 
 // Chat is the inbound chat surface: one block per platform adapter. Every
-// other part of kori pushes text out; this is the one part that reads text in,
+// other part of bulle pushes text out; this is the one part that reads text in,
 // which is why its allowlist is the security boundary of the whole feature.
 type Chat struct {
 	Matrix Matrix `json:"matrix" yaml:"matrix"`

@@ -71,7 +71,7 @@ func TestPublishReachesEveryAttachedEditor(t *testing.T) {
 // TestApproveIsUnansweredWithNoEditorAttached pins the difference between "no
 // editor to ask" and "the editor said no". A session that opens a socket nobody
 // has attached to must leave the decision where it was — a caller with its own
-// approval surface, which is kori's terminal prompt, keeps it — rather than
+// approval surface, which is bulle's terminal prompt, keeps it — rather than
 // reporting a refusal it never asked for.
 func TestApproveIsUnansweredWithNoEditorAttached(t *testing.T) {
 	srv := startTestServer(t, Options{})

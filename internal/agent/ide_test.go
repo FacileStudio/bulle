@@ -3,7 +3,7 @@ package agent
 import (
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/ide"
+	"github.com/FacileStudio/bulle/internal/ide"
 )
 
 // A session that publishes to no editor hands over nothing. The nil check is

@@ -12,7 +12,7 @@ chat:
   matrix:
     enabled: true
     homeserver: https://matrix.example.org
-    user_id: "@kori-bot:example.org"
+    user_id: "@bulle-bot:example.org"
     self_sign: true
     allow:
       - "@alice:example.org"
@@ -27,7 +27,7 @@ chat:
 // carry is a startup failure rather than a setting that silently does nothing,
 // and the scaffold is what a reader copies from.
 func TestTheChatBlockLoads(t *testing.T) {
-	path := filepath.Join(t.TempDir(), ".kori.yml")
+	path := filepath.Join(t.TempDir(), ".bulle.yml")
 	if err := os.WriteFile(path, []byte(chatConfig), 0o644); err != nil {
 		t.Fatalf("writing tmp config: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestTheChatBlockLoads(t *testing.T) {
 	if !DerefBool(m.Enabled) {
 		t.Error("enabled = false, want true")
 	}
-	if m.Homeserver != "https://matrix.example.org" || m.UserID != "@kori-bot:example.org" {
+	if m.Homeserver != "https://matrix.example.org" || m.UserID != "@bulle-bot:example.org" {
 		t.Errorf("homeserver/user_id = %q/%q", m.Homeserver, m.UserID)
 	}
 	if !DerefBool(m.SelfSign) {
@@ -100,7 +100,7 @@ func TestMaxAgeIsAParseableDuration(t *testing.T) {
 	if got := Defaults("").Chat.Matrix.MaxAge; got != "" {
 		t.Fatalf("default max_age = %q, want empty so a fresh install drops nothing", got)
 	}
-	path := filepath.Join(t.TempDir(), ".kori.yml")
+	path := filepath.Join(t.TempDir(), ".bulle.yml")
 	if err := os.WriteFile(path, []byte(chatConfig), 0o644); err != nil {
 		t.Fatalf("writing tmp config: %v", err)
 	}

@@ -4,9 +4,9 @@ package agent
 import (
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/diagnostics"
-	"github.com/FacileStudio/kori/internal/provider"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/diagnostics"
+	"github.com/FacileStudio/bulle/internal/provider"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // Assembling the agent from settings, split out of main.go because that file

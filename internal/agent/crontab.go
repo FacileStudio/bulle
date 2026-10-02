@@ -7,14 +7,14 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func isJobInstalled(crontab, name string) bool {
 	if crontab == "" {
 		return false
 	}
-	beginMarker := "# BEGIN KORI JOB " + name
+	beginMarker := "# BEGIN BULLE JOB " + name
 	return strings.Contains(crontab, beginMarker) || matchesLegacyCron(crontab, name)
 }
 
@@ -69,8 +69,8 @@ func matchesLegacyCron(line, name string) bool {
 }
 
 func stripCrontabBlock(current, name string) (string, bool) {
-	beginMarker := "# BEGIN KORI JOB " + name
-	endMarker := "# END KORI JOB " + name
+	beginMarker := "# BEGIN BULLE JOB " + name
+	endMarker := "# END BULLE JOB " + name
 	lines := strings.Split(current, "\n")
 	var result []string
 	inBlock := false

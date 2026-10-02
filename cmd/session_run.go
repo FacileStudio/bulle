@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/sandbox"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/sandbox"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // checkPreflight verifies the target is reachable and isolated before any
@@ -61,7 +61,7 @@ func resolvePromptArg(printPrompt string, promptArgs []string) string {
 // It is never the host's working directory. Keeping that is how 0.69 put the
 // launch directory into the banner, the system prompt and the session header of
 // a session whose tools never touched this machine — and grouped its transcript
-// with whatever local project kori happened to be started from.
+// with whatever local project bulle happened to be started from.
 func targetSessionRoot(workdir, targetName string) string {
 	if workdir != "" {
 		return workdir
@@ -69,7 +69,7 @@ func targetSessionRoot(workdir, targetName string) string {
 	return settings.TargetRoot(targetName)
 }
 
-// runTargetSession boots kori on the host against a resolved target, mounting
+// runTargetSession boots bulle on the host against a resolved target, mounting
 // the SSH-backed tool set in place of the local file and command tools.
 func runTargetSession(ctx context.Context, version string, cfg settings.Config, opts sandbox.SessionOptions) error {
 	if err := checkPreflight(ctx, opts.Target, opts); err != nil {

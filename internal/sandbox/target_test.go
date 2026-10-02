@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // TestTargetFromInstance pins the fix for the 0.70 VM refusal: the workspace

@@ -33,8 +33,8 @@ func TestShellToolDeniesElevation(t *testing.T) {
 func TestShellToolAllowsSafeCommands(t *testing.T) {
 	tool := shellTestTool(t, t.TempDir(), "bash", true)
 	allowed := []string{
-		"kori true",
-		"kori cron list",
+		"bulle true",
+		"bulle cron list",
 		"git commit -m \"add docker container\"",
 		"grep -r docker .",
 		"echo \"the su command\"",

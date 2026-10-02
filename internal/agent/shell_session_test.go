@@ -14,7 +14,7 @@ import (
 
 // shellSandbox keeps a test's commands away from the real home: the test
 // process gets fresh HOME and XDG_CONFIG_HOME, so nothing reaches out and
-// scaffolds a real ~/.kori.yml, and the session's own environment is
+// scaffolds a real ~/.bulle.yml, and the session's own environment is
 // built from those same isolated values.
 func shellSandbox(t *testing.T) {
 	t.Helper()
@@ -84,12 +84,12 @@ func TestShellSessionKeepsCwdAndEnvAcrossCalls(t *testing.T) {
 	}
 	tool := shellTestTool(t, dir, "bash", false)
 
-	first := shellRun(t, tool, shellCommandInput{Command: "cd sub && export KORI_SHELL_TEST=hello"})
+	first := shellRun(t, tool, shellCommandInput{Command: "cd sub && export BULLE_SHELL_TEST=hello"})
 	if strings.Contains(first, "exit status") {
 		t.Fatalf("setting up state failed: %s", first)
 	}
 
-	second := shellRun(t, tool, shellCommandInput{Command: "pwd && echo $KORI_SHELL_TEST"})
+	second := shellRun(t, tool, shellCommandInput{Command: "pwd && echo $BULLE_SHELL_TEST"})
 	if want := sub + "\nhello"; second != want {
 		t.Fatalf("state did not survive the call boundary:\n got %q\nwant %q", second, want)
 	}
@@ -118,7 +118,7 @@ func TestShellSessionSurvivesExitAndRespawns(t *testing.T) {
 
 func TestShellToolFallsBackWhenBashIsMissing(t *testing.T) {
 	dir := t.TempDir()
-	tool := shellTestTool(t, dir, "/nonexistent/kori-missing-bash", false)
+	tool := shellTestTool(t, dir, "/nonexistent/bulle-missing-bash", false)
 
 	if got := shellRun(t, tool, shellCommandInput{Command: "echo fallen-back"}); got != "fallen-back" {
 		t.Fatalf("the stateless fallback did not answer: %q", got)

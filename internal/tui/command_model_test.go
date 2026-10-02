@@ -73,7 +73,7 @@ func TestModelCommandSwitchProfile(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	profilesDir := filepath.Join(dir, ".kori", "profiles")
+	profilesDir := filepath.Join(dir, ".bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestApplyProfileSwitchResetsReasoningBudget(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	profilesDir := filepath.Join(dir, ".kori", "profiles")
+	profilesDir := filepath.Join(dir, ".bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)
 	}

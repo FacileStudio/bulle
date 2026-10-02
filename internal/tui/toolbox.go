@@ -3,8 +3,8 @@ package tui
 import (
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/diff"
-	"github.com/FacileStudio/kori/internal/toolview"
+	"github.com/FacileStudio/bulle/internal/diff"
+	"github.com/FacileStudio/bulle/internal/toolview"
 	"github.com/FacileStudio/nacelle"
 )
 

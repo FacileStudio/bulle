@@ -2,11 +2,11 @@ version: 2
 
 # Pinned explicitly per CLI-STANDARD §5.2: ProjectName is inferred from the
 # repo name when absent, and the archive name_template interpolates it.
-project_name: kori
+project_name: bulle
 
 builds:
   - main: .
-    binary: kori
+    binary: bulle
     env:
       - CGO_ENABLED=0
     # goolm swaps libolm for a pure Go implementation of Olm. Without it
@@ -35,11 +35,11 @@ checksum:
 # deprecated it in v2.16, and casks are the supported way to ship a prebuilt
 # binary.
 homebrew_casks:
-  - name: kori
-    homepage: https://github.com/FacileStudio/kori
-    description: Terminal coding agent — the human harness for the kori SDK
+  - name: bulle
+    homepage: https://github.com/FacileStudio/bulle
+    description: Terminal coding agent — the human harness for the bulle SDK
     binaries:
-      - kori
+      - bulle
     repository:
       owner: FacileStudio
       name: homebrew-tap
@@ -55,7 +55,7 @@ homebrew_casks:
       post:
         install: |
           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/kori"]
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/bulle"]
           end
 
 changelog:

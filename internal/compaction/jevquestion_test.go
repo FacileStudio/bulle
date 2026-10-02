@@ -99,7 +99,7 @@ func TestStateBoundsTheGoalLikeABlock(t *testing.T) {
 	if !strings.Contains(rendered, "[block-1]") {
 		t.Error("the goal's cut swallowed the blocks, want them after it")
 	}
-	if short := state("add compaction to kori", nil); !strings.Contains(short, "add compaction to kori") {
+	if short := state("add compaction to bulle", nil); !strings.Contains(short, "add compaction to bulle") {
 		t.Errorf("state = %q, want a goal under the cap left verbatim", short)
 	}
 }

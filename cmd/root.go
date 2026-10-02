@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	"charm.land/fang/v2"
-	"github.com/FacileStudio/kori/internal/agent"
+	"github.com/FacileStudio/bulle/internal/agent"
 	"github.com/spf13/cobra"
 )
 
-// Execute runs the kori command tree through fang and returns the execution error.
+// Execute runs the bulle command tree through fang and returns the execution error.
 func Execute(version string) error {
 	agent.EnsureUserPath()
 	normalizeArgs()
@@ -23,9 +23,9 @@ func Execute(version string) error {
 func newRootCmd(version string) *cobra.Command {
 	var f cliFlags
 	cmd := &cobra.Command{
-		Use:   "kori [flags] [prompt]",
+		Use:   "bulle [flags] [prompt]",
 		Short: "Terminal coding agent and harness for the nacelle SDK",
-		Long: "kori is a terminal coding agent built on the nacelle agent SDK.\n" +
+		Long: "bulle is a terminal coding agent built on the nacelle agent SDK.\n" +
 			"It streams reasoning and answers in full-screen Bubble Tea or inline modes,\n" +
 			"runs tools with optional approval, manages subagents, and schedules cron jobs.",
 		DisableAutoGenTag: true,

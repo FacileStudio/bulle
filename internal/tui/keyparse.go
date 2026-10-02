@@ -6,9 +6,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/approval"
-	"github.com/FacileStudio/kori/internal/herdr"
-	"github.com/FacileStudio/kori/internal/menu"
+	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/menu"
 )
 
 // key handles this client's bindings, reporting whether it consumed the

@@ -22,7 +22,7 @@ func TestDiagnosticsDefaultOn(t *testing.T) {
 // turns it on is not the layer that decides.
 func TestDiagnosticsFollowThePrecedenceChain(t *testing.T) {
 	written(t, "tools:\n  diagnostics: false")
-	t.Setenv("KORI_DIAGNOSTICS", "true")
+	t.Setenv("BULLE_DIAGNOSTICS", "true")
 
 	config, err := settings(Config{})
 	if err != nil {

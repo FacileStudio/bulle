@@ -30,7 +30,7 @@ func TestIsLedgerRecognizesTheSentinel(t *testing.T) {
 func TestIsLedgerRequiresTheSentinelOnItsOwnLine(t *testing.T) {
 	for _, text := range []string{
 		Sentinel + " and here is what I copied out of the docs",
-		Sentinel + " is the marker kori writes",
+		Sentinel + " is the marker bulle writes",
 		"the ledger opens with " + Sentinel + ", then the facts",
 	} {
 		msg := nacelle.UserText(text)

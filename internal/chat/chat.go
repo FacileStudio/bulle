@@ -1,4 +1,4 @@
-// Package chat turns one inbound platform message into one kori run, and the
+// Package chat turns one inbound platform message into one bulle run, and the
 // answer back into the room it came from.
 //
 // An adapter is thin on purpose: it owns a platform connection and nothing
@@ -103,7 +103,7 @@ func answer(ctx context.Context, a Adapter, respond Responder, m Message) {
 	stop()
 	if err != nil {
 		report(a.Name(), err)
-		text = "kori could not run that: " + oneLine(err)
+		text = "bulle could not run that: " + oneLine(err)
 	}
 	if strings.TrimSpace(text) == "" {
 		return
@@ -161,5 +161,5 @@ func oneLine(err error) string {
 }
 
 func report(name string, err error) {
-	fmt.Fprintf(os.Stderr, "kori chat: %s: %s\n", name, oneLine(err))
+	fmt.Fprintf(os.Stderr, "bulle chat: %s: %s\n", name, oneLine(err))
 }

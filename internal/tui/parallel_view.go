@@ -7,8 +7,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/FacileStudio/kori/internal/layout"
-	"github.com/FacileStudio/kori/internal/status"
+	"github.com/FacileStudio/bulle/internal/layout"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 

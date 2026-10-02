@@ -54,7 +54,7 @@ type SkillsResult struct {
 
 type skillsResult = SkillsResult
 
-// LoadSkills assembles every skill kori will tell the model about: every
+// LoadSkills assembles every skill bulle will tell the model about: every
 // skill under ~/.agents/skills/, every skill under a trusted .agents/
 // skills/ found walking up from root, and every skill under extraDirs
 // (-skill-dir / NACELLE_SKILL_DIRS / skill_dirs — another tool's own skills

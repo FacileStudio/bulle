@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/FacileStudio/kori/internal/ide"
+	"github.com/FacileStudio/bulle/internal/ide"
 )
 
 type modelFlags struct {
@@ -76,7 +76,7 @@ func bindModelFlags(cmd *cobra.Command, f *modelFlags) {
 	fl := cmd.Flags()
 	fl.StringVar(&f.backend, "backend", "anthropic", "Model provider: anthropic, google, openai, or openrouter")
 	fl.StringVar(&f.model, "model", "", "Model identifier, defaulting to provider default")
-	fl.StringVar(&f.profile, "profile", "", "Profile name from ~/.kori/profiles/")
+	fl.StringVar(&f.profile, "profile", "", "Profile name from ~/.bulle/profiles/")
 	fl.StringVar(&f.effort, "effort", "", "Reasoning effort: none, minimal, low, medium, high, xhigh, max")
 	fl.BoolVar(&f.thinking, "thinking", true, "Stream the model's internal reasoning")
 	fl.Int64Var(&f.budget, "reasoning-budget", 0, "Token ceiling for reasoning per turn (0 sets no ceiling)")
@@ -91,7 +91,7 @@ func bindSessionFlags(cmd *cobra.Command, f *sessionFlags) {
 	fl.StringVar(&f.resume, "resume", "", "Resume a specific session by ID or file path")
 	fl.StringVar(&f.mode, "mode", "tui", "Interface rendering mode: tui or inline")
 	fl.BoolVar(&f.transparent, "transparent-blocks", true, "Drop backdrop on tool result and diff panes")
-	fl.BoolVar(&f.noConfig, "no-config", false, "Start with default settings, ignoring ~/.kori.yml")
+	fl.BoolVar(&f.noConfig, "no-config", false, "Start with default settings, ignoring ~/.bulle.yml")
 	fl.StringVar(&f.printPrompt, "print", "", "Run prompt in headless mode and stream response to stdout")
 	fl.BoolVar(&f.showHooks, "show-hooks", true, "Show hook execution in conversation")
 	fl.BoolVar(&f.showHookOutput, "show-hook-output", true, "Show hook output preview in conversation")
@@ -120,7 +120,7 @@ func bindDiscoveryFlags(cmd *cobra.Command, f *discoveryFlags) {
 	fl.BoolVar(&f.skills, "skills", true, "Load skills from ~/.agents/skills and project directories")
 	fl.StringSliceVar(&f.skillDirs, "skill-dir", nil, "Additional directory to load skills from (repeatable)")
 	fl.BoolVar(&f.trustSkills, "trust-skills", false, "Trust all project .agents/skills directories this run")
-	fl.BoolVar(&f.trustHooks, "trust-hooks", false, "Trust current project .kori/hooks.yml")
+	fl.BoolVar(&f.trustHooks, "trust-hooks", false, "Trust current project .bulle/hooks.yml")
 	fl.StringVar(&f.gatesFile, "gates-file", "", "YAML file of gate checks the session must pass")
 	fl.IntVar(&f.iterations, "max-iterations", 5, "Maximum model turns before asking the user")
 	fl.Int64Var(&f.compactAt, "compact-at", 0, "Absolute transcript token threshold for compaction (0 disables; unset derives it from the context window)")

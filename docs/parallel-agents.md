@@ -57,7 +57,7 @@ Both end up as the same thing: a "started N parallel agents" message, one titled
 
 ## Conventions
 
-- `[module-path]`: `github.com/FacileStudio/kori`
+- `[module-path]`: `github.com/FacileStudio/bulle`
 - `[filet]`: `filet check .` passes; `filet test` passes
 - `[events]`: no change — the model-callable path still collapses parallel results into a single tool result; the detached path uses a new `detachedResult` message on the update loop
 - `[migrations/auth/muse/distribute]`: N/A

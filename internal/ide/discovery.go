@@ -31,7 +31,7 @@ func Dir() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".kori", "ide")
+	return filepath.Join(home, ".bulle", "ide")
 }
 
 // File is the path this process's discovery file takes.

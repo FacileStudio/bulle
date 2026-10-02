@@ -6,7 +6,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 type dummyInput struct{}
@@ -19,7 +19,7 @@ func dummyTool(name string) nacelle.Tool {
 }
 
 // It runs on a home of the test's own: setupAgentCustomTools resolves settings
-// through the real chain, so without that it read the developer's ~/.kori.yml
+// through the real chain, so without that it read the developer's ~/.bulle.yml
 // and whichever profile that names.
 func TestSetupAgentCustomTools(t *testing.T) {
 	writeHome(t, "")

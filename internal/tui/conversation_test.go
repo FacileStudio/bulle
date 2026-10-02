@@ -65,7 +65,7 @@ func using(t *testing.T) *model {
 func TestAToolRoundIsRebuiltAsTheModelProducedIt(t *testing.T) {
 	m := using(t)
 	m.record(nacelle.Event{Kind: nacelle.KindToolResult, Tool: &nacelle.ToolEvent{
-		ID: "call_1", Name: "read_file", Result: "module kori",
+		ID: "call_1", Name: "read_file", Result: "module bulle",
 	}})
 	m.record(nacelle.Event{Kind: nacelle.KindText, Text: "it is the nacelle module"})
 	m.absorb(nacelle.Event{Kind: nacelle.KindText, Text: "it is the nacelle module"})
@@ -99,7 +99,7 @@ func TestAToolRoundIsRebuiltAsTheModelProducedIt(t *testing.T) {
 func TestTheCallAndItsResultKeepTheSameID(t *testing.T) {
 	m := using(t)
 	m.record(nacelle.Event{Kind: nacelle.KindToolResult, Tool: &nacelle.ToolEvent{
-		ID: "call_1", Name: "read_file", Result: "module kori", Err: errors.New("no such file"),
+		ID: "call_1", Name: "read_file", Result: "module bulle", Err: errors.New("no such file"),
 	}})
 	m.settle()
 

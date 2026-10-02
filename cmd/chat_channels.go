@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/FacileStudio/kori/internal/agent"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/agent"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 

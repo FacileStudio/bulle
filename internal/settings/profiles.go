@@ -16,7 +16,7 @@ import (
 // Profile defines a reusable identity: the provider and reasoning that reach a
 // backend, the limits that tune a run to that model, and the persona text the
 // session layers on top of the base prompt. Behaviour — tools, security,
-// sources, gates — stays in ~/.kori.yml, so one profile works in every
+// sources, gates — stays in ~/.bulle.yml, so one profile works in every
 // checkout without carrying that checkout's environment along.
 type Profile struct {
 	Name             string    `yaml:"name"`
@@ -26,7 +26,7 @@ type Profile struct {
 	AdditionalPrompt string    `yaml:"additional_prompt"`
 }
 
-// ProfilesDir returns the path to ~/.kori/profiles.
+// ProfilesDir returns the path to ~/.bulle/profiles.
 func ProfilesDir() (string, error) {
 	dir, err := HomeDir()
 	if err != nil {
@@ -96,7 +96,7 @@ func FindProfile(profiles []Profile, name string) (Profile, bool) {
 
 // ApplyProfile overwrites the provider, reasoning and limit fields the profile
 // actually sets, and layers its persona text on top of the prompt. A profile is
-// a layer of its own, above ~/.kori.yml: it moves the identity it names even
+// a layer of its own, above ~/.bulle.yml: it moves the identity it names even
 // when the file names one too, and only the environment and the flags, merged
 // after it, can still win a field back.
 func ApplyProfile(c *Config, p Profile) {

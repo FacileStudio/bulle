@@ -17,7 +17,7 @@ import (
 
 // deviceName is what the bot's device is called on the homeserver, and the
 // name a human sees in Element's device list.
-const deviceName = "kori"
+const deviceName = "bulle"
 
 // Matrix is one bot account's connection to a homeserver and the whole of the
 // platform-specific half of this package: it owns the /sync loop and the
@@ -154,7 +154,7 @@ func newCryptoHelper(client *mautrix.Client, cfg MatrixConfig) (*cryptohelper.Cr
 }
 
 // Name identifies this adapter in every Identity it produces and prefixes the
-// session key, so it must stay the string the rest of kori already expects.
+// session key, so it must stay the string the rest of bulle already expects.
 func (m *Matrix) Name() string { return "matrix" }
 
 // Receive registers the message handler, then blocks in /sync until the
@@ -206,7 +206,7 @@ func (m *Matrix) watchInvites() error {
 			report("matrix", fmt.Errorf("joining %s: %w", evt.RoomID, err))
 			return
 		}
-		fmt.Fprintf(os.Stderr, "kori chat: matrix: joined %s\n", evt.RoomID)
+		fmt.Fprintf(os.Stderr, "bulle chat: matrix: joined %s\n", evt.RoomID)
 	})
 	return nil
 }

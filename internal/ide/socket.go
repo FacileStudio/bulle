@@ -8,20 +8,20 @@ import (
 	"path/filepath"
 )
 
-// SocketPath is where this process listens: $XDG_RUNTIME_DIR/kori/<pid>.sock,
-// or $TMPDIR/kori-<uid>/<pid>.sock when the runtime directory is unset. Both
+// SocketPath is where this process listens: $XDG_RUNTIME_DIR/bulle/<pid>.sock,
+// or $TMPDIR/bulle-<uid>/<pid>.sock when the runtime directory is unset. Both
 // are per-user directories, which matters because what arrives on the socket
 // can answer an approval.
 func SocketPath(pid int) (string, error) {
 	name := fmt.Sprintf("%d.sock", pid)
 	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
-		return filepath.Join(dir, "kori", name), nil
+		return filepath.Join(dir, "bulle", name), nil
 	}
 	uid := os.Getuid()
 	if uid < 0 {
 		return "", errors.New("no user id to build the IDE socket path from")
 	}
-	return filepath.Join(os.TempDir(), fmt.Sprintf("kori-%d", uid), name), nil
+	return filepath.Join(os.TempDir(), fmt.Sprintf("bulle-%d", uid), name), nil
 }
 
 // listen opens the socket, creating its directory 0700 so only its owner can

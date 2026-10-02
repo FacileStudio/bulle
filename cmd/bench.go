@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/agent"
+	"github.com/FacileStudio/bulle/internal/agent"
 	"github.com/spf13/cobra"
 )
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // Target is a resolved SSH execution endpoint: where a session's tools run.
@@ -114,7 +114,7 @@ func resolveTargetFromInstance(name string, cfg settings.Config) (*Target, bool)
 
 // ResolveTarget resolves a boite sandbox by name: an entry in sandbox.targets
 // first, then a local boite instance of that name. A name that matches neither
-// is an error rather than an SSH address — SSH hosts belong to `kori remote`.
+// is an error rather than an SSH address — SSH hosts belong to `bulle remote`.
 func ResolveTarget(name string, cfg settings.Config) (*Target, error) {
 	targetName := cmp.Or(name, cfg.Sandbox.Default, cfg.Sandbox.VMName)
 	if targetName == "" {
@@ -126,5 +126,5 @@ func ResolveTarget(name string, cfg settings.Config) (*Target, error) {
 	if target, found := resolveTargetFromInstance(targetName, cfg); found {
 		return target, nil
 	}
-	return nil, fmt.Errorf("no boite sandbox %q: not a sandbox.targets entry or a local boite instance (try: kori sandbox list)", targetName)
+	return nil, fmt.Errorf("no boite sandbox %q: not a sandbox.targets entry or a local boite instance (try: bulle sandbox list)", targetName)
 }

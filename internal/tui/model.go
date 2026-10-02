@@ -9,11 +9,11 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/herdr"
-	"github.com/FacileStudio/kori/internal/history"
-	"github.com/FacileStudio/kori/internal/menu"
-	"github.com/FacileStudio/kori/internal/status"
-	"github.com/FacileStudio/kori/internal/theme"
+	"github.com/FacileStudio/bulle/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/history"
+	"github.com/FacileStudio/bulle/internal/menu"
+	"github.com/FacileStudio/bulle/internal/status"
+	"github.com/FacileStudio/bulle/internal/theme"
 	"github.com/FacileStudio/nacelle"
 )
 

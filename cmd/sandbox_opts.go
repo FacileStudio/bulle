@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/FacileStudio/kori/internal/sandbox"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/sandbox"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // resolveSandboxSnapshot picks the snapshot decision: an explicit --snapshot

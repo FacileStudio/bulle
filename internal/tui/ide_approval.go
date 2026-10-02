@@ -7,7 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/herdr"
 )
 
 // ideApprovalTimeout is how long an attached editor has to answer a pending

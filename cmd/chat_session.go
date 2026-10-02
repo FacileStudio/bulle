@@ -15,7 +15,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // chatHistoryLimit caps how much of a conversation is replayed into the prompt,
@@ -97,7 +97,7 @@ func appendChatTurn(key, who, text string) error {
 	}
 	defer func() { _ = file.Close() }()
 	if info, err := file.Stat(); err == nil && info.Size() == 0 {
-		if _, err := fmt.Fprintf(file, "# kori chat session %s\n", key); err != nil {
+		if _, err := fmt.Fprintf(file, "# bulle chat session %s\n", key); err != nil {
 			return err
 		}
 	}
@@ -157,12 +157,12 @@ func saveRecoveryKey(key string) error {
 	if err := os.WriteFile(path, []byte(key+"\n"), 0o600); err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "kori chat: cross-signing recovery key written to %s; keep it, it is the only copy\n", path)
+	fmt.Fprintf(os.Stderr, "bulle chat: cross-signing recovery key written to %s; keep it, it is the only copy\n", path)
 	return nil
 }
 
 // loadRecoveryKey reads the stored cross-signing recovery key if one was
-// previously written to ~/.kori/chat/recovery.key.
+// previously written to ~/.bulle/chat/recovery.key.
 func loadRecoveryKey() string {
 	path := filepath.Join(settings.ChatDir(), "recovery.key")
 	data, err := os.ReadFile(path)
@@ -175,8 +175,8 @@ func loadRecoveryKey() string {
 // loadOrCreatePickleKey returns the key that encrypts the bot device's stored
 // keys. A configured value or command wins; with neither, a fresh key is
 // generated once and kept beside the database 0600, because a key that changed
-// on every start would make kori a new device each time and flood the
-// homeserver. Shipping one constant instead would make every kori install share
+// on every start would make bulle a new device each time and flood the
+// homeserver. Shipping one constant instead would make every bulle install share
 // a key, which is the same as having none.
 func loadOrCreatePickleKey(m settings.Matrix) ([]byte, error) {
 	if m.PickleKey != "" {

@@ -7,7 +7,7 @@ import (
 	"github.com/FacileStudio/nacelle"
 	"github.com/FacileStudio/nacelle/anthropic"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // banner is the two lines the transcript opens with.
@@ -31,7 +31,7 @@ import (
 // read a page it just found needs the reason on screen.
 //
 // Root is resolved to an absolute path rather than echoed as typed, because
-// "-root ." reads the same from any directory kori happens to be
+// "-root ." reads the same from any directory bulle happens to be
 // launched from and answers nothing on its own.
 //
 // Whether bash is on is named last and named after the flag, because the
@@ -39,7 +39,7 @@ import (
 // client: asked to build something, it answers that it has no terminal and
 // cannot run a command. That is true and deliberate — run_command is
 // unconfined, so it stays a decision — but nothing on screen connected it to
-// a line in ~/.kori.yml written once and forgotten. Saying "bash off"
+// a line in ~/.bulle.yml written once and forgotten. Saying "bash off"
 // where the model's own capabilities are listed is the shortest path from
 // that answer back to the switch that causes it.
 //
@@ -56,7 +56,7 @@ func banner(backend nacelle.Backend, config settings.Config, found loaded, mcp c
 	if *config.Bash {
 		bash = "bash on"
 	}
-	line := fmt.Sprintf("kori %s · %s · %s\n%s · %s · %s · %s", version, backend.Name(), model, root,
+	line := fmt.Sprintf("bulle %s · %s · %s\n%s · %s · %s · %s", version, backend.Name(), model, root,
 		countedNoun(len(found.skills), "skill"), countedNoun(found.contextFiles, "context file"), bash)
 
 	if mcp.servers > 0 {
@@ -93,7 +93,7 @@ func countedNoun(n int, noun string) string {
 }
 
 // absolute is the root as a path that means the same thing from anywhere.
-// "-root ." reads identically from every directory kori was launched in
+// "-root ." reads identically from every directory bulle was launched in
 // and so answers nothing on its own — neither for the person reading the
 // banner nor for the model reading the system prompt, which are the two
 // callers.
@@ -101,7 +101,7 @@ func countedNoun(n int, noun string) string {
 // A target-labeled root ("target:<name>", set by remote and sandbox
 // sessions with no configured workdir) is echoed back as-is: it names the
 // machine on the other end of the SSH connection, not a directory on this
-// one, and resolving it would only rename the directory kori was launched
+// one, and resolving it would only rename the directory bulle was launched
 // from.
 func absolute(root string) string {
 	if settings.IsTargetRoot(root) {

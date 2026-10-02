@@ -1,9 +1,9 @@
 package agent
 
 import (
-	"github.com/FacileStudio/kori/internal/compaction"
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
 // Policy folds the resolved budget and the tail's own bounds into the one

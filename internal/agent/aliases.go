@@ -1,9 +1,9 @@
 package agent
 
 import (
-	"github.com/FacileStudio/kori/internal/approval"
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/skills"
+	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/skills"
 )
 
 // Config aliases settings.Config.

@@ -111,7 +111,7 @@ func isLoopbackHost(host string) bool {
 // hostKeyHint recognizes the ssh host-key failures that otherwise surface as a
 // bare exit status, and returns the command that resolves them.
 //
-// Every kori ssh runs with BatchMode=yes, so ssh can never show the yes/no
+// Every bulle ssh runs with BatchMode=yes, so ssh can never show the yes/no
 // prompt a hand-typed connection would: an unknown key and a rotated one are
 // both refused with nothing the user can act on. A boite VM never reaches here —
 // its args turn verification off — so this is about network hosts, and the trust
@@ -135,7 +135,7 @@ func hostKeyHint(target *Target, output string) (string, bool) {
 		}
 		hint += ", then retry"
 		if isLoopbackHost(host) {
-			hint += "; for a local boite VM, use `kori sandbox <vm>` instead"
+			hint += "; for a local boite VM, use `bulle sandbox <vm>` instead"
 		}
 		return hint, true
 	}
@@ -143,7 +143,7 @@ func hostKeyHint(target *Target, output string) (string, bool) {
 }
 
 // sshConnectArgs is the tail of the hand-typed equivalent of the connection
-// kori tried: the port it would pass and the user it would log in as, with the
+// bulle tried: the port it would pass and the user it would log in as, with the
 // ssh_config alias left for ssh itself to resolve.
 func sshConnectArgs(target *Target, host string, port int) string {
 	dest := resolveSSHUserDestination(target, "", host)

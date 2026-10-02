@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // SessionLog is the record of a session on disk: one JSONL file per run,
-// under ~/.kori/sessions/, holding the questions that were typed and the
+// under ~/.bulle/sessions/, holding the questions that were typed and the
 // answers that came back.
 //
 // It holds a path and nothing else — no handle, no buffer, no goroutine. Each
@@ -133,7 +133,7 @@ type sessionEntry struct {
 //
 // The root is recorded as given when it names a target: that names a machine on
 // the other end of an SSH connection, not a directory here, and resolving it
-// would record the path kori was launched from and group the session with that
+// would record the path bulle was launched from and group the session with that
 // project instead of with its VM.
 func newSessionLog(backend, model, root string) *sessionLog {
 	dir, err := settings.HomeDir()

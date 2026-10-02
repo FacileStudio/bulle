@@ -203,12 +203,12 @@ func TestJudgeKeyComesFromTheFileUnlessTheEnvironmentOverrides(t *testing.T) {
 // setting, so a key already exported for TypeSafe needs no second copy.
 func TestJudgeKeyPrefersTheTypesafeVariable(t *testing.T) {
 	t.Setenv("TYPESAFE_API_KEY", "from-typesafe")
-	t.Setenv(EnvPrefix+"COMPACTION_JUDGE_API_KEY", "from-kori")
+	t.Setenv(EnvPrefix+"COMPACTION_JUDGE_API_KEY", "from-bulle")
 	if key := FromEnv().Compaction.Judge.APIKey; key != "from-typesafe" {
 		t.Errorf("judge key = %q, want TYPESAFE_API_KEY to win", key)
 	}
 	t.Setenv("TYPESAFE_API_KEY", "")
-	if key := FromEnv().Compaction.Judge.APIKey; key != "from-kori" {
+	if key := FromEnv().Compaction.Judge.APIKey; key != "from-bulle" {
 		t.Errorf("judge key = %q, want the namespaced variable when TypeSafe's is empty", key)
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 type editorFinishedMsg struct {
@@ -39,7 +39,7 @@ func editInExternalEditor(content string, editor string) (string, error) {
 		return content, errors.New("no editor configured")
 	}
 
-	tmpPath, closeFn, err := createTempFile(content, "kori-*.md")
+	tmpPath, closeFn, err := createTempFile(content, "bulle-*.md")
 	if err != nil {
 		return content, err
 	}
@@ -105,7 +105,7 @@ func (m *Model) openEditor() tea.Cmd {
 	}
 	content := m.prompt.Value()
 
-	tmpPath, cleanup, err := createTempFile(content, "kori-prompt-*.md")
+	tmpPath, cleanup, err := createTempFile(content, "bulle-prompt-*.md")
 	if err != nil {
 		m.say(fromReader, "editor failed: "+err.Error())
 		return nil

@@ -3,7 +3,7 @@ package tui
 import (
 	"charm.land/lipgloss/v2"
 
-	"github.com/FacileStudio/kori/internal/toolview"
+	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
 // green, red and yellow are the three run-state colours a parallel task row's

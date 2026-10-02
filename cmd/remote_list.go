@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"charm.land/lipgloss/v2"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ func collectRemoteEntries(cfg settings.Config) []remoteListEntry {
 
 func printRemoteTextList(entries []remoteListEntry) {
 	if len(entries) == 0 {
-		fmt.Println("no remote hosts configured; pass user@host:port directly or add remote.targets in ~/.kori.yml")
+		fmt.Println("no remote hosts configured; pass user@host:port directly or add remote.targets in ~/.bulle.yml")
 		return
 	}
 	nameStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Green)
@@ -55,7 +55,7 @@ func newRemoteListCmd() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List configured remote SSH hosts",
-		Long:    "List every host configured under remote.targets in ~/.kori.yml.",
+		Long:    "List every host configured under remote.targets in ~/.bulle.yml.",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return runRemoteList(jsonOutput)
 		},

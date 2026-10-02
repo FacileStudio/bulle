@@ -16,7 +16,7 @@ import (
 func TestProfileSwitchResolvesAKeyFromItsCommand(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	profiles := filepath.Join(dir, ".kori", "profiles")
+	profiles := filepath.Join(dir, ".bulle", "profiles")
 	if err := os.MkdirAll(profiles, 0o755); err != nil {
 		t.Fatal(err)
 	}

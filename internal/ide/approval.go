@@ -4,7 +4,7 @@ import "context"
 
 // Answer is what the attached editors said about one pending tool call. It is
 // three-valued on purpose: "there was nobody to ask" is not the same as "the
-// call was refused", and a caller with an approval surface of its own — kori's
+// call was refused", and a caller with an approval surface of its own — bulle's
 // terminal prompt — has to be able to tell them apart. Collapsed into a bool,
 // a session that opens a socket no editor has attached to denies every call the
 // moment it is asked, terminal prompt and all.

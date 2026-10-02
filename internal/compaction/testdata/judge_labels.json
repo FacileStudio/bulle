@@ -1,6 +1,6 @@
 {
   "note": "Labeled history blocks for the judge calibration harness (calibration_test.go). Each case is one atomic history block with the verdict a careful operator would give it, and the labels are the corpus's whole value: extend this file with blocks from real traces, keep the labels honest, and the two thresholds stop being guesses. Add a case rather than editing one when you disagree with a label, so the disagreement stays visible. Labels are keep (live state the agent is still working from), ledger (a decision, constraint, artifact or dead end worth keeping compressed) and prune (superseded output with no lasting value).",
-  "goal": "Add ratio-based context compaction to kori: a soft tier that tombstones old tool results, a mid tier that classifies each history block, and a state ledger the fold writes into. Package layout, the filet ceilings and the invariant list are fixed.",
+  "goal": "Add ratio-based context compaction to bulle: a soft tier that tombstones old tool results, a mid tier that classifies each history block, and a state ledger the fold writes into. Package layout, the filet ceilings and the invariant list are fixed.",
   "cases": [
     {
       "id": "superseded-listing",
@@ -10,12 +10,12 @@
     {
       "id": "superseded-read",
       "label": "prune",
-      "text": "tool call read_file {\"path\":\"internal/tui/compact_mask.go\"}\npackage tui\n\nimport \"github.com/FacileStudio/kori/internal/compaction\"\n\nconst (\n\tcompactMinResult = compaction.MinResult\n)\n... 84 more lines ...\nassistant: The mask aliases the package constants."
+      "text": "tool call read_file {\"path\":\"internal/tui/compact_mask.go\"}\npackage tui\n\nimport \"github.com/FacileStudio/bulle/internal/compaction\"\n\nconst (\n\tcompactMinResult = compaction.MinResult\n)\n... 84 more lines ...\nassistant: The mask aliases the package constants."
     },
     {
       "id": "failed-command-typo",
       "label": "prune",
-      "text": "tool call run_command {\"command\":\"go test ./internal/compaction/... -race -count=1\"}\nFAIL github.com/FacileStudio/kori/internal/compaction [build failed]\n# github.com/FacileStudio/kori/internal/compaction\n./micro.go:133:17: undefined: DroppedNotic\nassistant: Typo. Fixing and re-running."
+      "text": "tool call run_command {\"command\":\"go test ./internal/compaction/... -race -count=1\"}\nFAIL github.com/FacileStudio/bulle/internal/compaction [build failed]\n# github.com/FacileStudio/bulle/internal/compaction\n./micro.go:133:17: undefined: DroppedNotic\nassistant: Typo. Fixing and re-running."
     },
     {
       "id": "duplicate-build-check",

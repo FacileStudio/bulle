@@ -19,7 +19,7 @@ func TestMCPFilesFromYAML(t *testing.T) {
 
 func TestMCPFilesFromEnvironment(t *testing.T) {
 	written(t, "")
-	t.Setenv("KORI_MCP_FILES", "/env/one.json:/env/two.json")
+	t.Setenv("BULLE_MCP_FILES", "/env/one.json:/env/two.json")
 
 	config, err := settings(Config{})
 	if err != nil {

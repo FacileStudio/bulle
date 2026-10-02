@@ -7,7 +7,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/diff"
+	"github.com/FacileStudio/bulle/internal/diff"
 )
 
 // publisher is the nacelle hook this package registers. It holds the little

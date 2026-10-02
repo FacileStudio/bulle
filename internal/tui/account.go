@@ -3,8 +3,8 @@ package tui
 import (
 	"time"
 
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/usage"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/usage"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -64,7 +64,7 @@ type account struct {
 	sink *usage.Sink
 
 	// session is this run of the client written down: the questions asked
-	// and the answers given, appended to a file under ~/.kori/sessions
+	// and the answers given, appended to a file under ~/.bulle/sessions
 	// as they are said. It is nil when the file could not be opened, which
 	// is not a reason to refuse to run.
 	session *sessions.SessionLog

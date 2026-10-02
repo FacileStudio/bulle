@@ -1,9 +1,9 @@
 // Package herdr reports this pane's agent state to a running herdr
-// multiplexer over its socket API. kori is not one of the agent kinds
+// multiplexer over its socket API. bulle is not one of the agent kinds
 // compiled into herdr, so herdr would show the pane as a plain shell; a
 // process whose name herdr does not know can still claim a label through
 // `pane report-agent`, and herdr treats that report as the sole authority.
-// Reporting here is what makes a kori session show up in herdr at all.
+// Reporting here is what makes a bulle session show up in herdr at all.
 package herdr
 
 import (
@@ -21,7 +21,7 @@ const (
 // source is the stable, unique source id every report from this process uses.
 // Herdr keys lifecycle authority by (source, agent); keeping both fixed here
 // means the reports never compete and never get released by anything else.
-const source = "kori"
+const source = "bulle"
 
 // Client reports to one pane. spawn is injected so tests can record the
 // commands that would run instead of launching a real herdr; production wires
@@ -50,7 +50,7 @@ func SetSession(h *Client, path string) {
 }
 
 // NewFromEnv builds a client from the environment herdr injects into every
-// pane, returning nil when kori is not running inside herdr. Guarding on
+// pane, returning nil when bulle is not running inside herdr. Guarding on
 // HERDR_ENV makes the integration a no-op outside herdr, and refusing to build
 // when the pane or binary is missing keeps a partial environment from sending
 // reports into nothing.
@@ -103,8 +103,8 @@ func Report(h *Client, state string) {
 	h.state = state
 }
 
-// Release drops the agent's lifecycle authority when kori exits, so herdr
-// does not keep showing a dead pane as kori. It runs before the process
+// Release drops the agent's lifecycle authority when bulle exits, so herdr
+// does not keep showing a dead pane as bulle. It runs before the process
 // ends, so the awaited subprocess completes in time.
 func Release(h *Client) {
 	if h == nil {

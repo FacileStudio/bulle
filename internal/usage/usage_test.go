@@ -34,7 +34,7 @@ func TestARecordedTurnIsAnAssistantMessageMyceliumWillCount(t *testing.T) {
 		CacheReadTokens: 7, CacheCreationTokens: 3, Cost: 0.012,
 	}, sinkNow)
 
-	path := filepath.Join(dataDir, "events", "kori", "2026-08.jsonl")
+	path := filepath.Join(dataDir, "events", "bulle", "2026-08.jsonl")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("mycelium reads events/<agent>/<month>.jsonl: %v", err)
@@ -46,8 +46,8 @@ func TestARecordedTurnIsAnAssistantMessageMyceliumWillCount(t *testing.T) {
 	if got.Type != "message" || got.Role != "assistant" {
 		t.Errorf("type/role = %q/%q, want message/assistant", got.Type, got.Role)
 	}
-	if got.Agent != "kori" {
-		t.Errorf("agent = %q, want kori so the dashboard labels it", got.Agent)
+	if got.Agent != "bulle" {
+		t.Errorf("agent = %q, want bulle so the dashboard labels it", got.Agent)
 	}
 	checkTurnAccounting(t, got)
 }
@@ -77,7 +77,7 @@ func TestEachTurnAppendsItsOwnLine(t *testing.T) {
 	sink.Record(nacelle.Usage{OutputTokens: 40}, sinkNow)
 	sink.Record(nacelle.Usage{OutputTokens: 60}, sinkNow.Add(time.Minute))
 
-	data, err := os.ReadFile(filepath.Join(dataDir, "events", "kori", "2026-08.jsonl"))
+	data, err := os.ReadFile(filepath.Join(dataDir, "events", "bulle", "2026-08.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestAnUnpricedTurnCarriesNoCost(t *testing.T) {
 
 	sink.Record(nacelle.Usage{InputTokens: 10, OutputTokens: 5}, sinkNow)
 
-	data, err := os.ReadFile(filepath.Join(dataDir, "events", "kori", "2026-08.jsonl"))
+	data, err := os.ReadFile(filepath.Join(dataDir, "events", "bulle", "2026-08.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}

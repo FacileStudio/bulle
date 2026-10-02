@@ -12,7 +12,7 @@ type RemoteTarget struct {
 	Root       string `json:"root" yaml:"root"`
 }
 
-// Remote holds the defaults `kori remote` applies to SSH hosts: the host it
+// Remote holds the defaults `bulle remote` applies to SSH hosts: the host it
 // connects to with no argument, and the user, port, identity and workspace
 // every host inherits unless it overrides them. An empty port is meaningful —
 // it lets ssh pick, honoring ~/.ssh/config's Port before ssh's own default of

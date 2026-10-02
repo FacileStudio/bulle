@@ -2,7 +2,7 @@
 
 This document answers three questions in order:
 
-1. Can kori block elevation commands in `run_command` through `~/.kori.yml`?
+1. Can bulle block elevation commands in `run_command` through `~/.bulle.yml`?
 2. Is blocking elevation a good idea?
 3. If elevation is allowed, how do we let the human type a password without the
    agent ever seeing it?
@@ -19,7 +19,7 @@ exec.CommandContext(ctx, "/bin/sh", "-c", command)
 Consequences that matter here:
 
 - The command runs with **this process's own privileges**: whatever user
-  launched kori, that is who the agent runs as.
+  launched bulle, that is who the agent runs as.
 - There is **no TTY**. Interactive `sudo` asks for a password on a terminal,
   and there is none, so plain `sudo apt install foo` fails today with
   "sudo: a terminal is required".
@@ -30,10 +30,10 @@ Consequences that matter here:
 The SDK already has a scanner for shell escapes,
 `tools/command_escape.go` (`checkCommandEscapes`). It walks the command,
 splits on `;`, `&&`, `||`, `|`, `&`, and refuses a list of shell builtins
-when strict confinement (`security.path_isolation`) is on. A kori rule has
+when strict confinement (`security.path_isolation`) is on. A bulle rule has
 a natural home right next to it.
 
-## Question 1: can we configure this in ~/.kori.yml?
+## Question 1: can we configure this in ~/.bulle.yml?
 
 Not today: there is no setting for it. Two ways to get there:
 
@@ -61,8 +61,8 @@ Option A shipped as `deny_elevation` — broader than the original `deny_sudo`
 sketch: it refuses every elevation primitive (`sudo`, `doas`, `su`, `pkexec`,
 `docker`, `chroot` and relatives, however spelled, quoted, chained or behind a
 path) and refuses to run any setuid-root binary. Default on. Settings wiring in
-kori is `internal/settings/config.go` (`DenyElevation`, env
-`KORI_DENY_ELEVATION`); detection lives in the SDK at
+bulle is `internal/settings/config.go` (`DenyElevation`, env
+`BULLE_DENY_ELEVATION`); detection lives in the SDK at
 `tools/command_escape.go` (`checkCommandElevation`), checked before execution.
 
 The denial message carries the protocol: the blocked agent is told not to
@@ -125,7 +125,7 @@ across sources: denylist for the obvious cases, human approval for the rest,
 and OS-level enforcement as the real boundary.
 
 So the honest framing for the docs: `deny_sudo` catches accidents, lazy
-models and injected instructions. If you need a guarantee, run kori under
+models and injected instructions. If you need a guarantee, run bulle under
 an account that is not in the `sudo` group, or rely on `security.env_isolation`
 and path isolation plus OS sandboxing. String matching is the first rung, not
 the wall.
@@ -143,7 +143,7 @@ Concretely, ranked:
 The harness must never hold the password and feed it to `sudo -S`'s stdin.
 That puts the credential one `echo`, one `printenv`, or one prompt injection
 away from the transcript, and it teaches the model that sudo is just available.
-Never store a sudo password in `~/.kori.yml`, tiroir, or the environment
+Never store a sudo password in `~/.bulle.yml`, tiroir, or the environment
 for the agent's use.
 
 ### Best: NOPASSWD per command in sudoers
@@ -152,7 +152,7 @@ If a workflow legitimately needs elevation (restarting a service, mounting a
 disk), configure sudoers for those exact commands:
 
 ```
-# /etc/sudoers.d/kori
+# /etc/sudoers.d/bulle
 yann ALL=(root) NOPASSWD: /usr/bin/systemctl restart myservice, /usr/bin/mount
 ```
 
@@ -164,14 +164,14 @@ exists anywhere.
 
 ### Good: the human types, in their own terminal
 
-When a command needs elevation and sudoers does not cover it, kori pauses
+When a command needs elevation and sudoers does not cover it, bulle pauses
 and asks you to run that one command yourself in your own terminal. The agent
 sees only "the human ran it, exit code 0". No password ever crosses the
 process boundary.
 
 ### Good: harness approves, sudo prompts on a fresh pty
 
-When a command needs elevation and sudoers does not cover it, kori can
+When a command needs elevation and sudoers does not cover it, bulle can
 run the elevated command itself by letting **sudo's own prompt** collect the
 password on a pty the harness allocates but never reads. The harness writes
 the command to the pty, forwards only the output after the prompt and the
@@ -209,6 +209,6 @@ The agent never sees a password. It sees, at most:
 
 | Question | Answer |
 |---|---|
-| Configure a sudo block in `~/.kori.yml` | Yes: shipped as `security.deny_elevation`, default on, all elevation primitives plus setuid-root binaries |
+| Configure a sudo block in `~/.bulle.yml` | Yes: shipped as `security.deny_elevation`, default on, all elevation primitives plus setuid-root binaries |
 | Good idea? | Yes, as a policy guard. Not a security boundary; OS-level enforcement is the wall |
 | Safe password entry | Never through the agent. Sudoers NOPASSWD per command, the human runs the command themselves, or (phase 2) a fresh pty per elevated command whose prompt the harness never reads |

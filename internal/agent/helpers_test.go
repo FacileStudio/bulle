@@ -10,7 +10,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func asSettled(c Config) Config {

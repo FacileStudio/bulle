@@ -10,7 +10,7 @@ import (
 	"maunium.net/go/mautrix/id"
 )
 
-const selfMXID = "@kori:example.org"
+const selfMXID = "@bulle:example.org"
 
 const roomID = "!room:example.org"
 
@@ -30,12 +30,12 @@ const syncFixture = `{
               "sender": "@alice:example.org",
               "event_id": "$plain:example.org",
               "origin_server_ts": 1700000000000,
-              "content": {"msgtype": "m.text", "body": "hello kori"}
+              "content": {"msgtype": "m.text", "body": "hello bulle"}
             },
             {
               "type": "m.room.message",
               "room_id": "!room:example.org",
-              "sender": "@kori:example.org",
+              "sender": "@bulle:example.org",
               "event_id": "$self:example.org",
               "origin_server_ts": 1700000001000,
               "content": {"msgtype": "m.text", "body": "my own reply"}
@@ -143,7 +143,7 @@ func TestMessageFromRefuses(t *testing.T) {
 func TestMessageFromAccepts(t *testing.T) {
 	events := fixtureEvents(t)
 	cases := map[string]want{
-		"$plain:example.org":  {sender: "@alice:example.org", room: roomID, event: "$plain:example.org", text: "hello kori", at: 1700000000000},
+		"$plain:example.org":  {sender: "@alice:example.org", room: roomID, event: "$plain:example.org", text: "hello bulle", at: 1700000000000},
 		"$notice:example.org": {sender: "@alice:example.org", room: roomID, event: "$notice:example.org", text: "deploy finished", at: 1700000003000},
 	}
 	for eventID, w := range cases {

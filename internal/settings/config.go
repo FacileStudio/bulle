@@ -13,7 +13,7 @@ import (
 )
 
 // ConfigFile is where settings are read from when the flags leave them out.
-const ConfigFile = ".kori.yml"
+const ConfigFile = ".bulle.yml"
 
 // Limits is the threshold settings that cap the run. Embedded in Config so
 // every field still reads as c.MaxIterations.
@@ -37,7 +37,7 @@ type Limits struct {
 
 // Provider is the backend in use plus the endpoint and key that reach it.
 // The yaml keys live under the group names (provider:, limits: and the rest);
-// the KORI_ names are new; NACELLE_ names still resolve for existing environments.
+// the BULLE_ names are new; NACELLE_ names still resolve for existing environments.
 type Provider struct {
 	Backend string `yaml:"backend"`
 	Model   string `yaml:"model"`
@@ -109,7 +109,7 @@ type Security struct {
 	ApproveTools  *bool `yaml:"approve_tools"`
 	PathIsolation *bool `yaml:"path_isolation"`
 	// DenyElevation refuses run_command calls that try to elevate
-	// privileges (kori, su, doas, pkexec): a policy guard against accidents
+	// privileges (bulle, su, doas, pkexec): a policy guard against accidents
 	// and injected instructions, not a security boundary; the OS decides
 	// who may elevate.
 	DenyElevation *bool `yaml:"deny_elevation"`
@@ -187,7 +187,7 @@ type GateSpec struct {
 
 // Automation groups the config's chained machinery. It is inline in the
 // YAML, so the keys stay top-level: hooks, gates. Scheduled jobs are not
-// here anymore — LoadJobs reads them from ~/.kori/jobs/ instead.
+// here anymore — LoadJobs reads them from ~/.bulle/jobs/ instead.
 type Automation struct {
 	Hooks []HookSpec `yaml:"hooks"`
 	Gates []GateSpec `yaml:"gates"`
@@ -236,7 +236,7 @@ func Settings(system string, flags Config) (Config, error) {
 	if created, err := Scaffold(ConfigPath()); err != nil {
 		return Config{}, err
 	} else if created {
-		fmt.Fprintln(os.Stderr, "wrote ~/.kori.yml with the default settings")
+		fmt.Fprintln(os.Stderr, "wrote ~/.bulle.yml with the default settings")
 	}
 	file, err := Load(ConfigPath())
 	if err != nil {

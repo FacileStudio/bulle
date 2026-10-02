@@ -29,7 +29,7 @@ var keyPrecedenceCases = []struct {
 	{
 		name: "the environment beats the command",
 		file: "provider:\n  api_key_command: \"exit 3\"\n",
-		env:  map[string]string{"KORI_PROVIDER_API_KEY": "sk-from-env"},
+		env:  map[string]string{"BULLE_PROVIDER_API_KEY": "sk-from-env"},
 		want: "sk-from-env",
 	},
 	{
@@ -68,7 +68,7 @@ var keyFailureCases = []struct {
 // A key command is a source, not an override: it fills a key nothing else
 // supplied, and every layer that did supply one wins.
 func TestResolveKeysPrecedence(t *testing.T) {
-	clearEnv(t, "KORI_PROVIDER_API_KEY", "NACELLE_PROVIDER_API_KEY", "TYPESAFE_API_KEY")
+	clearEnv(t, "BULLE_PROVIDER_API_KEY", "NACELLE_PROVIDER_API_KEY", "TYPESAFE_API_KEY")
 	for _, tt := range keyPrecedenceCases {
 		t.Run(tt.name, func(t *testing.T) {
 			written(t, tt.file)
@@ -93,7 +93,7 @@ func TestResolveKeysPrecedence(t *testing.T) {
 // has to land where the session reads it, and the judge has its own field and its
 // own command, so one key can be a literal while the other is fetched.
 func TestKeyCommandsReachTheirOwnField(t *testing.T) {
-	clearEnv(t, "TYPESAFE_API_KEY", "KORI_COMPACTION_JUDGE_API_KEY", "NACELLE_COMPACTION_JUDGE_API_KEY")
+	clearEnv(t, "TYPESAFE_API_KEY", "BULLE_COMPACTION_JUDGE_API_KEY", "NACELLE_COMPACTION_JUDGE_API_KEY")
 	written(t, `provider:
   api_key_command: "echo sk-provider"
 limits:
@@ -121,7 +121,7 @@ limits:
 // of them carrying a secret — so the profile's own command has to survive the
 // layer that applies it, over a file that names no command at all.
 func TestAProfileKeyCommandReachesTheResolvedConfig(t *testing.T) {
-	clearEnv(t, "KORI_PROVIDER_API_KEY", "NACELLE_PROVIDER_API_KEY", "TYPESAFE_API_KEY")
+	clearEnv(t, "BULLE_PROVIDER_API_KEY", "NACELLE_PROVIDER_API_KEY", "TYPESAFE_API_KEY")
 	setupProfileEnvWith(t, "lerouteur.yml",
 		"name: lerouteur\nprovider:\n  backend: openrouter\n  model: deepseek\n  api_key_command: \"echo sk-profile\"\n",
 		"profile: lerouteur\n")
@@ -144,7 +144,7 @@ func TestAProfileKeyCommandReachesTheResolvedConfig(t *testing.T) {
 // A command that cannot produce a key is refused at load, naming where it was
 // written, rather than leaving a credential-shaped hole behind.
 func TestAFailingKeyCommandNamesItsField(t *testing.T) {
-	clearEnv(t, "TYPESAFE_API_KEY", "KORI_COMPACTION_JUDGE_API_KEY", "NACELLE_COMPACTION_JUDGE_API_KEY")
+	clearEnv(t, "TYPESAFE_API_KEY", "BULLE_COMPACTION_JUDGE_API_KEY", "NACELLE_COMPACTION_JUDGE_API_KEY")
 	for _, tt := range keyFailureCases {
 		t.Run(tt.name, func(t *testing.T) {
 			written(t, tt.file)

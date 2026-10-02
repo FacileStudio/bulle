@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 type sandboxFlags struct {
@@ -17,24 +17,24 @@ func newSandboxCmd() *cobra.Command {
 	var f sandboxFlags
 	cmd := &cobra.Command{
 		Use:   "sandbox [vm] [prompt]",
-		Short: "Run a kori session against a local boite microVM",
-		Long: `Run kori on the host with every tool call executing inside a local boite
+		Short: "Run a bulle session against a local boite microVM",
+		Long: `Run bulle on the host with every tool call executing inside a local boite
 microVM over SSH. The model reaches the VM's workspace but never sees the host
-filesystem, and no API key or kori binary is ever shipped into the guest.
+filesystem, and no API key or bulle binary is ever shipped into the guest.
 
-Use 'kori sandbox list' to discover available VMs, or 'kori sandbox <vm> [prompt]'
-to start a session. SSH hosts that are not boite VMs are handled by 'kori remote'.`,
+Use 'bulle sandbox list' to discover available VMs, or 'bulle sandbox <vm> [prompt]'
+to start a session. SSH hosts that are not boite VMs are handled by 'bulle remote'.`,
 		Example: `  # List local boite VMs and configured sandbox targets
-  kori sandbox list
+  bulle sandbox list
 
   # Start an interactive session in a VM
-  kori sandbox pingu
+  bulle sandbox pingu
 
   # Run a prompt headlessly in the VM and stream output
-  kori sandbox pingu "run the test suite and report failures"
+  bulle sandbox pingu "run the test suite and report failures"
 
   # Snapshot the VM overlay disk when the session ends
-  kori sandbox pingu --snapshot`,
+  bulle sandbox pingu --snapshot`,
 		Args: cobra.ArbitraryArgs,
 		RunE: func(c *cobra.Command, args []string) error {
 			return runSandbox(c, &f, args)

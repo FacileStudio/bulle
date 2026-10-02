@@ -1,15 +1,15 @@
-# kori
+# bulle
 
 Terminal coding agent — the human harness for the
 [nacelle](https://github.com/FacileStudio/nacelle) agent SDK.
 
-The binary is named `kori`. The SDK is a Go library for building agents;
+The binary is named `bulle`. The SDK is a Go library for building agents;
 this program is its first consumer and lives to exercise every part of it from
 a terminal, where someone is watching: text, reasoning, tools starting and
 finishing, why a turn ended, what it cost. It is deliberately small — sessions,
 profiles and panes are what a product grows, not what a contract test needs.
 
-**Note**: This repo changed its name from `nacelle-tui` to `kori` on 2026-09-14. The core SDK (`nacelle`) remains the same library.
+**Note**: This repo changed its name from `nacelle-tui` to `bulle` on 2026-09-14. The core SDK (`nacelle`) remains the same library.
 
 ## What it does
 
@@ -34,13 +34,13 @@ profiles and panes are what a product grows, not what a contract test needs.
 |---|---|
 | TUI | Go 1.26.4, `charm.land/bubbletea/v2`, lipgloss v2, glamour v2 |
 | Agent | [FacileStudio/nacelle](https://github.com/FacileStudio/nacelle), pinned by tag |
-| State | `~/.kori.yml`, `~/.kori/hooks.json` for hook trust |
+| State | `~/.bulle.yml`, `~/.bulle/hooks.json` for hook trust |
 | Release | GoReleaser, GitHub Actions on tag push, Homebrew tap `FacileStudio/tap` |
 
 ## Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/FacileStudio/kori/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FacileStudio/bulle/main/install.sh | bash
 ```
 
 Installs to `~/.local/bin` via [facile](https://github.com/FacileStudio/facile), the suite
@@ -49,13 +49,13 @@ installer. Pass `--bin-dir <dir>` to change that, `--source` to build from sourc
 Already have `facile`:
 
 ```sh
-facile install kori
+facile install bulle
 ```
 
 Or Homebrew:
 
 ```sh
-brew install FacileStudio/tap/kori
+brew install FacileStudio/tap/bulle
 ```
 
 ## Usage
@@ -63,34 +63,34 @@ brew install FacileStudio/tap/kori
 Run it in the directory you want it to work in:
 
 ```sh
-kori
+bulle
 ```
 
 It reads API keys from the environment: `ANTHROPIC_API_KEY` for the default
 backend, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) for `-backend google`,
 `OPENAI_API_KEY` for `-backend openai`, and `OPENROUTER_API_KEY` for `-backend openrouter`.
 
-Settings layer bottom-up: defaults, then `~/.kori.yml`, then `KORI_*`
+Settings layer bottom-up: defaults, then `~/.bulle.yml`, then `BULLE_*`
 environment variables, then flags. The useful ones:
 
 | Flag | Env | What |
 |---|---|---|
-| `-backend` | `KORI_BACKEND` | `anthropic`, `google`, `openai`, or `openrouter` |
-| `-model` | `KORI_MODEL` | model id; the backend's own default otherwise |
-| `-root` | `KORI_ROOT` | directory the file tools may reach |
-| `-bash` | `KORI_BASH` | let the model run commands (off by default) |
+| `-backend` | `bulle_BACKEND` | `anthropic`, `google`, `openai`, or `openrouter` |
+| `-model` | `bulle_MODEL` | model id; the backend's own default otherwise |
+| `-root` | `bulle_ROOT` | directory the file tools may reach |
+| `-bash` | `bulle_BASH` | let the model run commands (off by default) |
 | `-continue` | — | auto-resume the newest session for the current project |
 | `-resume` | — | resume a specific session by id or file path |
-| `-no-config` | — | start with default settings, ignoring ~/.kori.yml |
-| `-tasks` | `KORI_TASKS` | task planning tool (on by default) |
-| `-approve-tools` | `KORI_APPROVE_TOOLS` | ask before every tool call runs |
-| `-subagents` | `KORI_SUBAGENTS` | give the model the parallel delegate tool (on by default) |
-| `-max-iterations` | `KORI_MAX_ITERATIONS` | how many times the model may be asked |
+| `-no-config` | — | start with default settings, ignoring ~/.bulle.yml |
+| `-tasks` | `bulle_TASKS` | task planning tool (on by default) |
+| `-approve-tools` | `bulle_APPROVE_TOOLS` | ask before every tool call runs |
+| `-subagents` | `bulle_SUBAGENTS` | give the model the parallel delegate tool (on by default) |
+| `-max-iterations` | `bulle_MAX_ITERATIONS` | how many times the model may be asked |
 | `-mcp` | — | MCP servers file (repeatable) |
-| `-skill-dir` | `KORI_SKILL_DIRS` | extra skills directory (repeatable) |
-| `-ide` | `KORI_IDE` | publish the session to an editor over a unix socket |
+| `-skill-dir` | `bulle_SKILL_DIRS` | extra skills directory (repeatable) |
+| `-ide` | `bulle_IDE` | publish the session to an editor over a unix socket |
 
-`kori -version` prints exactly `kori <semver>`. See `-h` for the full set:
+`bulle -version` prints exactly `bulle <semver>`. See `-h` for the full set:
 reasoning effort and budget, web fetch, project-context and skill
 discovery, hooks trust.
 
@@ -98,15 +98,15 @@ Full settings reference: [docs/configuration.md](docs/configuration.md).
 
 ## Configuration
 
-Settings live in `~/.kori.yml`, **written on first boot with every default
+Settings live in `~/.bulle.yml`, **written on first boot with every default
 explicitly set** — delete it to regenerate. An existing file is never touched.
 The example file with all defaults, and the full reference with the
 precedence order and the traps in each setting:
 [docs/configuration.md](docs/configuration.md).
 
-`example.kori.yml` in this repo is the same file the first boot writes — the whole
+`example.bulle.yml` in this repo is the same file the first boot writes — the whole
 surface, abridged here. The abridgement is illustrative: the scaffold-parity test covers
-`example.kori.yml`, and nothing reads the block below, so a wrong key here fails no gate —
+`example.bulle.yml`, and nothing reads the block below, so a wrong key here fails no gate —
 it fails at load, under `KnownFields`, when you paste it.
 
 ```yaml
@@ -250,7 +250,7 @@ it still names every identifier the old body named, otherwise the merge stands.
 compaction), and a backend that reports no context window falls back to it.
 
 If a provider refuses a request for length anyway — the ladder is measured
-against an estimate, so it can — kori compacts once and sends the turn again.
+against an estimate, so it can — bulle compacts once and sends the turn again.
 That retry forces the fold, it happens at most once per turn, and it is
 skipped entirely when `compact_at` is `0`.
 
@@ -266,58 +266,58 @@ pass's tier.
 
 ## Sandboxes & remote hosts
 
-kori runs on the host and sends every tool call to the target over SSH, so the
+bulle runs on the host and sends every tool call to the target over SSH, so the
 provider keys and the local filesystem never enter the environment the model
 reaches. Two commands cover the two kinds of target:
 
 ```sh
 # Local boite microVMs
-kori sandbox list              # configured sandbox.targets and running boite VMs
-kori sandbox pingu             # interactive session inside a VM
-kori sandbox pingu --snapshot  # snapshot the overlay disk when the session ends
+bulle sandbox list              # configured sandbox.targets and running boite VMs
+bulle sandbox pingu             # interactive session inside a VM
+bulle sandbox pingu --snapshot  # snapshot the overlay disk when the session ends
 
 # SSH hosts
-kori remote list               # hosts configured under remote.targets
-kori remote staging            # interactive session on a configured host
-kori remote deploy@build:2222 "run the tests"
+bulle remote list               # hosts configured under remote.targets
+bulle remote staging            # interactive session on a configured host
+bulle remote deploy@build:2222 "run the tests"
 ```
 
 `sandbox` targets resolve to local [boite](https://github.com/FacileStudio/boite)
 microVMs: an entry in `sandbox.targets`, then a registered instance of that
 name. `remote` targets resolve to a `remote.targets` entry, a direct
 `user@host:port` address, or an `~/.ssh/config` host alias. Each reads its
-defaults — user, port, identity, workspace — from its own group in `~/.kori.yml`.
+defaults — user, port, identity, workspace — from its own group in `~/.bulle.yml`.
 
 Scheduled jobs are not configured here anymore: one YAML file per job under
-`~/.kori/jobs/`, trusted with `kori cron trust <name>` before it runs.
-Use `kori cron list` to view all jobs along with their enabled and crontab installation status.
+`~/.bulle/jobs/`, trusted with `bulle cron trust <name>` before it runs.
+Use `bulle cron list` to view all jobs along with their enabled and crontab installation status.
 
 ## herdr
 
-Run inside [herdr](https://herdr.dev), `kori` reports its live state and
-session identity over herdr's socket API (`internal/herdr/`). A kori pane
+Run inside [herdr](https://herdr.dev), `bulle` reports its live state and
+session identity over herdr's socket API (`internal/herdr/`). A bulle pane
 shows as an agent with an idle / working / blocked state, and herdr holds a
 reference to the run's transcript. This needs no herdr binary update and works
 on any machine, including stock herdr.
 
-After a herdr **server restart**, herdr restores a kori pane as a plain
-shell in its saved directory — kori is not in herdr's compiled-in resume
+After a herdr **server restart**, herdr restores a bulle pane as a plain
+shell in its saved directory — bulle is not in herdr's compiled-in resume
 table, and no config or plugin adds it. Reopen the session in that directory
-with `kori` (auto-resumes the newest session by cwd) or
-`kori --resume <transcript-path>`. Real auto-restore awaits herdr adding
-kori to its resume table; `--resume` already accepts the exact absolute
+with `bulle` (auto-resumes the newest session by cwd) or
+`bulle --resume <transcript-path>`. Real auto-restore awaits herdr adding
+bulle to its resume table; `--resume` already accepts the exact absolute
 transcript path the reporter reports.
 
 ## Editors
 
-`kori --ide` (or `KORI_IDE=1`) publishes the session to an editor over a unix
-socket, so a plugin can watch a run and drive it: mark the lines kori changes,
+`bulle --ide` (or `BULLE_IDE=1`) publishes the session to an editor over a unix
+socket, so a plugin can watch a run and drive it: mark the lines bulle changes,
 put an approval in front of you, run a prompt with your cursor's place
 attached, and stop a run. It is off by default, and a session that publishes to
 nobody creates no socket, no file and no goroutine.
 
 The contract is [docs/ide-protocol.md](docs/ide-protocol.md); the first client
-is [kori.nvim](https://github.com/FacileStudio/kori.nvim).
+is [bulle.nvim](https://github.com/FacileStudio/bulle.nvim).
 
 ## Structure
 
@@ -333,7 +333,7 @@ internal/layout/    Terminal dimensions and line truncation
 internal/menu/      Autocompletion menu for commands and skills
 internal/queue/     Input queueing during active turns
 internal/sessions/  Session persistence, listing, rotation, resume
-internal/settings/  CLI flags, ~/.kori.yml, and environment configuration
+internal/settings/  CLI flags, ~/.bulle.yml, and environment configuration
 internal/skills/    Agent skills discovery and execution
 internal/status/    Spinner and progress status indicator
 internal/tasks/     Task planning tool, validation, step updates

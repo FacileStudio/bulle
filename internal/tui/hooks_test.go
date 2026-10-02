@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/nacelle"
 )
 

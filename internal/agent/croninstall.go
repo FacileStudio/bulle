@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/adhocore/gronx"
 )
 
@@ -49,7 +49,7 @@ func listCronJobs() error {
 		fmt.Printf("when=%s\nenabled=%t\ninstalled=%t\ncommands=%t\ntrusted=%t\nworkdir=%s\ndelivery=%s\n\n",
 			job.When, job.IsEnabled(), installed, job.Commands != nil && *job.Commands, trusted, job.Workdir, job.Delivery)
 	}
-	fmt.Println("(You can update your job files in the ~/.kori/jobs/ folder)")
+	fmt.Println("(You can update your job files in the ~/.bulle/jobs/ folder)")
 	return nil
 }
 
@@ -87,7 +87,7 @@ func installCronJobOptions(name string, printOnly bool) error {
 	}
 	bin, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("locating kori: %w", err)
+		return fmt.Errorf("locating bulle: %w", err)
 	}
 	logsDir := filepath.Join(settings.JobsDir(), "..", "logs")
 	logsDir = filepath.Clean(expandHome(logsDir))
@@ -154,7 +154,7 @@ func normalizeCronSchedule(when string) (string, error) {
 
 func formatCronBlock(name, schedule, bin, logsDir string) string {
 	logPath := filepath.Join(logsDir, name+".log")
-	return fmt.Sprintf("# BEGIN KORI JOB %s\n%s %s cron run %s >> %s 2>&1\n# END KORI JOB %s",
+	return fmt.Sprintf("# BEGIN BULLE JOB %s\n%s %s cron run %s >> %s 2>&1\n# END BULLE JOB %s",
 		name, schedule, bin, name, logPath, name)
 }
 
@@ -163,7 +163,7 @@ func checkCronInstallable(job settings.CronJob) error {
 		return fmt.Errorf("invalid cron job name %q: cron job names only allow letters, digits, and . _ -", job.Name)
 	}
 	if job.Enabled == nil || !*job.Enabled {
-		return fmt.Errorf("job %q is disabled: run `kori cron run %s`, confirm the output, then set enabled: true",
+		return fmt.Errorf("job %q is disabled: run `bulle cron run %s`, confirm the output, then set enabled: true",
 			job.Name, job.Name)
 	}
 	if job.Workdir == "" {

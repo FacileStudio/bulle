@@ -15,7 +15,7 @@ import (
 //
 // Without it an unreadable message is a log line from a library nobody reads
 // and a bot that appears to ignore the room. The two causes need opposite
-// responses and neither is a bug in kori: a sender whose client refuses to
+// responses and neither is a bug in bulle: a sender whose client refuses to
 // share keys with an unverified device is a policy decision the person can
 // change in their own client, while a missing session is what a broken device
 // looks like. Saying which one happened is the whole point.
@@ -51,7 +51,7 @@ func watchUndecryptable(helper *cryptohelper.CryptoHelper, client *mautrix.Clien
 //     A homeserver does not demand user-interactive auth to publish a first
 //     master key, which is why this works unattended.
 //   - an identity, with this device already signed by it: nothing to do.
-//   - an identity kori cannot sign with, which is what logging Element into the
+//   - an identity bulle cannot sign with, which is what logging Element into the
 //     bot's account first produces. Nothing here can fix that: replacing the
 //     identity needs user-interactive auth, and a homeserver that has moved to
 //     OAuth offers no password stage at all (matrix.org offers only m.oauth and
@@ -76,7 +76,7 @@ func selfSign(ctx context.Context, helper *cryptohelper.CryptoHelper, password, 
 			report("matrix", errors.New("cross-signing verified with recovery key"))
 			return "", nil
 		}
-		return "", errors.New("matrix: account has existing cross-signing keys that kori cannot sign without credentials; set recovery_key in config or run kori chat verify")
+		return "", errors.New("matrix: account has existing cross-signing keys that bulle cannot sign without credentials; set recovery_key in config or run bulle chat verify")
 	}
 }
 
@@ -125,7 +125,7 @@ func (m *Matrix) watchTombstone() error {
 	syncer.OnEventType(event.StateTombstone, func(_ context.Context, evt *event.Event) {
 		replacement := evt.Content.AsTombstone().GetReplacementRoom()
 		report("matrix", fmt.Errorf(
-			"room %s was upgraded to %s: this conversation is over, add the new room to chat.matrix.rooms if it should reach kori",
+			"room %s was upgraded to %s: this conversation is over, add the new room to chat.matrix.rooms if it should reach bulle",
 			evt.RoomID, replacement))
 	})
 	return nil

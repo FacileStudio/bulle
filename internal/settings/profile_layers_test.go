@@ -25,7 +25,7 @@ func TestAProfileBeatsTheFileAndLosesToTheEnvironment(t *testing.T) {
 		t.Errorf("profile = %q, want the selected profile recorded", cfg.Profile)
 	}
 
-	t.Setenv("KORI_MAX_ITERATIONS", "8")
+	t.Setenv("BULLE_MAX_ITERATIONS", "8")
 	if cfg, err := Settings("", Config{}); err != nil {
 		t.Fatalf("Settings failed: %v", err)
 	} else if *cfg.MaxIterations != 8 {
@@ -41,8 +41,8 @@ func TestAProfileBeatsTheFileAndLosesToTheEnvironment(t *testing.T) {
 }
 
 // The same file has to give the same answer however the profile was selected:
-// the file's own profile: key, KORI_PROFILE, and -profile all resolve to the
-// same layer, above ~/.kori.yml.
+// the file's own profile: key, BULLE_PROFILE, and -profile all resolve to the
+// same layer, above ~/.bulle.yml.
 func TestEveryLayerThatNamesAProfileResolvesItTheSameWay(t *testing.T) {
 	slow := "name: slow\nlimits:\n  max_iterations: 12\n"
 	cases := []struct {
@@ -52,7 +52,7 @@ func TestEveryLayerThatNamesAProfileResolvesItTheSameWay(t *testing.T) {
 		flags Config
 	}{
 		{"the file names it", "profile: slow\nlimits:\n  max_iterations: 3\n", "", Config{}},
-		{"KORI_PROFILE names it", "limits:\n  max_iterations: 3\n", "slow", Config{}},
+		{"BULLE_PROFILE names it", "limits:\n  max_iterations: 3\n", "slow", Config{}},
 		{"-profile names it", "limits:\n  max_iterations: 3\n", "", Config{Profile: "slow"}},
 	}
 
@@ -60,7 +60,7 @@ func TestEveryLayerThatNamesAProfileResolvesItTheSameWay(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			setupProfileEnvWith(t, "slow.yml", slow, c.file)
 			if c.env != "" {
-				t.Setenv("KORI_PROFILE", c.env)
+				t.Setenv("BULLE_PROFILE", c.env)
 			}
 
 			cfg, err := Settings("", c.flags)
@@ -87,7 +87,7 @@ func TestFromFlagsCollectsOnlyWhatWasTyped(t *testing.T) {
 	}
 }
 
-// -no-config drops ~/.kori.yml and nothing else, so a profile the flag or the
+// -no-config drops ~/.bulle.yml and nothing else, so a profile the flag or the
 // environment names still applies — and the file's competing limit, which this
 // run never reads, does not come back with it.
 func TestNoConfigStillAppliesANamedProfile(t *testing.T) {
@@ -95,7 +95,7 @@ func TestNoConfigStillAppliesANamedProfile(t *testing.T) {
 		"name: slow\nlimits:\n  max_iterations: 12\n",
 		"limits:\n  max_iterations: 3\n")
 	off := true
-	t.Setenv("KORI_PROFILE", "slow")
+	t.Setenv("BULLE_PROFILE", "slow")
 
 	cfg, err := Settings("", Config{NoConfig: &off})
 	if err != nil {

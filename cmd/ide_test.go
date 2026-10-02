@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/ide"
+	"github.com/FacileStudio/bulle/internal/ide"
 )
 
 // The --ide switch reaches a session through the pointer the command line wrote

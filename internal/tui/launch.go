@@ -6,11 +6,11 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/herdr"
-	"github.com/FacileStudio/kori/internal/provider"
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/usage"
+	"github.com/FacileStudio/bulle/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/provider"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/usage"
 )
 
 // boot wires the session config the model was built from into its live fields —

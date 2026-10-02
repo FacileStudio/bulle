@@ -3,7 +3,7 @@ package settings
 import (
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 )
 
 // DefaultCompactAt is the transcript size, in tokens, a session falls back to

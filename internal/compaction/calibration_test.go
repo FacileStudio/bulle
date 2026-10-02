@@ -19,7 +19,7 @@ const minCalibrationAccuracy = 0.7
 // exported on a machine that uses the judge at all, so gating on it alone makes
 // every ordinary `go test ./...` pay the vendor for a call and fail whenever the
 // vendor is down or the model has drifted.
-const calibrationEnv = "KORI_CALIBRATION"
+const calibrationEnv = "BULLE_CALIBRATION"
 
 // judgeLabels is the labeled corpus the harness classifies, loaded from
 // testdata/judge_labels.json. The file is the artifact a human reviews, so the
@@ -61,7 +61,7 @@ type calibration struct {
 // every run — and fail on vendor downtime or model drift rather than on a
 // regression here. Set calibrationEnv to ask for it deliberately:
 //
-//	TYPESAFE_API_KEY=... KORI_CALIBRATION=1 go test ./internal/compaction -run JudgeCalibration -v
+//	TYPESAFE_API_KEY=... BULLE_CALIBRATION=1 go test ./internal/compaction -run JudgeCalibration -v
 //
 // One call classifies the whole corpus, so the sweep afterwards costs nothing:
 // the probabilities come back on the verdicts and are re-thresholded offline.

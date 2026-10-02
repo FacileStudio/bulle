@@ -72,7 +72,7 @@ func TestResumeDefaultsEmptyAndIsRefusedInTheFile(t *testing.T) {
 	}
 }
 
-// -no-config skips the file entirely: an invalid ~/.kori.yml must not block
+// -no-config skips the file entirely: an invalid ~/.bulle.yml must not block
 // a boot that asked to ignore it, and the other layers (env, flags) still apply.
 func TestNoConfigSkipsAnInvalidFile(t *testing.T) {
 	written(t, "totally_not_yaml: [[[")
@@ -131,7 +131,7 @@ func TestSkillDirsComesFromTheFile(t *testing.T) {
 	}
 }
 
-// KORI_SKILL_DIRS is colon-separated, the same convention PATH itself
+// BULLE_SKILL_DIRS is colon-separated, the same convention PATH itself
 // uses for a list of directories, and it has to beat the file without
 // erasing an unrelated setting the file made.
 func TestSkillDirsFromTheEnvironmentAreColonSeparatedAndBeatTheFile(t *testing.T) {

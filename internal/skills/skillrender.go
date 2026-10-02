@@ -24,7 +24,7 @@ func renderSkills(skills []skill) string {
 	return body.String()
 }
 
-// skillNotice tells the person running kori when skills were found but
+// skillNotice tells the person running bulle when skills were found but
 // did not load. It reports three independent facts, any of which can be
 // true alone: skills sitting unloaded because nobody trusted them, a trust
 // decision made this run that failed to persist — which without a word

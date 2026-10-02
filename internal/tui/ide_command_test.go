@@ -60,7 +60,7 @@ func TestAnEditorPromptTakesTheSamePathAsATypedOne(t *testing.T) {
 func TestAnEditorOpenMovesTheTranscriptToThePath(t *testing.T) {
 	m := attached(&fakeSurface{})
 	m.mode = modeTUI
-	m.hold = []string{"kori 0.76.0", "✎ edit_file internal/tui/ide.go", "", "answer", "done"}
+	m.hold = []string{"bulle 0.76.0", "✎ edit_file internal/tui/ide.go", "", "answer", "done"}
 
 	m.Open("internal/tui/ide.go", 12)
 

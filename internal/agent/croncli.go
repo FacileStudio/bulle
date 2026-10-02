@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // UsageError marks a malformed cron invocation.
@@ -19,9 +19,9 @@ func usagef(format string, args ...any) error {
 }
 
 func printCronUsage() error {
-	fmt.Println(`usage: kori cron <command> [args]
+	fmt.Println(`usage: bulle cron <command> [args]
 
-  list                 show the jobs in ~/.kori/jobs/
+  list                 show the jobs in ~/.bulle/jobs/
   run <name>           run one job now through the headless path
   trust <name>         review one job file and approve its contents
   install <name>       install one job directly to crontab

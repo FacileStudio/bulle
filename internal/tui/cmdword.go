@@ -3,7 +3,7 @@ package tui
 import (
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/menu"
+	"github.com/FacileStudio/bulle/internal/menu"
 )
 
 // commandFilter returns the slash command the autocomplete should filter on:

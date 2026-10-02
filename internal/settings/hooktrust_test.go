@@ -66,7 +66,7 @@ func TestTheFirstSaveFoldsHooksJSONForward(t *testing.T) {
 	if err := Save(other, []byte("x")); err != nil {
 		t.Fatalf("Save: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".kori", TrustFile)); err != nil {
+	if _, err := os.Stat(filepath.Join(home, ".bulle", TrustFile)); err != nil {
 		t.Fatalf("Save did not write %s: %v", TrustFile, err)
 	}
 	if trusted, _ := IsTrusted(path, raw); !trusted {
@@ -82,7 +82,7 @@ func TestTheFirstSaveFoldsHooksJSONForward(t *testing.T) {
 func writeOldHooksTrust(t *testing.T, home, path string, raw []byte) {
 	t.Helper()
 	store := map[string]trustRecord{path: {Hash: contentHash(raw), TrustedAt: "2026-01-01T00:00:00Z"}}
-	dir := filepath.Join(home, ".kori")
+	dir := filepath.Join(home, ".bulle")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -9,13 +9,13 @@ import (
 
 // EnvPrefix is what every setting's environment variable starts with. The
 // legacy NACELLE_ names still resolve: an environment written before the
-// rename keeps working, and a KORI_ variable wins whenever both are set.
-const EnvPrefix = "KORI_"
+// rename keeps working, and a BULLE_ variable wins whenever both are set.
+const EnvPrefix = "BULLE_"
 
 const legacyEnvPrefix = "NACELLE_"
 
 // providerEnv reads the active provider's four fields. Backend and Model reuse
-// the KORI_BACKEND/KORI_MODEL names every other layer uses; the endpoint
+// the BULLE_BACKEND/BULLE_MODEL names every other layer uses; the endpoint
 // and key are the ones this layer adds, so they carry the PROVIDER_ prefix.
 func providerEnv() Provider {
 	return Provider{

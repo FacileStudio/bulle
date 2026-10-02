@@ -70,7 +70,7 @@ func TestResizeReflowsWider(t *testing.T) {
 	m.mode = modeTUI
 	m.resize(tea.WindowSizeMsg{Width: 40, Height: 24})
 	m.say(fromReader, "What is the best practice for terminal resize reflow?")
-	m.say(fromModel, "Terminal emulators do not reflow text automatically when wider unless the application re-renders the text from the source buffer. In alternate screen mode, kori now retains the raw transcript and paints it afresh.")
+	m.say(fromModel, "Terminal emulators do not reflow text automatically when wider unless the application re-renders the text from the source buffer. In alternate screen mode, bulle now retains the raw transcript and paints it afresh.")
 	m.prints()
 	for _, row := range m.hold {
 		if lipgloss.Width(row) > 40 {
@@ -96,7 +96,7 @@ func TestResizeReflowsIdempotent(t *testing.T) {
 	m.width = 80
 	m.windowHeight = 24
 	m.say(fromReader, "What is the best practice for terminal resize reflow?")
-	m.say(fromModel, "Terminal emulators do not reflow text automatically when wider unless the application re-renders the text from the source buffer. In alternate screen mode, kori now retains the raw transcript and paints it afresh.")
+	m.say(fromModel, "Terminal emulators do not reflow text automatically when wider unless the application re-renders the text from the source buffer. In alternate screen mode, bulle now retains the raw transcript and paints it afresh.")
 	m.prints()
 
 	pristine := append([]string(nil), m.hold...)

@@ -34,9 +34,9 @@ func TestAdditionalPromptFallsThroughTheWholeChain(t *testing.T) {
 // layers replace each other rather than stacking.
 func TestAProfilePersonaBeatsTheFilesAndTheEnvironmentBeatsTheProfile(t *testing.T) {
 	written(t, "profile: terse\nsession:\n  additional_prompt: from-the-file\n")
-	clearEnv(t, "KORI_PROFILE", "NACELLE_PROFILE")
+	clearEnv(t, "BULLE_PROFILE", "NACELLE_PROFILE")
 
-	dir := filepath.Join(os.Getenv("HOME"), ".kori", "profiles")
+	dir := filepath.Join(os.Getenv("HOME"), ".bulle", "profiles")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

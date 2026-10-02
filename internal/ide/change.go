@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/FacileStudio/kori/internal/diff"
+	"github.com/FacileStudio/bulle/internal/diff"
 )
 
 // change turns one captured edit into what an editor marks it with: the line

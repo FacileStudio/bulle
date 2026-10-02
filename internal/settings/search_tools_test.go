@@ -36,17 +36,17 @@ func TestSearchToolsCanBeDisabledByFile(t *testing.T) {
 
 func TestSearchToolsEnvironmentBeatsFile(t *testing.T) {
 	written(t, "tools:\n  search_content: false\n  find_files: false\n")
-	t.Setenv("KORI_SEARCH_CONTENT", "true")
-	t.Setenv("KORI_FIND_FILES", "true")
+	t.Setenv("BULLE_SEARCH_CONTENT", "true")
+	t.Setenv("BULLE_FIND_FILES", "true")
 
 	config, err := settings(Config{})
 	if err != nil {
 		t.Fatalf("settings: %v", err)
 	}
 	if !*config.SearchContent {
-		t.Error("KORI_SEARCH_CONTENT environment did not beat file")
+		t.Error("BULLE_SEARCH_CONTENT environment did not beat file")
 	}
 	if !*config.FindFiles {
-		t.Error("KORI_FIND_FILES environment did not beat file")
+		t.Error("BULLE_FIND_FILES environment did not beat file")
 	}
 }

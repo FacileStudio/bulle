@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 	"github.com/FacileStudio/nacelle"
 )
 

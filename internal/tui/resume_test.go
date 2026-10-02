@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/sessions"
 )
 
 func TestInitReplaysResumedSession(t *testing.T) {

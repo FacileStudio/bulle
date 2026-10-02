@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func TestCheckCronInstallable(t *testing.T) {
@@ -63,14 +63,14 @@ func TestNormalizeCronSchedule(t *testing.T) {
 }
 
 func TestFormatCronBlock(t *testing.T) {
-	block := formatCronBlock("news", "0 9 * * *", "/usr/bin/kori", "/home/user/.kori/logs")
-	if !strings.Contains(block, "# BEGIN KORI JOB news") {
+	block := formatCronBlock("news", "0 9 * * *", "/usr/bin/bulle", "/home/user/.bulle/logs")
+	if !strings.Contains(block, "# BEGIN BULLE JOB news") {
 		t.Errorf("expected begin marker in %s", block)
 	}
-	if !strings.Contains(block, "# END KORI JOB news") {
+	if !strings.Contains(block, "# END BULLE JOB news") {
 		t.Errorf("expected end marker in %s", block)
 	}
-	if !strings.Contains(block, "0 9 * * * /usr/bin/kori cron run news >> /home/user/.kori/logs/news.log 2>&1") {
+	if !strings.Contains(block, "0 9 * * * /usr/bin/bulle cron run news >> /home/user/.bulle/logs/news.log 2>&1") {
 		t.Errorf("expected command line in %s", block)
 	}
 }

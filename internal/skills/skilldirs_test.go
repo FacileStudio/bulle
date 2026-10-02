@@ -30,8 +30,8 @@ func TestExtraSkillsToleratesAMissingDirectory(t *testing.T) {
 	}
 }
 
-// A flag's own argument is already expanded by the shell before kori
-// sees it, but ~/.kori.yml and KORI_SKILL_DIRS go through no shell at
+// A flag's own argument is already expanded by the shell before bulle
+// sees it, but ~/.bulle.yml and BULLE_SKILL_DIRS go through no shell at
 // all — this is the one place "~/.claude/skills" has to work from either.
 func TestExpandHomeResolvesALeadingTilde(t *testing.T) {
 	home := t.TempDir()

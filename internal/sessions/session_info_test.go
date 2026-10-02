@@ -97,7 +97,7 @@ func createDeadSessionFile(t *testing.T, dir string, pid int) (string, string) {
 func TestMarkSessionStatusAndDeadProcess(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	dir := filepath.Join(home, ".kori", "sessions")
+	dir := filepath.Join(home, ".bulle", "sessions")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestKillSession(t *testing.T) {
 		}
 	}()
 
-	dir := filepath.Join(home, ".kori", "sessions")
+	dir := filepath.Join(home, ".bulle", "sessions")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}

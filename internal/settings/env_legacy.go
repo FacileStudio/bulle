@@ -13,7 +13,7 @@ func envGet(name string) string {
 }
 
 // lookup reads a variable, falling back to the legacy NACELLE_ name when the
-// KORI_ one is unset.
+// BULLE_ one is unset.
 func lookup(name string) (string, bool) {
 	if v, ok := os.LookupEnv(name); ok {
 		return v, ok

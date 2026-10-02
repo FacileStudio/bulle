@@ -12,9 +12,9 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-// CronJob is one scheduled background run, one file in ~/.kori/jobs/.
+// CronJob is one scheduled background run, one file in ~/.bulle/jobs/.
 // The external scheduler (systemd/crontab) owns the clock and fires
-// `kori cron run <name>`; kori only generates the units and interprets
+// `bulle cron run <name>`; bulle only generates the units and interprets
 // the schedule for display. Commands and Enabled default to off, the reverse
 // of the interactive defaults, because a run no one can approve starts
 // shell-less and disarmed.
@@ -163,7 +163,7 @@ func repointCronKey(err error) error {
 	for _, item := range typeErr.Errors {
 		if strings.Contains(item.Err.Error(), "field cron not found") {
 			item = &yaml.UnmarshalError{
-				Err:    fmt.Errorf("field cron not found: jobs are one .yml file each under ~/.kori/jobs/ now"),
+				Err:    fmt.Errorf("field cron not found: jobs are one .yml file each under ~/.bulle/jobs/ now"),
 				Line:   item.Line,
 				Column: item.Column,
 			}

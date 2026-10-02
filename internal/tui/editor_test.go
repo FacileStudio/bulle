@@ -9,7 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func TestOpenEditorCreatesMarkdownFileWithPromptContent(t *testing.T) {
@@ -25,7 +25,7 @@ func TestOpenEditorCreatesMarkdownFileWithPromptContent(t *testing.T) {
 		t.Fatal("openEditor returned nil cmd")
 	}
 
-	matches, err := filepath.Glob(filepath.Join(tDir, "kori-prompt-*.md"))
+	matches, err := filepath.Glob(filepath.Join(tDir, "bulle-prompt-*.md"))
 	if err != nil || len(matches) != 1 {
 		t.Fatalf("expected 1 created file, got %v (err: %v)", matches, err)
 	}

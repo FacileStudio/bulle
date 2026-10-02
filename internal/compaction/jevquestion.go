@@ -3,7 +3,7 @@ package compaction
 import (
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/jev"
+	"github.com/FacileStudio/bulle/internal/jev"
 )
 
 // state renders the goal and the blocks into the text every question is asked

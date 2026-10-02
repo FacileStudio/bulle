@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 )
 
 // compactFinished says the compaction channel closed and no outcome arrived.

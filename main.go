@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/FacileStudio/kori/cmd"
-	"github.com/FacileStudio/kori/internal/agent"
+	"github.com/FacileStudio/bulle/cmd"
+	"github.com/FacileStudio/bulle/internal/agent"
 )
 
-var version = "v0.79.0"
+var version = "v0.80.0"
 
 func main() {
 	if err := cmd.Execute(version); err != nil {
@@ -21,5 +21,5 @@ func main() {
 }
 
 func unprefixed(err error) string {
-	return strings.TrimPrefix(err.Error(), "kori: ")
+	return strings.TrimPrefix(err.Error(), "bulle: ")
 }

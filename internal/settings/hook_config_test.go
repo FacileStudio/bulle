@@ -38,7 +38,7 @@ func TestHookOutputAliasFromFile(t *testing.T) {
 }
 
 // The environment beats the defaults. It runs on a home of the test's own like
-// its siblings do: without that this read the developer's real ~/.kori.yml and
+// its siblings do: without that this read the developer's real ~/.bulle.yml and
 // profiles, so an unrelated key in someone's own config could fail the suite.
 func TestShowHooksFromEnv(t *testing.T) {
 	written(t, "")

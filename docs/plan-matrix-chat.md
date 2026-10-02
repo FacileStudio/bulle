@@ -1,17 +1,17 @@
-# Plan — Matrix chat surface for kori
+# Plan — Matrix chat surface for bulle
 
 Status: proposed, awaiting review. Written 2026-09-25 as a cold-start handoff: a reader
 with no memory of the conversation that produced it should be able to execute it.
 
 ## Goal
 
-A kori background process holds a Matrix connection, so a message from an allowlisted MXID
-runs a kori session and the answer comes back in the same room, with end-to-end encryption
+A bulle background process holds a Matrix connection, so a message from an allowlisted MXID
+runs a bulle session and the answer comes back in the same room, with end-to-end encryption
 on.
 
 ## Why (evidence)
 
-kori can push text out but nothing can send a message in. Concretely:
+bulle can push text out but nothing can send a message in. Concretely:
 
 - `delivery:` in a cron job accepts `""` or `file:<dir>` and nothing else —
   `validateDelivery` in `internal/agent/cronlog.go` returns `unknown delivery %q: want
@@ -29,7 +29,7 @@ https://hermes-agent.nousresearch.com/docs/developer-guide/gateway-internals).
 
 ## Approach
 
-One new package, `internal/chat`, holding thin adapters, plus a `kori chat` subcommand that
+One new package, `internal/chat`, holding thin adapters, plus a `bulle chat` subcommand that
 runs them and a systemd user unit so it survives logout. The Matrix adapter reuses
 `mautrix-go` for `/sync` and the encrypted send path, and reuses the existing headless agent
 for the actual work: an inbound message becomes a headless session keyed by room + sender,
@@ -52,8 +52,8 @@ exists rather than one hardcoded Matrix loop.
 - CLI standard: `standards/cli.md` (every command carrying data gets `--json`).
 - Suite release process: `ROADMAP.md` §Release (core tags `vX.Y.Z`, CI runs
   `go test ./... -race`, `golangci-lint`, `goreleaser`).
-- kori ROADMAP Track I — **conflicts, see step 9**. Track I states "Not doing — a daemon".
-- Not applicable: migrations (no DB in kori today), porte/auth (no HTTP surface), muse (no UI).
+- bulle ROADMAP Track I — **conflicts, see step 9**. Track I states "Not doing — a daemon".
+- Not applicable: migrations (no DB in bulle today), porte/auth (no HTTP surface), muse (no UI).
 
 ## Verified technical recipe
 
@@ -61,7 +61,7 @@ This is not documentation reading. Every claim below was built and run on 2026-0
 `mautrix-go` v0.31.0 and Go 1.26.6, at `CGO_ENABLED=0`.
 
 **The build requires a tag.** mautrix-go defaults to libolm through
-`crypto/registerlibolm.go` (build tag `!goolm`), which imports an all-cgo package. With kori's
+`crypto/registerlibolm.go` (build tag `!goolm`), which imports an all-cgo package. With bulle's
 `CGO_ENABLED=0` and no tag the build fails:
 
 ```
@@ -116,9 +116,9 @@ If decryption of a live event fails, stop and report — the fallback is mautrix
 
 ### 2. `go.mod` — add the dependency
 
-- `maunium.net/go/mautrix` v0.31.0 (requires Go 1.26; kori pins 1.26 in `mise.toml`)
+- `maunium.net/go/mautrix` v0.31.0 (requires Go 1.26; bulle pins 1.26 in `mise.toml`)
 - `go.mau.fi/util` (for `dbutil`)
-- `modernc.org/sqlite` (pure Go — kori has no sqlite today, sessions are JSONL)
+- `modernc.org/sqlite` (pure Go — bulle has no sqlite today, sessions are JSONL)
 
 `mise run check` stays green before moving on.
 
@@ -144,7 +144,7 @@ past the limit.
 
 ### 6. `internal/chat/store.go` — crypto state
 
-The `dbutil` + `modernc.org/sqlite` store, at `~/.kori/chat/crypto.db`, with the construction
+The `dbutil` + `modernc.org/sqlite` store, at `~/.bulle/chat/crypto.db`, with the construction
 and upgrade ordering from the verified recipe above. The pickle key belongs in tiroir/casier,
 not beside the database.
 
@@ -156,18 +156,18 @@ inbound older than a configurable age and advance past it. The allowlist check h
 
 ### 8. `cmd/chat.go` — the subcommand
 
-`kori chat` runs the adapters; `kori chat channels` lists configured adapters and their
-state, with `--json`. Config lives in `~/.kori.yml` under a `chat:` key, following how
+`bulle chat` runs the adapters; `bulle chat channels` lists configured adapters and their
+state, with `--json`. Config lives in `~/.bulle.yml` under a `chat:` key, following how
 `cron:` is already read, so there is one config file and one owner.
 
 ### 9. `ROADMAP.md` — revise the daemon note
 
 Track I currently ends: *"Not doing — a daemon, a job DB, retry, or parsing systemd/crontab
-syntax inside kori."* This plan adds a daemon. That sentence must be amended deliberately
+syntax inside bulle."* This plan adds a daemon. That sentence must be amended deliberately
 rather than quietly contradicted. Proposed wording:
 
 > - **Not doing in the cron track** — a job DB, retry, or parsing systemd/crontab syntax
->   inside kori. A long-lived process for **inbound** chat is a separate concern and lives
+>   inside bulle. A long-lived process for **inbound** chat is a separate concern and lives
 >   in the chat track: cron stays fire-and-forget, chat is a supervised service.
 
 Plus a new track heading for the chat surface itself.
@@ -180,7 +180,7 @@ or read the token, `daemon-reload`, `enable --now`. Unit needs `Restart=on-failu
 `EnvironmentFile=-` for the credentials. Linger is already enabled on this machine, so the
 service starts at boot.
 
-### 11. `docs/configuration.md` and `example.kori.yml` — document the surface
+### 11. `docs/configuration.md` and `example.bulle.yml` — document the surface
 
 The `chat:` key, the credentials it expects, how to obtain a Matrix access token, and what
 the allowlist refuses. Suite docs standard applies.
@@ -203,7 +203,7 @@ New:
 - `internal/chat/store.go` — crypto store
 - `internal/chat/route.go` — identity, allowlist, staleness
 - `internal/chat/route_test.go`
-- `cmd/chat.go` — `kori chat`, `kori chat channels`
+- `cmd/chat.go` — `bulle chat`, `bulle chat channels`
 - `cmd/chat_install.go` — systemd user unit
 - `docs/plan-matrix-chat.md` — this file
 
@@ -212,7 +212,7 @@ Modified:
 - `go.mod` / `go.sum` — three new dependencies
 - `.goreleaser.yml` — `flags: ["-tags=goolm"]`
 - `ROADMAP.md` — amend Track I's "not doing a daemon", add a chat track
-- `docs/configuration.md`, `example.kori.yml` — the `chat:` key
+- `docs/configuration.md`, `example.bulle.yml` — the `chat:` key
 
 ## Exit criteria
 
@@ -228,7 +228,7 @@ Modified:
 6. The bot ignores its own messages — no self-reply loop.
 7. After a restart, `next_batch` and the crypto store both persist: no replay of the backlog
    and no lost decryption.
-8. The unit survives logout: `systemctl --user status kori-chat` is active after a fresh
+8. The unit survives logout: `systemctl --user status bulle-chat` is active after a fresh
    login.
 
 ## Risks / unknown unknowns
@@ -241,10 +241,10 @@ Modified:
 - **Device verification.** An unverified bot device may not be able to decrypt until verified
   in Element. Establish early whether verification is required for this room, because it
   changes the UX story.
-- **A new storage dependency.** kori has none today. `crypto.db` is new persistent state with
+- **A new storage dependency.** bulle has none today. `crypto.db` is new persistent state with
   a backup story nobody has written.
 - **The agent has shell access to the workstation.** The allowlist is the security boundary.
-  Antenne authenticates apps; kori authorizes humans, and nothing outside kori may widen the
+  Antenne authenticates apps; bulle authorizes humans, and nothing outside bulle may widen the
   allowlist or the tool policy. Every inbound message is untrusted text.
 - **One bot token, one connection.** Sharing an account or `device_id` with another process
   makes both fight. Use a dedicated account, not the Antenne sender.
@@ -259,10 +259,10 @@ Modified:
   incident, a CI failure) and wrong for chat: durable replay is exactly what chat does not
   want, and a personal platform identity should not sit behind a shared production service.
 - **Routing chat through Antenne.** Antenne keeps the notification leg only.
-- **Approval buttons in chat.** Phase 1 approvals stay local (`kori sessions attach` on the
+- **Approval buttons in chat.** Phase 1 approvals stay local (`bulle sessions attach` on the
   workstation). Carrying approvals over chat is a security surface, not a feature, and it
   needs its own design.
-- **`kori serve` / exposing the IDE socket headless.** Defensible later; not needed to answer
+- **`bulle serve` / exposing the IDE socket headless.** Defensible later; not needed to answer
   whether chat is useful.
 - **A `delivery: webhook:<url>` kind.** Only needed if cron notifications should reach
   Antenne. Separate from this plan.
@@ -284,17 +284,17 @@ verified only by reading the code.
 | 5 | A denied tool stays denied | Verified by reading, and only meaningful when `approve_tools` is on: the chat path never touches `config.ApproveTools`, and `approval.Build(true)` with a nil `send` returns false from `Ask`, so the run fails closed. With the **default** `approve_tools: false` no tool call needs approval at all, so a chat run executes tools unattended — the allowlist is the only gate |
 | 6 | No self-reply loop | Verified: `TestMessageFromRefuses` covers the bot's own message |
 | 7 | `next_batch` and the crypto store survive a restart | Unverified: the store is passed to `cryptohelper`, which replaces the in-memory sync store, but no restart has been exercised |
-| 8 | The unit survives logout | Unverified: the unit was verified with `systemd-analyze verify` only; `kori chat install` was not run against a live config |
+| 8 | The unit survives logout | Unverified: the unit was verified with `systemd-analyze verify` only; `bulle chat install` was not run against a live config |
 
 Answers to the open questions that the implementation settled: 3 is answered by the research
 folded in below (an unverified device decrypts only while the sender's client shares keys with
 unverified devices); 4 is done as written. Questions 1 and 2 are still yours: the daemon refuses
 to start until the homeserver, the user id and a non-empty allowlist are configured.
 
-Deliberately not built, and worth a follow-up rather than a surprise: kori does not re-key a
+Deliberately not built, and worth a follow-up rather than a surprise: bulle does not re-key a
 conversation when a room is upgraded. The room ID changes with `m.room.tombstone`, the
 conversation is genuinely over, and the new room is one nobody has said may reach a shell, so
-kori logs the replacement room ID and leaves the decision to the operator.
+bulle logs the replacement room ID and leaves the decision to the operator.
 
 Replies thread onto the triggering message with `m.in_reply_to`, an answer too long for one
 event is split across several messages with the relation on the first only, an invite is joined

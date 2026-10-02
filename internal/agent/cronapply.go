@@ -10,7 +10,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func applyJob(config settings.Config, job settings.CronJob) settings.Config {
@@ -59,7 +59,7 @@ func ensureTrusted(f settings.JobFile) error {
 	if ok {
 		return nil
 	}
-	return fmt.Errorf("job %q is not trusted: review %s, then run `kori cron trust %s`", f.Job.Name, f.Path, f.Job.Name)
+	return fmt.Errorf("job %q is not trusted: review %s, then run `bulle cron trust %s`", f.Job.Name, f.Path, f.Job.Name)
 }
 
 func loadExecutableJob(name string) (settings.CronJob, settings.Config, error) {

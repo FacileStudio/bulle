@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // cronStatus is the outcome appended to a job's delivery log.
@@ -92,13 +92,13 @@ type cronRun struct {
 // job, regardless of delivery. Under XDG_STATE_HOME when set.
 func cronStatePath() (string, error) {
 	if dir := os.Getenv("XDG_STATE_HOME"); dir != "" {
-		return filepath.Join(dir, "kori", "cron.jsonl"), nil
+		return filepath.Join(dir, "bulle", "cron.jsonl"), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("resolving state dir: %w", err)
 	}
-	return filepath.Join(home, ".local", "state", "kori", "cron.jsonl"), nil
+	return filepath.Join(home, ".local", "state", "bulle", "cron.jsonl"), nil
 }
 
 func appendCronRun(rec cronRun) error {

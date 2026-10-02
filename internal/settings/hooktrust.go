@@ -27,7 +27,7 @@ type trustRecord struct {
 }
 
 // trustDir is where the trust store lives — the first thing this package
-// puts under ~/.kori/, which stays otherwise empty until something needs it.
+// puts under ~/.bulle/, which stays otherwise empty until something needs it.
 func trustDir() (string, error) {
 	return HomeDir()
 }
@@ -72,7 +72,7 @@ func readTrust(path string) (map[string]trustRecord, error) {
 	return store, nil
 }
 
-// saveTrust records one approval, creating ~/.kori/ if the store has not
+// saveTrust records one approval, creating ~/.bulle/ if the store has not
 // needed it before now.
 func saveTrust(store map[string]trustRecord, path, hash string) error {
 	dir, err := trustDir()

@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/FacileStudio/kori/internal/sandbox"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/sandbox"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func TestRootVersion(t *testing.T) {
@@ -34,7 +34,7 @@ func TestTriggerSnapshotIfRequested(t *testing.T) {
 	}
 }
 
-// A target session must never record the directory kori was launched from: the
+// A target session must never record the directory bulle was launched from: the
 // model's tools run on the other machine, and a host path there is a claim
 // about a filesystem the session never opened.
 func TestTargetSessionRootNamesTheTargetWithoutAWorkdir(t *testing.T) {

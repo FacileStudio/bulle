@@ -7,8 +7,8 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/diagnostics"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/diagnostics"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // The diagnostics loop: filet findings injected after every edit, plus the

@@ -105,7 +105,7 @@ remote:
   ssh_key_path: /tmp/remote_key
   root: /srv/app
 `
-	tmp := filepath.Join(t.TempDir(), ".kori.yml")
+	tmp := filepath.Join(t.TempDir(), ".bulle.yml")
 	if err := os.WriteFile(tmp, []byte(yamlData), 0o644); err != nil {
 		t.Fatalf("writing tmp config: %v", err)
 	}

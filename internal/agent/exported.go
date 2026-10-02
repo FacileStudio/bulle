@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
 // RunSessionWithFlags runs an interactive agent session using the provided configuration flags.

@@ -6,9 +6,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/menu"
-	"github.com/FacileStudio/kori/internal/provider"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/menu"
+	"github.com/FacileStudio/bulle/internal/provider"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/nacelle"
 )
 

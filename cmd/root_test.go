@@ -54,7 +54,7 @@ func TestBenchHelpCommand(t *testing.T) {
 func TestNormalizeArgs(t *testing.T) {
 	saved := os.Args
 	defer func() { os.Args = saved }()
-	os.Args = []string{"kori", "-model", "gpt-4", "-h", "--root", ".", "--", "-not-a-flag"}
+	os.Args = []string{"bulle", "-model", "gpt-4", "-h", "--root", ".", "--", "-not-a-flag"}
 	normalizeArgs()
 	if os.Args[1] != "--model" {
 		t.Errorf("expected -model normalized to --model, got %s", os.Args[1])

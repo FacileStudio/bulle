@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"charm.land/lipgloss/v2"
-	"github.com/FacileStudio/kori/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/spf13/cobra"
 )
 

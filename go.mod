@@ -1,4 +1,4 @@
-module github.com/FacileStudio/kori
+module github.com/FacileStudio/bulle
 
 go 1.26.6
 

@@ -161,10 +161,10 @@ func TestNoEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	}
 }
 
-// A surface with nobody attached is not a refusal. kori's terminal prompt is
+// A surface with nobody attached is not a refusal. bulle's terminal prompt is
 // the reader's approval surface, and a session that opened a socket no editor
 // has dialled must leave the call to it: reading "nobody was there to ask" as
-// "no" would deny every tool call the moment --ide or a stray KORI_IDE is set,
+// "no" would deny every tool call the moment --ide or a stray BULLE_IDE is set,
 // with the prompt still on screen asking a question that is already answered.
 func TestAnUnattachedEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	surface := &fakeSurface{answer: IDEUnanswered}

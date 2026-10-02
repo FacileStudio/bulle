@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // The two outcomes a bench run can report.
@@ -20,7 +20,7 @@ const (
 
 // printBenchUsage writes the bench subcommand's usage to stdout; help exits 0.
 func printBenchUsage() error {
-	fmt.Println(`usage: kori bench [flags] <prompt>
+	fmt.Println(`usage: bulle bench [flags] <prompt>
 
   Run the prompt through the headless path one or more times, sequentially,
   and print what each run measured: duration, input, output and cache
@@ -63,7 +63,7 @@ func checkBenchFlag() (bool, error) {
 	if flags.prompt == "" {
 		piped, perr := stdinPrompt()
 		if perr != nil || piped == "" {
-			return true, usagef("usage: kori bench [-n runs] [--json] <prompt>")
+			return true, usagef("usage: bulle bench [-n runs] [--json] <prompt>")
 		}
 		flags.prompt = piped
 	}

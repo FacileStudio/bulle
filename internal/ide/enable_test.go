@@ -19,11 +19,11 @@ func TestEnabledReadsTheSwitchAndTheEnvironment(t *testing.T) {
 	BindFlag(&off)
 	t.Setenv(EnvVar, "1")
 	if !Enabled() {
-		t.Error("KORI_IDE=1 did not turn the surface on")
+		t.Error("BULLE_IDE=1 did not turn the surface on")
 	}
 	t.Setenv(EnvVar, "0")
 	if Enabled() {
-		t.Error("KORI_IDE=0 turned the surface on")
+		t.Error("BULLE_IDE=0 turned the surface on")
 	}
 }
 

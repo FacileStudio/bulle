@@ -13,7 +13,7 @@ import (
 //
 // There is no backend or host field: sandbox targets are boite by definition,
 // and SSH hosts live under remote.targets. Binary synchronization is not a
-// setting either — kori runs on the host and only tool calls cross the boundary.
+// setting either — bulle runs on the host and only tool calls cross the boundary.
 type SandboxTarget struct {
 	VMName       string `json:"vm_name" yaml:"vm_name"`
 	User         string `json:"user" yaml:"user"`
@@ -23,7 +23,7 @@ type SandboxTarget struct {
 	AutoSnapshot *bool  `json:"auto_snapshot" yaml:"auto_snapshot"`
 }
 
-// Sandbox holds the boite microVM defaults: which VM `kori sandbox` enters
+// Sandbox holds the boite microVM defaults: which VM `bulle sandbox` enters
 // with no argument, and the SSH identity and workspace it uses unless a target
 // overrides them. An empty root means the instance's own workspace, where boite
 // mounted the project, so no path is guessed when the config says nothing.
@@ -134,7 +134,7 @@ func repointSandboxMessage(msg string) error {
 	case strings.Contains(msg, "field workdir not found"):
 		return errors.New("sandbox target workdir is now root")
 	case strings.Contains(msg, "field auto_sync not found"):
-		return errors.New("auto_sync is gone: kori runs on the host and syncs no binary into the target")
+		return errors.New("auto_sync is gone: bulle runs on the host and syncs no binary into the target")
 	}
 	return errors.New(msg)
 }

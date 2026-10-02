@@ -1,4 +1,4 @@
-# kori — Development
+# bulle — Development
 
 Local setup, the quality gate, and how releases are cut.
 
@@ -67,7 +67,7 @@ git commit && git push && git tag vX.Y.Z && git push origin vX.Y.Z
 ```
 
 The tag push triggers goreleaser, which publishes the release assets and updates
-`Casks/kori.rb` in [FacileStudio/homebrew-tap](https://github.com/FacileStudio/homebrew-tap)
+`Casks/bulle.rb` in [FacileStudio/homebrew-tap](https://github.com/FacileStudio/homebrew-tap)
 using the `HOMEBREW_TAP_GITHUB_TOKEN` secret. That token must be a fine-grained PAT scoped to
 only the tap repository with Contents read/write; a missing or under-scoped token fails the
 formula push after the binaries are already published, which leaves the release half-done —

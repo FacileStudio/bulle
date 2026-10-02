@@ -12,7 +12,7 @@ import (
 
 // keyCommandTimeout bounds one api_key_command. A key command that stops to ask
 // a question, wait on a lock or reach an unreachable network would otherwise
-// hang the run before its first turn, where the failure reads as kori being
+// hang the run before its first turn, where the failure reads as bulle being
 // slow rather than as a command nobody answered.
 const keyCommandTimeout = 10 * time.Second
 
@@ -26,7 +26,7 @@ const keyCommandTimeout = 10 * time.Second
 // TYPESAFE_API_KEY already exported on a machine keeps working untouched and the
 // command is never run to disagree with it, and the command runs only on the
 // paths that actually speak to a provider: a read-only invocation like
-// `kori list` never runs it, so a locked secret store cannot break inspection.
+// `bulle list` never runs it, so a locked secret store cannot break inspection.
 //
 // A command that fails, times out or prints nothing is a load error naming the
 // field, never an empty key. An empty key reaches the backend as "no credential"

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // resolve is Settings as the real callers reach it: the defaults are the base the
@@ -44,7 +44,7 @@ func TestJudgeIsOffUntilTheConfigTurnsItOn(t *testing.T) {
 	}
 }
 
-// And it is enableable from that file alone: one key in ~/.kori.yml, with no flag
+// And it is enableable from that file alone: one key in ~/.bulle.yml, with no flag
 // and no environment variable, is all it takes to switch it on and have the
 // session carry it.
 func TestJudgeIsBuiltFromTheConfigFile(t *testing.T) {

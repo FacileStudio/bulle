@@ -3,7 +3,7 @@ package tui
 import (
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/toolview"
+	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
 const holdEntriesCap = 1000

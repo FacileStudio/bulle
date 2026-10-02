@@ -21,7 +21,7 @@ func TestParallelAgentsDefaultOn(t *testing.T) {
 // turns it on is not the layer that decides.
 func TestParallelAgentsFollowThePrecedenceChain(t *testing.T) {
 	written(t, "tools:\n  parallel_agents: false")
-	t.Setenv("KORI_PARALLEL_AGENTS", "true")
+	t.Setenv("BULLE_PARALLEL_AGENTS", "true")
 
 	config, err := settings(Config{})
 	if err != nil {
@@ -62,7 +62,7 @@ func TestMaxConcurrencyDefaultsTo16(t *testing.T) {
 
 func TestMaxConcurrencyFollowsPrecedenceChain(t *testing.T) {
 	written(t, "limits:\n  max_concurrency: 8")
-	t.Setenv("KORI_MAX_CONCURRENCY", "32")
+	t.Setenv("BULLE_MAX_CONCURRENCY", "32")
 
 	config, err := settings(Config{})
 	if err != nil {
@@ -84,7 +84,7 @@ func TestMaxParallelAgentsFromEnvAndFile(t *testing.T) {
 		t.Errorf("max_parallel_agents got %v, want 4", config.MaxParallelAgents)
 	}
 
-	t.Setenv("KORI_MAX_PARALLEL_AGENTS", "24")
+	t.Setenv("BULLE_MAX_PARALLEL_AGENTS", "24")
 	config, err = settings(Config{})
 	if err != nil {
 		t.Fatalf("settings: %v", err)

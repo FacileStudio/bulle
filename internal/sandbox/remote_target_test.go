@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func TestTargetFromSSH(t *testing.T) {

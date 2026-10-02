@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 
-	"github.com/FacileStudio/kori/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/compaction"
 )
 
 // contextLoad is the status surface's name for the conversation's size against

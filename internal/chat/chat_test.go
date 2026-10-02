@@ -120,7 +120,7 @@ func TestRunRepliesWhenTheRunFails(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("sent %d replies, want 1", len(got))
 	}
-	if want := "kori could not run that: the backend refused for two lines"; got[0].Text != want {
+	if want := "bulle could not run that: the backend refused for two lines"; got[0].Text != want {
 		t.Errorf("reply = %q, want %q", got[0].Text, want)
 	}
 }

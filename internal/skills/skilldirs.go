@@ -10,7 +10,7 @@ import (
 // skills folder, most often, named so its skills reach the model without
 // moving or copying anything. No trust decision applies, for the same
 // reason globalSkills has none: naming a directory here is something only
-// the person running kori, on their own machine, can do in the first
+// the person running bulle, on their own machine, can do in the first
 // place.
 func extraSkills(dirs []string) ([]skill, []string) {
 	var found []skill
@@ -47,7 +47,7 @@ func globalSkillsDir() string {
 }
 
 // loadTrustedContainers loads the skills of every container the trust store
-// accepts and names the ones it does not, so the person running kori can
+// accepts and names the ones it does not, so the person running bulle can
 // review what they are being asked to trust.
 func loadTrustedContainers(containers []string, store map[string]trustRecord) (skipped []string, found []skill, problems []string) {
 	for _, dir := range containers {
@@ -68,8 +68,8 @@ func ExpandHome(dir string) string {
 }
 
 // expandHome resolves a leading "~" the way a shell would. A flag's own
-// argument never needs this — the shell already expanded it before kori
-// saw it — but ~/.kori.yml and an environment variable set by anything
+// argument never needs this — the shell already expanded it before bulle
+// saw it — but ~/.bulle.yml and an environment variable set by anything
 // that isn't a shell (a service manager's Environment=, for one) go through
 // no shell at all, so the same "~/.claude/skills" would silently work from
 // one source and not another without this.

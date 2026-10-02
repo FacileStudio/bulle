@@ -1,6 +1,6 @@
 package tui
 
-import "github.com/FacileStudio/kori/internal/compaction"
+import "github.com/FacileStudio/bulle/internal/compaction"
 
 const (
 	// compactMinResult and droppedNotice alias the compaction package's tombstone

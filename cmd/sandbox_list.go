@@ -8,8 +8,8 @@ import (
 	"sort"
 
 	"charm.land/lipgloss/v2"
-	"github.com/FacileStudio/kori/internal/sandbox"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/sandbox"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 type sandboxListEntry struct {

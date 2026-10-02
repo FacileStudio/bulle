@@ -3,7 +3,7 @@ package ide
 import (
 	"fmt"
 
-	"github.com/FacileStudio/kori/internal/diff"
+	"github.com/FacileStudio/bulle/internal/diff"
 )
 
 // begin allocates the id a call's start and finish share, and remembers it

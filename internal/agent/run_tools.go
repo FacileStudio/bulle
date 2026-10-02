@@ -10,11 +10,11 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/approval"
-	"github.com/FacileStudio/kori/internal/ide"
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/ide"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
 // RunSessionWithTools runs an interactive session with custom tools.

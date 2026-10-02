@@ -10,8 +10,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/cost"
-	"github.com/FacileStudio/kori/internal/tasks"
+	"github.com/FacileStudio/bulle/internal/cost"
+	"github.com/FacileStudio/bulle/internal/tasks"
 	"github.com/FacileStudio/nacelle"
 )
 

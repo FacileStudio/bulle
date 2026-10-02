@@ -111,18 +111,18 @@ func TestApplyProfileCarriesLimitsAndPersona(t *testing.T) {
 	}
 }
 
-// setupProfileEnvWith writes one profile and one ~/.kori.yml into a home of the
+// setupProfileEnvWith writes one profile and one ~/.bulle.yml into a home of the
 // test's own, and clears the variables a developer's shell may carry: the suite
-// must answer the same on a machine that exports KORI_PROFILE or
-// KORI_MAX_ITERATIONS as it does in CI.
+// must answer the same on a machine that exports BULLE_PROFILE or
+// BULLE_MAX_ITERATIONS as it does in CI.
 func setupProfileEnvWith(t *testing.T, profileFile, profileYml, fileYml string) {
 	t.Helper()
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	clearEnv(t, "KORI_BACKEND", "NACELLE_BACKEND", "KORI_PROFILE", "NACELLE_PROFILE",
-		"KORI_MAX_ITERATIONS", "NACELLE_MAX_ITERATIONS")
+	clearEnv(t, "BULLE_BACKEND", "NACELLE_BACKEND", "BULLE_PROFILE", "NACELLE_PROFILE",
+		"BULLE_MAX_ITERATIONS", "NACELLE_MAX_ITERATIONS")
 
-	pDir := filepath.Join(home, ".kori", "profiles")
+	pDir := filepath.Join(home, ".bulle", "profiles")
 	if err := os.MkdirAll(pDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +165,7 @@ func TestFlagProfileOverridesFileBackend(t *testing.T) {
 
 func TestEnvProfileOverridesFileBackend(t *testing.T) {
 	setupProfileEnv(t)
-	t.Setenv("KORI_PROFILE", "fast")
+	t.Setenv("BULLE_PROFILE", "fast")
 	cfg, err := Settings("", Config{})
 	if err != nil {
 		t.Fatalf("Settings with env profile failed: %v", err)

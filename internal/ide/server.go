@@ -32,7 +32,7 @@ type Options struct {
 	Version string
 	Session string
 	// Commands is how an editor's prompts reach the session. Nil keeps the
-	// socket an observer, which is how kori runs today.
+	// socket an observer, which is how bulle runs today.
 	Commands Commands
 }
 

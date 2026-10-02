@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -63,7 +63,7 @@ func NewSink(root, model string) *Sink {
 	machine, _ := os.Hostname()
 	project, branch := repoIdentity(root)
 	return &Sink{
-		dir:     filepath.Join(dataDir, "events", "kori"),
+		dir:     filepath.Join(dataDir, "events", "bulle"),
 		machine: machine,
 		project: project,
 		branch:  branch,
@@ -103,7 +103,7 @@ func (s *Sink) canonical(usage nacelle.Usage, now time.Time) canonicalEvent {
 		Type:      "message",
 		Role:      "assistant",
 		Timestamp: now.UTC().Format(time.RFC3339Nano),
-		Agent:     "kori",
+		Agent:     "bulle",
 		Machine:   s.machine,
 		Project:   s.project,
 		Branch:    s.branch,
@@ -123,7 +123,7 @@ func (s *Sink) canonical(usage nacelle.Usage, now time.Time) canonicalEvent {
 
 // repoIdentity names the project a run belongs to and the branch it sat on. A
 // target-labeled root names a remote machine, not a repo here: running host git
-// against it would silently report the project kori was launched from, so the
+// against it would silently report the project bulle was launched from, so the
 // target's own name is the identity and there is no branch to name.
 func repoIdentity(root string) (string, string) {
 	if name := settings.TargetRootName(root); name != "" {

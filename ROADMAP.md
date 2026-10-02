@@ -1,4 +1,4 @@
-# kori Roadmap
+# bulle Roadmap
 
 This file tracks UI-only work. Core SDK changes live in `../nacelle/ROADMAP.md`. Both repos release with the same tag (e.g. `v0.8.0` / `tui/v0.8.0`) in a two-commit flow: core first, then UI pinned to it.
 
@@ -26,25 +26,25 @@ This file tracks UI-only work. Core SDK changes live in `../nacelle/ROADMAP.md`.
 
 - **Log rotation & write-failure warning** — rotate session files at 256 KB, gzip old file (`.gz`), start new timestamped file. *Done via `sessionrotate.go`.*
 - **Session summary command** — *Done via `/status` command.*
-- **Dynamic compaction window** — automatically scales the trigger when unconfigured. *Done: the ratio ladder in `docs/plan-compaction-robust.md`. Phase 0 shipped the config surface and `ResolveBudget`; Phase 1 landed the zone/ledger model in `internal/compaction` (`Plan`/`Apply`/`Tombstone`) and the tiered trigger — soft tombstones history with no model call, mid and hard folded it into one `[state ledger]` under a pinned anchor. Phase 2 added the opt-in TypeSafe System One judge (`internal/jev`, batched keep/prune/ledger, hard force-summarizes what it keeps). Phase 3 surfaced it: the footer shows the live ratio and tier (`↕120k/200k · 0.60 · soft`) and `/status` reports the ledger and the last pass's tier, with ratios, tiers, judge and privacy written up in `docs/configuration.md`, `README.md` and `example.kori.yml`. Phase 4 hardened it: re-running the whole validation matrix closed a hole in I1 where the ledger could absorb a kept tool call and orphan its result — `internal/compaction` now extends the ledger zone over its own replies and carries an absorbed block forward (`Apply`, `Plan`, `ledgerCarry`). 2026-09-22 followed a review against published practice: the verbatim tail is sized by `keep_tokens` with `keep_turns` as its floor, the ladder is read against the window less a `reserve_tokens` runway with `window_tokens` to override a backend that reports none, and the pre-send guard fires at the trigger itself — the footer's denominator is that usable window (`↕120k/160k · 0.75 · soft`).*
+- **Dynamic compaction window** — automatically scales the trigger when unconfigured. *Done: the ratio ladder in `docs/plan-compaction-robust.md`. Phase 0 shipped the config surface and `ResolveBudget`; Phase 1 landed the zone/ledger model in `internal/compaction` (`Plan`/`Apply`/`Tombstone`) and the tiered trigger — soft tombstones history with no model call, mid and hard folded it into one `[state ledger]` under a pinned anchor. Phase 2 added the opt-in TypeSafe System One judge (`internal/jev`, batched keep/prune/ledger, hard force-summarizes what it keeps). Phase 3 surfaced it: the footer shows the live ratio and tier (`↕120k/200k · 0.60 · soft`) and `/status` reports the ledger and the last pass's tier, with ratios, tiers, judge and privacy written up in `docs/configuration.md`, `README.md` and `example.bulle.yml`. Phase 4 hardened it: re-running the whole validation matrix closed a hole in I1 where the ledger could absorb a kept tool call and orphan its result — `internal/compaction` now extends the ledger zone over its own replies and carries an absorbed block forward (`Apply`, `Plan`, `ledgerCarry`). 2026-09-22 followed a review against published practice: the verbatim tail is sized by `keep_tokens` with `keep_turns` as its floor, the ladder is read against the window less a `reserve_tokens` runway with `window_tokens` to override a backend that reports none, and the pre-send guard fires at the trigger itself — the footer's denominator is that usable window (`↕120k/160k · 0.75 · soft`).*
 - **Summarize near the limit** — the gap nacelle's own Track H item 17 left open: past the mechanical drop of old tool results, an assistant-text-heavy history had no fallback before the window ran out. *Done here, consumer-side as that item requires: smart summarizes the history into the ledger once the ratio is crossed, keep the deterministic tombstone as the failure path, and let `/status` name the tier that ran (`internal/compaction`, `internal/tui/compact*.go`).*
-- **Resume** — `--continue` picks the newest session under `~/.kori/sessions/<project>/`; `/resume` picker in the TUI to resume past conversation. *Done via `--continue` flag and `/resume` command.*
+- **Resume** — `--continue` picks the newest session under `~/.bulle/sessions/<project>/`; `/resume` picker in the TUI to resume past conversation. *Done via `--continue` flag and `/resume` command.*
 - **Subagents overview** — show list of running subagents and current task progress one per line under the input prompt (like pi or antigravity). *Done via `parallel_result.go` in v0.26.0.*
 
 ---
 
 ## Track I — Background scheduling (cron)
 
-A cron for agents: unattended, no daemon. Jobs live inline in `~/.kori.yml` under `cron:`; the `kori cron` subcommand fronts the existing headless path. The scheduler is systemd/Cron — kori only surfaces and arms it.
+A cron for agents: unattended, no daemon. Jobs live inline in `~/.bulle.yml` under `cron:`; the `bulle cron` subcommand fronts the existing headless path. The scheduler is systemd/Cron — bulle only surfaces and arms it.
 
-- **`kori cron list`** — show jobs and their armed state. *Done.*
-- **`kori cron run <name>`** — run one job headless, deliver the transcript. Defaults are reversed for unattended runs: shell (`commands`) off and `enabled` off, because a run nobody can answer must not reach a live approval prompt. `install` refuses a disabled job so test-run-first is explicit. *Done (Phase 1).*
-- **`kori cron install <name>`** — directly install the job into user's crontab with tagged markers, log redirection, and automatic PATH/key resolution. *Done.*
-- **`kori cron uninstall <name>`** — remove an installed job from crontab. *Done.*
+- **`bulle cron list`** — show jobs and their armed state. *Done.*
+- **`bulle cron run <name>`** — run one job headless, deliver the transcript. Defaults are reversed for unattended runs: shell (`commands`) off and `enabled` off, because a run nobody can answer must not reach a live approval prompt. `install` refuses a disabled job so test-run-first is explicit. *Done (Phase 1).*
+- **`bulle cron install <name>`** — directly install the job into user's crontab with tagged markers, log redirection, and automatic PATH/key resolution. *Done.*
+- **`bulle cron uninstall <name>`** — remove an installed job from crontab. *Done.*
 - **Delivery** — `delivery: "file:<dir>"` appends a status header + transcript to `<dir>/<name>.log`; unset means journal/stdout only. *Done (Phase 1).*
 - **Phase 2 (not yet built): promotion UX** — repeat a chat job, agent offers to schedule it, test-runs it once into the same thread, creates it enabled-by-design, and auto-disables on failure with a notification. Mirrors the `syntheses/background-agent-scheduling.md` reference.
 - **Not doing in the cron track** — a job DB, retry, or parsing systemd/crontab syntax
-  inside kori. A long-lived process for **inbound** chat is a separate concern and lives
+  inside bulle. A long-lived process for **inbound** chat is a separate concern and lives
   in the chat track: cron stays fire-and-forget, chat is a supervised service.
 
 ---
@@ -59,7 +59,7 @@ The model should see what its edits broke without being told to check: filet fin
 
 ## Track K — Chat
 
-An inbound surface. `kori chat` runs one long-lived process holding thin platform adapters,
+An inbound surface. `bulle chat` runs one long-lived process holding thin platform adapters,
 so a message from an allowlisted identity starts a session and the answer returns in the same
 room, with Matrix end-to-end encryption on. This is the daemon Track I declined, held
 deliberately apart from cron: cron stays fire-and-forget, chat is a supervised service.
@@ -74,7 +74,7 @@ Design and evidence live in `docs/plan-matrix-chat.md`; the settings are in
   the chat's key is the room instead.
 - **Default-deny allowlist** — which MXIDs may start a session and which rooms are read at
   all. Both empty refuses every message, and the check runs before the agent is built.
-- **`kori chat install`** — writes and enables the systemd user unit, so the process
+- **`bulle chat install`** — writes and enables the systemd user unit, so the process
   survives logout; the unit restarts on failure, not always, so a revoked token cannot
   restart-loop.
 - **Not doing** — a second adapter (the seam is the deliverable and a second platform is what

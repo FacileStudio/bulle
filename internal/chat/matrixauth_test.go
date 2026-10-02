@@ -58,8 +58,8 @@ type matrixAuth struct {
 // since a homeserver ignores the display name once the device exists.
 func TestAPasswordWithNoTokenIsALogin(t *testing.T) {
 	cases := map[string]string{
-		"a full user id":   "@kori:example.org",
-		"a bare localpart": "kori",
+		"a full user id":   "@bulle:example.org",
+		"a bare localpart": "bulle",
 	}
 	for name, id := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestAPasswordWithNoTokenIsALogin(t *testing.T) {
 // a login, so setting LoginAs would be harmless but would also mean the helper
 // never uses the credential it was handed.
 func TestATokenIsUsedAsGiven(t *testing.T) {
-	cfg := authConfig("@kori:example.org")
+	cfg := authConfig("@bulle:example.org")
 	cfg.Token = "syt_example"
 	auth := helperFor(t, cfg)
 	if auth.login != nil {
@@ -105,7 +105,7 @@ func TestATokenIsUsedAsGiven(t *testing.T) {
 // leaves a token behind after switching to a password would keep using the
 // token, or the reverse, with nothing on screen to say so.
 func TestATokenWinsOverAPassword(t *testing.T) {
-	cfg := authConfig("@kori:example.org")
+	cfg := authConfig("@bulle:example.org")
 	cfg.Token = "syt_example"
 	cfg.Password = "hunter2"
 	auth := helperFor(t, cfg)
@@ -118,7 +118,7 @@ func TestATokenWinsOverAPassword(t *testing.T) {
 // optional there, and an unset one must stay unset rather than becoming the
 // empty string that a login would then try to reuse.
 func TestTheDeviceIDIsOnlySetWhenConfigured(t *testing.T) {
-	cfg := authConfig("@kori:example.org")
+	cfg := authConfig("@bulle:example.org")
 	cfg.Token = "syt_example"
 	if auth := helperFor(t, cfg); auth.client.DeviceID != "" {
 		t.Errorf("device id = %q, want unset", auth.client.DeviceID)

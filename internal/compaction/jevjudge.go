@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/FacileStudio/kori/internal/jev"
+	"github.com/FacileStudio/bulle/internal/jev"
 )
 
 // defaultMaxState bounds one classification request in bytes.

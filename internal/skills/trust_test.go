@@ -3,7 +3,7 @@ package skills
 import "testing"
 
 // A directory nobody has trusted yet is the ordinary state for a project
-// kori has never run against, not a corrupt store.
+// bulle has never run against, not a corrupt store.
 func TestLoadTrustIsEmptyWithNoStoreYet(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 

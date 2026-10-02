@@ -1,9 +1,9 @@
-# kori — Configuration
+# bulle — Configuration
 
 Every field the core `Config` reads, then the client's own settings layer — a separate thing,
 with its own precedence order — and the traps in each.
 
-## `kori.Config`
+## `bulle.Config`
 
 The core reads nothing from the environment or from disk. Every field is passed in the struct
 literal a consumer builds.
@@ -78,7 +78,7 @@ with an `*Unsupported` error rather than silently running with less.
 
 The client's settings layer is a separate settings problem from the core, and deliberately does not share a
 mechanism with it: **the library must never read configuration from disk or environment.** A
-`nacelle` package that read `~/.kori.yml` would let a file on a *different* machine's disk
+`nacelle` package that read `~/.bulle.yml` would let a file on a *different* machine's disk
 change a headless consumer's behaviour, the way Bubble Tea's own config never reaches past the
 program that imports it.
 
@@ -92,9 +92,9 @@ could tell apart.
 
 | Layer | Source | Notes |
 |---|---|---|
-| Flags | `-backend`, `-model`, `-effort`, `-root`, `-system-prompt`, `-additional-prompt`, `-bash`, `-thinking`, `-project-context`, `-skills`, `-trust-skills`, `-skill-dir`, `-mcp`, `-fetch`, `-approve-tools`, `-diffs`, `-show-hooks`, `-show-hook-output`, `-max-iterations`, `-compact-at`, `-max-concurrency`, `-max-parallel-agents`, `-tasks`, `-continue`, `-resume`, `-gates-file`, `-no-config` | Only flags actually **typed** are collected, via `flag.Visit` — Go's `flag` package cannot otherwise tell a flag left alone from one passed its own default value. `-skill-dir` and `-mcp` are repeatable (`-mcp a.json -mcp b.json`); every other flag keeps only its last occurrence. `-resume` names one session by id or file path and, when given, beats `-continue`. `-no-config` skips `~/.kori.yml` entirely: defaults plus environment plus flags. An invalid file gets a coloured report and one prompt — yes boots with defaults, no exits with the documentation link |
-| Environment | `KORI_BACKEND`, `KORI_MODEL`, `KORI_PROVIDER_BASE_URL`, `KORI_PROVIDER_API_KEY`, `KORI_EFFORT`, `KORI_REASONING_BUDGET`, `KORI_ROOT`, `KORI_SYSTEM_PROMPT`, `KORI_ADDITIONAL_PROMPT`, `KORI_BASH`, `KORI_THINKING`, `KORI_PROJECT_CONTEXT`, `KORI_SKILLS`, `KORI_TRUST_SKILLS`, `KORI_SKILL_DIRS`, `KORI_APPROVE_TOOLS`, `KORI_DIFFS`, `KORI_SHOW_HOOKS`, `KORI_SHOW_HOOK_OUTPUT`, `KORI_MAX_ITERATIONS`, `KORI_COMPACT_AT`, `KORI_MAX_CONCURRENCY`, `KORI_MAX_PARALLEL_AGENTS`, `KORI_COMPACTION_SOFT_RATIO`, `KORI_COMPACTION_SMART_RATIO`, `KORI_COMPACTION_WINDOW_TOKENS`, `KORI_COMPACTION_RESERVE_TOKENS`, `KORI_COMPACTION_KEEP_TURNS`, `KORI_COMPACTION_KEEP_TOKENS`, `KORI_COMPACTION_ANCHOR_MESSAGES`, `KORI_COMPACTION_JUDGE`, `KORI_COMPACTION_JUDGE_MODEL`, `KORI_COMPACTION_JUDGE_BASE_URL`, `KORI_COMPACTION_JUDGE_API_KEY`, `KORI_COMPACTION_PRUNE_THRESHOLD`, `KORI_COMPACTION_MAX_BLOCKS`, `KORI_FETCH`, `KORI_TASKS`, `TYPESAFE_API_KEY` | A misspelt boolean (`KORI_BASH=yez`) is treated as unmentioned, not as `false`, and falls through to the layer below. `KORI_SKILL_DIRS` is colon-separated, the same convention `PATH` itself uses for a list of directories. `KORI_PROVIDER_BASE_URL` and `KORI_PROVIDER_API_KEY` belong to the active provider — see [Custom providers](#custom-providers). `TYPESAFE_API_KEY` is the compaction judge's key and beats `KORI_COMPACTION_JUDGE_API_KEY`; it is the one credential to keep in the environment rather than the file |
-| File | `~/.kori.yml` | Preferences only, **no credentials** — those already have two homes: the environment, and the Anthropic SDK's own profile. A file can avoid holding one even where it needs one: `api_key_command` names the program that prints the key (`provider.api_key_command`, `limits.compaction.judge.api_key_command`) — see [Keeping the key out of the file](#keeping-the-key-out-of-the-file). `KnownFields(true)`: an unrecognised key (`max_iteration:`, one letter short) is refused rather than silently ignored |
+| Flags | `-backend`, `-model`, `-effort`, `-root`, `-system-prompt`, `-additional-prompt`, `-bash`, `-thinking`, `-project-context`, `-skills`, `-trust-skills`, `-skill-dir`, `-mcp`, `-fetch`, `-approve-tools`, `-diffs`, `-show-hooks`, `-show-hook-output`, `-max-iterations`, `-compact-at`, `-max-concurrency`, `-max-parallel-agents`, `-tasks`, `-continue`, `-resume`, `-gates-file`, `-no-config` | Only flags actually **typed** are collected, via `flag.Visit` — Go's `flag` package cannot otherwise tell a flag left alone from one passed its own default value. `-skill-dir` and `-mcp` are repeatable (`-mcp a.json -mcp b.json`); every other flag keeps only its last occurrence. `-resume` names one session by id or file path and, when given, beats `-continue`. `-no-config` skips `~/.bulle.yml` entirely: defaults plus environment plus flags. An invalid file gets a coloured report and one prompt — yes boots with defaults, no exits with the documentation link |
+| Environment | `BULLE_BACKEND`, `BULLE_MODEL`, `BULLE_PROVIDER_BASE_URL`, `BULLE_PROVIDER_API_KEY`, `BULLE_EFFORT`, `BULLE_REASONING_BUDGET`, `BULLE_ROOT`, `BULLE_SYSTEM_PROMPT`, `BULLE_ADDITIONAL_PROMPT`, `BULLE_BASH`, `BULLE_THINKING`, `BULLE_PROJECT_CONTEXT`, `BULLE_SKILLS`, `BULLE_TRUST_SKILLS`, `BULLE_SKILL_DIRS`, `BULLE_APPROVE_TOOLS`, `BULLE_DIFFS`, `BULLE_SHOW_HOOKS`, `BULLE_SHOW_HOOK_OUTPUT`, `BULLE_MAX_ITERATIONS`, `BULLE_COMPACT_AT`, `BULLE_MAX_CONCURRENCY`, `BULLE_MAX_PARALLEL_AGENTS`, `BULLE_COMPACTION_SOFT_RATIO`, `BULLE_COMPACTION_SMART_RATIO`, `BULLE_COMPACTION_WINDOW_TOKENS`, `BULLE_COMPACTION_RESERVE_TOKENS`, `BULLE_COMPACTION_KEEP_TURNS`, `BULLE_COMPACTION_KEEP_TOKENS`, `BULLE_COMPACTION_ANCHOR_MESSAGES`, `BULLE_COMPACTION_JUDGE`, `BULLE_COMPACTION_JUDGE_MODEL`, `BULLE_COMPACTION_JUDGE_BASE_URL`, `BULLE_COMPACTION_JUDGE_API_KEY`, `BULLE_COMPACTION_PRUNE_THRESHOLD`, `BULLE_COMPACTION_MAX_BLOCKS`, `BULLE_FETCH`, `BULLE_TASKS`, `TYPESAFE_API_KEY` | A misspelt boolean (`BULLE_BASH=yez`) is treated as unmentioned, not as `false`, and falls through to the layer below. `BULLE_SKILL_DIRS` is colon-separated, the same convention `PATH` itself uses for a list of directories. `BULLE_PROVIDER_BASE_URL` and `BULLE_PROVIDER_API_KEY` belong to the active provider — see [Custom providers](#custom-providers). `TYPESAFE_API_KEY` is the compaction judge's key and beats `BULLE_COMPACTION_JUDGE_API_KEY`; it is the one credential to keep in the environment rather than the file |
+| File | `~/.bulle.yml` | Preferences only, **no credentials** — those already have two homes: the environment, and the Anthropic SDK's own profile. A file can avoid holding one even where it needs one: `api_key_command` names the program that prints the key (`provider.api_key_command`, `limits.compaction.judge.api_key_command`) — see [Keeping the key out of the file](#keeping-the-key-out-of-the-file). `KnownFields(true)`: an unrecognised key (`max_iteration:`, one letter short) is refused rather than silently ignored |
 | Defaults | — | `provider.backend: anthropic`, `root: .`, `tools.run_command: true`, `reasoning.thinking: true`, `discovery.project_context: true`, `discovery.skills: true`, `discovery.trust_skills: false`, `discovery.trust_hooks: false`, `sources.skill_dirs: []`, `sources.mcp: {}`, `security.approve_tools: false`, `security.deny_elevation: true`, `ui.diffs: true`, `ui.show_hooks: true`, `ui.show_hook_output: true`, `limits.max_iterations: 5`, `limits.compact_at: unset` (an absolute override when set; unset derives the ceiling from `soft_ratio` × the context window, `0` disables), `limits.max_concurrency: 16`, `limits.max_parallel_agents: 16`, `limits.compaction.soft_ratio: 0.65`, `limits.compaction.smart_ratio: 0.80`, `limits.compaction.keep_turns: 1`, `limits.compaction.keep_tokens: 40000`, `limits.compaction.anchor_messages: 1`, `limits.compaction.judge.enabled: false`, (`limits.compaction.window_tokens` and `reserve_tokens` are unset: the first is the backend's own window, the second a fifth of it), `tools.web_fetch: true`, `tools.tasks: true`, `tools.parallel_agents: true`, `ui.rendering_mode: tui`, `ui.group_tools: true`, `ui.show_thinking: true` |
 
 `project_context` and `skills` default **on**, unlike `bash`: each fails soft to nothing when
@@ -107,7 +107,7 @@ the person running this should opt into, not defaults sprung on them. See
 [Context and skills](#context-and-skills) and
 [Tool approval](#tool-approval) below.
 
-### `~/.kori.yml`
+### `~/.bulle.yml`
 
 The file is grouped: each family of settings lives under its own key, the same
 families the code groups them into. The old flat layout (every key at the top
@@ -202,7 +202,7 @@ ui:
   show_hook_output: true
   # cron_list_json: false
   # start_message: |-
-  #   Welcome to kori.
+  #   Welcome to bulle.
   #     _   _
   #    | | | |
   #    | |_| |
@@ -247,13 +247,13 @@ Old flat key → new home, for migrating a pre-0.44 file:
 | `skill_dirs`, `mcp` | `sources:` |
 
 Every field is optional. A missing file is not an error — on first boot
-kori writes this file itself with every default explicit, and you edit from
+bulle writes this file itself with every default explicit, and you edit from
 there; deleting it regenerates it. But an unreadable or malformed one is: a
 unreadable or malformed one is: a config silently ignored is worse than no config, because the
 setting carefully written is simply not in effect and nothing says so.
 
 Scheduled jobs are no longer part of this file at all — they live one YAML file
-per job in `~/.kori/jobs/`. See [Cron jobs](#cron-jobs) for the folder, its
+per job in `~/.bulle/jobs/`. See [Cron jobs](#cron-jobs) for the folder, its
 trust gate and the per-job overrides.
 
 `prompt_placeholder` is the ghost text shown while the prompt is empty. The prompt has no prefix:
@@ -263,14 +263,14 @@ the first row opens at a single margin space, and wrapped rows of a long questio
 string that may span lines, so use a `|`-literal (or `|-` to drop the trailing newline) to put a
 welcome block or an ascii banner there. Empty (the default) prints nothing.
 
-**No per-project `./.kori.yml` yet.** A second precedence layer before the first has real
+**No per-project `./.bulle.yml` yet.** A second precedence layer before the first has real
 users is a layer nobody has asked for the shape of.
 
 ### Custom providers
 
-A custom provider points kori at an endpoint that is not one of the four vendor APIs, using an
+A custom provider points bulle at an endpoint that is not one of the four vendor APIs, using an
 existing backend's protocol when the endpoint speaks it. It is four fields with the same precedence
-as everything else: `backend` and `model` (the `KORI_BACKEND` / `KORI_MODEL` behind them), plus
+as everything else: `backend` and `model` (the `BULLE_BACKEND` / `BULLE_MODEL` behind them), plus
 `base_url` and `api_key` (the new ones), all read into one `Provider` group.
 
 The common case is an OpenAI-compatible gateway — any server that speaks the
@@ -279,14 +279,14 @@ proxies. Point `backend` at `openai`, set your own `base_url` and `api_key`, and
 as-is:
 
 ```sh
-export KORI_BACKEND=openai
-export KORI_PROVIDER_BASE_URL=http://localhost:3001/v1
-export KORI_PROVIDER_API_KEY=sk-your-unified-key
-export KORI_MODEL=auto
-kori
+export BULLE_BACKEND=openai
+export BULLE_PROVIDER_BASE_URL=http://localhost:3001/v1
+export BULLE_PROVIDER_API_KEY=sk-your-unified-key
+export BULLE_MODEL=auto
+bulle
 ```
 
-Or the same provider in `~/.kori.yml`:
+Or the same provider in `~/.bulle.yml`:
 
 ```yaml
 provider:
@@ -307,7 +307,7 @@ The file note from the precedence table above softens here: the config file **ca
 warning still stands for vendor keys — a file holding an `OPENAI_API_KEY` you actually use is a file
 that can never be committed to a dotfiles repo. A custom endpoint like freellmapi has its own key,
 so the two stories do not collide. In either case the env-var route is the one that keeps the key
-out of any file, and `KORI_PROVIDER_API_KEY` shares the `KORI_` prefix the rest of the layer
+out of any file, and `BULLE_PROVIDER_API_KEY` shares the `BULLE_` prefix the rest of the layer
 uses.
 
 `anthropic` cannot be pointed at a custom endpoint: its `Config` takes a pre-built client rather
@@ -346,14 +346,14 @@ fails against end-of-file instead of seizing your terminal, and it is killed aft
 environment, a literal `api_key`, a profile — and the command only fills what is still empty. The
 practical consequence is worth stating plainly: **if `TYPESAFE_API_KEY` is exported on your machine,
 a judge `api_key_command` never runs**, because the environment already answered. Same for
-`KORI_PROVIDER_API_KEY` or an exported `OPENROUTER_API_KEY` against a provider command. Unset the
+`BULLE_PROVIDER_API_KEY` or an exported `OPENROUTER_API_KEY` against a provider command. Unset the
 variable when you want the command to take over. Nothing else changes: a key that arrives from the
 environment keeps working with no config edit at all.
 
 Two more properties, both deliberate:
 
 - The command runs only where a key is actually used — when a session builds its provider or the
-  judge — and never for inspection. `kori list`, `kori sessions` and `kori cron list` do not run it,
+  judge — and never for inspection. `bulle list`, `bulle sessions` and `bulle cron list` do not run it,
   so a locked secret store cannot break them.
 - A command that fails, times out or prints nothing is **refused at startup**, naming the field,
   rather than left as an empty key. An empty key would reach the backend as "no credential" and read
@@ -364,16 +364,16 @@ command route is for when it is not, and for the files you keep in git.
 
 ### Profiles and /model command
 
-Profiles define reusable identities in `~/.kori/profiles/<name>.yml`. Kori reads any `.yml` file in that folder on startup and during interactive sessions.
+Profiles define reusable identities in `~/.bulle/profiles/<name>.yml`. Bulle reads any `.yml` file in that folder on startup and during interactive sessions.
 
 A profile carries **identity and model-aware settings**: which backend and model to reach, how
 hard that model should think, the limits that suit it, and the persona layered on top of the
-prompt. **Behaviour** — tools, security, sources, gates — stays in `~/.kori.yml`. That split is
+prompt. **Behaviour** — tools, security, sources, gates — stays in `~/.bulle.yml`. That split is
 the point: one profile then works in every checkout without carrying that checkout's environment
-along, and a single edit to `~/.kori.yml` moves every profile at once.
+along, and a single edit to `~/.bulle.yml` moves every profile at once.
 
 ```yaml
-# ~/.kori/profiles/fast.yml
+# ~/.bulle/profiles/fast.yml
 name: fast
 provider:
   backend: google
@@ -391,22 +391,22 @@ limits:
 additional_prompt: Answer in short paragraphs and name every file you change.
 ```
 
-You can select a profile in `~/.kori.yml` using the top-level `profile` key:
+You can select a profile in `~/.bulle.yml` using the top-level `profile` key:
 
 ```yaml
 profile: fast
 ```
 
-Or pass `-profile <name>` on the command line, or set `KORI_PROFILE=<name>` in the environment. Whichever layer names a profile, it applies in the same place. Precedence order follows:
+Or pass `-profile <name>` on the command line, or set `BULLE_PROFILE=<name>` in the environment. Whichever layer names a profile, it applies in the same place. Precedence order follows:
 
 ```
-defaults < ~/.kori.yml < profile < environment < flags
+defaults < ~/.bulle.yml < profile < environment < flags
 ```
 
-A profile is a layer of its own, and it sits **above `~/.kori.yml`**: the identity it names wins
+A profile is a layer of its own, and it sits **above `~/.bulle.yml`**: the identity it names wins
 over the file, so `profile: fast` moves the backend even when the file names one too, and one
 profile then works in every checkout. It is not a complete override — the environment and the
-flags still win over it, field by field, so a `KORI_MAX_ITERATIONS` or `-max-iterations` beats the
+flags still win over it, field by field, so a `BULLE_MAX_ITERATIONS` or `-max-iterations` beats the
 limit a profile sets, and what is specific to *this* machine survives a profile the whole suite
 shares. Exactly one `additional_prompt` reaches the prompt: a profile's persona replaces the
 file's rather than stacking with it. And a profile's limits and persona take effect at launch
@@ -474,7 +474,7 @@ summarizer alone — every call that rewrites it also carries turns no earlier p
 once the body outgrows one summary (2000 tokens, the ceiling the summarizer itself writes under) the
 pass *consolidates* it instead: one rewritten block, accepted only if it still names every
 identifier the old body named, and otherwise the merge stands. If a provider refuses a request for
-length anyway, kori compacts once and sends the turn again — one forced pass, at most once per
+length anyway, bulle compacts once and sends the turn again — one forced pass, at most once per
 turn, and not at all while `compact_at` is `0`.
 
 **The judge is opt-in and off by default.** Turning on `limits.compaction.judge` sends
@@ -484,7 +484,7 @@ setting here that leaves the machine. Its key prefers the `TYPESAFE_API_KEY` env
 over `limits.compaction.judge.api_key`. With the judge off, compaction behaves exactly as it did
 before this ladder existed.
 
-Enabling it is one key in `~/.kori.yml`. No flag and no environment variable are required:
+Enabling it is one key in `~/.bulle.yml`. No flag and no environment variable are required:
 
 ```yaml
 limits:
@@ -582,14 +582,14 @@ same risk.
 [Agent Skills specification](https://agentskills.io/specification): every `SKILL.md` under
 `~/.agents/skills/` (no trust needed, the user's own machine), every one under a **trusted**
 `.agents/skills/` found the same way the context walk works, and every one under a directory
-named by `-skill-dir` (repeatable), `KORI_SKILL_DIRS` (colon-separated) or `skill_dirs` in
-`~/.kori.yml`. Only a skill's `name` and `description` ever reach the system prompt; the
+named by `-skill-dir` (repeatable), `BULLE_SKILL_DIRS` (colon-separated) or `skill_dirs` in
+`~/.bulle.yml`. Only a skill's `name` and `description` ever reach the system prompt; the
 model reads the rest with `read_file` once it decides a skill applies. `-trust-skills` trusts
 every project-local `.agents/skills/` found on that run and remembers the decision in
-`~/.kori/trust.json`, keyed by canonical directory — run it once per project, not on every
+`~/.bulle/trust.json`, keyed by canonical directory — run it once per project, not on every
 launch.
 
-**MCP servers** (`mcp.go`). A server is written inline under `sources.mcp:` in `~/.kori.yml` — nothing
+**MCP servers** (`mcp.go`). A server is written inline under `sources.mcp:` in `~/.bulle.yml` — nothing
 else is needed to start one:
 ```yaml
 sources:
@@ -602,7 +602,7 @@ The key is the server name;the definition uses the keys the `mcpServers` format 
 (stdio), `"type": "http"` + `url` (remote), `env`, `cwd`, `headers`, `disabled`. Both stdio and HTTP
 servers work, on **either backend**:the tools are bridged to `nacelle.Tool`, so
 `-approve-tools` gates them like every other tool and `-backend openrouter` gets them too. `${VAR}`和
-`${VAR:-default}` expand,, so a token stays in the environment rather than in `~/.kori.yml`. Writing
+`${VAR:-default}` expand,, so a token stays in the environment rather than in `~/.bulle.yml`. Writing
 the definition here means there is no second file to keep in step and no pointer to remember to point tor
 
 For the times a server is already configured for another client, `-mcp <file>` (repeatable) names
@@ -619,18 +619,18 @@ refusing to work rather than as a server that is down.
 
 Nothing is discovered. A `.mcp.json` sitting in the working directory is **not** read, because it
 names executables to run — strictly worse than the project-local `.agents/skills/` this client
-already gates behind `~/.kori/trust.json`, since a skill is text the model may decline to act
-on and this is a subprocess started before the model is asked anything. Every server kori
-opens was named on the command line or in your own `~/.kori.yml`.
+already gates behind `~/.bulle/trust.json`, since a skill is text the model may decline to act
+on and this is a subprocess started before the model is asked anything. Every server bulle
+opens was named on the command line or in your own `~/.bulle.yml`.
 
 The spec defines the `SKILL.md` file, not where it has to live on disk — every tool picks its
 own directory (Claude Code reads `~/.claude/skills/`, pi reads `~/.agents/skills/` and its own
-`~/.pi/agent/skills/`), so `~/.agents/skills/` is kori's own choice, not a location any other
-tool already reads. `-skill-dir` is how kori sees a directory that belongs to one of those,
+`~/.pi/agent/skills/`), so `~/.agents/skills/` is bulle's own choice, not a location any other
+tool already reads. `-skill-dir` is how bulle sees a directory that belongs to one of those,
 without moving or copying anything into its own — the same problem pi itself solves with a
 `skills` array in `settings.json` pointed at `~/.claude/skills` or `~/.codex/skills`. No trust
 gate applies to it, same reasoning as `~/.agents/skills/` above: naming a directory here is
-something only the person running kori, on their own machine, can do in the first place.
+something only the person running bulle, on their own machine, can do in the first place.
 
 **The banner** (`main.go`'s `banner`) is how much of this is actually visible before typing
 anything: line one names the backend and model, line two the resolved `-root`, how many skills
@@ -641,12 +641,12 @@ question this client otherwise had no way to check short of a debug build.
 `bash off` earns its place because the symptom arrives from the model rather than from this
 client: asked to build and run something, it answers that it has no terminal and cannot run a
 command. That is true and deliberate — `run_command` is unconfined, so it stays opt-in — but
-nothing connected that answer back to a `tools.run_command: false` written once in `~/.kori.yml` and
-forgotten. Turn it on with `-bash`, `KORI_BASH=1`, or `tools.run_command: true`.
+nothing connected that answer back to a `tools.run_command: false` written once in `~/.bulle.yml` and
+forgotten. Turn it on with `-bash`, `BULLE_BASH=1`, or `tools.run_command: true`.
 
 ## Reading a page
 
-`tools.web_fetch` (`KORI_FETCH`, `-fetch`) lets the model read one web page by URL. **On by default**,
+`tools.web_fetch` (`BULLE_FETCH`, `-fetch`) lets the model read one web page by URL. **On by default**,
 unlike bash, and it is what turns a page's URL into text the model can act on.
 
 It is on by default because it cannot change anything and cannot reach anything but the public
@@ -669,7 +669,7 @@ reported as one, with the suggestion to try another source, rather than as the p
 
 ## Tool approval
 
-`-approve-tools` (`KORI_APPROVE_TOOLS`, `approve_tools`) asks before every tool call runs.
+`-approve-tools` (`BULLE_APPROVE_TOOLS`, `approve_tools`) asks before every tool call runs.
 **Off by default**: a nil `Config.Approve` means the SDK itself runs every call unasked, and
 the TUI's own default matches — nobody gets a behaviour change without opting in.
 
@@ -686,7 +686,7 @@ a normal tool-result error block for the model to see, the same as any other fai
 
 ## Deny elevation
 
-`security.deny_elevation` (`KORI_DENY_ELEVATION`) refuses `run_command` calls that try to
+`security.deny_elevation` (`BULLE_DENY_ELEVATION`) refuses `run_command` calls that try to
 elevate privileges: `sudo`, `su`, `doas`, `pkexec`, checked after every chain separator and
 inside subshells, not only at the start of the line. **On by default.** The refusal is an
 ordinary tool error the model reads, so it adapts instead of retrying.
@@ -700,29 +700,29 @@ password. [docs/sudo.md](sudo.md) carries the full analysis.
 
 ## Cron jobs
 
-Cron is kori run unattended: the same agent, driven headless by an external
-scheduler — a systemd timer or a crontab — while nobody watches. kori owns
+Cron is bulle run unattended: the same agent, driven headless by an external
+scheduler — a systemd timer or a crontab — while nobody watches. bulle owns
 the job definitions and the run itself; the clock belongs to systemd, which is
-why there is no daemon here to reload or supervise. The `kori cron`
+why there is no daemon here to reload or supervise. The `bulle cron`
 subcommand ties the two together:
 
 ```sh
-kori cron list            # every job, trusted or not
-kori cron run news        # run one job now, through the headless path
-kori cron install news    # install the job directly into crontab
-kori cron uninstall news  # remove the job from crontab
-kori cron trust news      # approve one job file's current contents
+bulle cron list            # every job, trusted or not
+bulle cron run news        # run one job now, through the headless path
+bulle cron install news    # install the job directly into crontab
+bulle cron uninstall news  # remove the job from crontab
+bulle cron trust news      # approve one job file's current contents
 ```
 
-`kori cron list --json` prints the same table as one JSON document; set
+`bulle cron list --json` prints the same table as one JSON document; set
 `ui.cron_list_json: true` to make that the default output.
 
 ### The jobs folder
 
-Each job is one YAML file in `~/.kori/jobs/` — `news.yml`, `healthchecks.yml`,
+Each job is one YAML file in `~/.bulle/jobs/` — `news.yml`, `healthchecks.yml`,
 one file per job, the job's own fields at the top level of the file rather than
 wrapped in a list. The job's name defaults to the filename stem, so `news.yml`
-defines the job `news` and `kori cron run news` runs it; a `name:` key
+defines the job `news` and `bulle cron run news` runs it; a `name:` key
 overrides it for the rare file whose stem is not the name you want (a name
 must be unit-safe: letters, digits and `. _ -` only).
 
@@ -731,7 +731,7 @@ daemon and no reload step: a file dropped in appears in `cron list` on the next
 invocation, a file edited changes the job, and a file deleted takes the job
 with it. Deleting the file is the off switch.
 
-Job files decode strictly, the way `~/.kori.yml` itself does: a typo in a
+Job files decode strictly, the way `~/.bulle.yml` itself does: a typo in a
 job file is a hard error naming the file, not a silent half-job. Loud is the
 right setting for something that fires at 2am.
 
@@ -741,29 +741,29 @@ A job file is instructions an agent will follow unattended with your provider
 keys in reach, so it is gated the way project skills and hooks are: a human
 must approve the exact bytes before they run.
 
-- A new file shows up in `kori cron list` immediately, marked untrusted.
-- `kori cron run` and `kori cron install` refuse an untrusted job until
-  someone runs `kori cron trust <name>`, which prints the file's path, its
+- A new file shows up in `bulle cron list` immediately, marked untrusted.
+- `bulle cron run` and `bulle cron install` refuse an untrusted job until
+  someone runs `bulle cron trust <name>`, which prints the file's path, its
   name and its prompt, and asks before recording anything.
 - Trusting records a SHA-256 hash of the file's contents against its path in
-  `~/.kori/trust.json`, the same store that remembers approved skill
+  `~/.bulle/trust.json`, the same store that remembers approved skill
   directories. Editing the file changes the hash, and a changed file is
   refused again — trust re-arms on every edit, so no one-line change to a
   trusted job slips through unreviewed.
-- Trust is per machine. A `~/.kori/jobs/` folder synced across machines
+- Trust is per machine. A `~/.bulle/jobs/` folder synced across machines
   carries the files but not the approvals, so each machine needs its own
-  `kori cron trust` — the person trusting is a person at that machine's
+  `bulle cron trust` — the person trusting is a person at that machine's
   keyboard, and that is the point.
 
 Trusting makes a job **runnable**, not **scheduled**: it clears `cron run` and
 unblocks `cron install`, and `cron install` still only prints the systemd
-service and timer units for you to save and enable yourself. Nothing kori
+service and timer units for you to save and enable yourself. Nothing bulle
 does creates the timer.
 
 ### A job file
 
 ```yaml
-# ~/.kori/jobs/news.yml — one file, one job; the job's name is the stem.
+# ~/.bulle/jobs/news.yml — one file, one job; the job's name is the stem.
 when: daily
 prompt: |-
   Summarise what changed on the pages in my feed list since yesterday.
@@ -793,7 +793,7 @@ limits:
 
 | Field | Default | What it does |
 |---|---|---|
-| `when` | empty (`install` writes `daily`) | The `OnCalendar=` line of the generated timer — any systemd calendar expression. kori never parses it; systemd does |
+| `when` | empty (`install` writes `daily`) | The `OnCalendar=` line of the generated timer — any systemd calendar expression. bulle never parses it; systemd does |
 | `prompt` | — required | The question the run starts from |
 | `workdir` | — install requires one | The run's root and the unit's `WorkingDirectory=`. Without one the run would execute wherever the scheduler happens to start the unit, which is never the project |
 | `delivery` | empty — no transcript written | `file:<dir>` appends the transcript to `<dir>/<name>-YYYY-MM-DD.md` and one status line per run to `<dir>/<name>.log` |
@@ -822,8 +822,8 @@ exactly on the config's settings.
 
 ### Migration
 
-The inline `cron:` list in `~/.kori.yml` is gone. A config still carrying it
-is refused at load with an error naming `~/.kori/jobs/` — the same refusal an
+The inline `cron:` list in `~/.bulle.yml` is gone. A config still carrying it
+is refused at load with an error naming `~/.bulle/jobs/` — the same refusal an
 unknown key gets, because a silently ignored job list is a scheduler that
 quietly stopped existing. Each list entry becomes its own file in the folder:
 the entry's `name` names the file (`news` becomes `news.yml`), the rest of the
@@ -832,9 +832,9 @@ spelling of `tools.run_command: true`.
 
 ## Chat
 
-`kori chat` is the inbound surface: one long-lived process holding a Matrix connection, so
-a message from an allowlisted account runs a kori session and the answer comes back in the
-same room. Every other part of kori pushes text out; this is the one part that reads text
+`bulle chat` is the inbound surface: one long-lived process holding a Matrix connection, so
+a message from an allowlisted account runs a bulle session and the answer comes back in the
+same room. Every other part of bulle pushes text out; this is the one part that reads text
 in. The design, the evidence and the deliberate omissions are in
 [plan-matrix-chat.md](plan-matrix-chat.md); this page is the settings and the first run.
 
@@ -842,20 +842,20 @@ It is cron's opposite in one respect. A [cron job](#cron-jobs) is fire-and-forge
 systemd and run once; chat is a supervised service that has to stay up to hear anything.
 
 ```sh
-kori chat              # hold the connection in the foreground
-kori chat channels     # what is configured, and its state
-kori chat channels --json
-kori chat install      # write and start the systemd user unit
+bulle chat              # hold the connection in the foreground
+bulle chat channels     # what is configured, and its state
+bulle chat channels --json
+bulle chat install      # write and start the systemd user unit
 ```
 
-`kori chat` holds the connection until it is stopped. `kori chat install` writes a systemd
+`bulle chat` holds the connection until it is stopped. `bulle chat install` writes a systemd
 **user** unit and enables it, so the process survives logout; on a machine with linger
 already on it also starts at boot. The unit restarts on failure rather than always: a
 revoked token would restart in a loop forever under `Restart=always`.
 
 ### The chat block
 
-Everything lives under `chat:` in `~/.kori.yml`. It is off until `enabled` is `true`, and an
+Everything lives under `chat:` in `~/.bulle.yml`. It is off until `enabled` is `true`, and an
 untouched file with it off opens no connection.
 
 ```yaml
@@ -863,14 +863,14 @@ chat:
   matrix:
     enabled: true
     homeserver: https://matrix.example.org
-    user_id: "@kori-bot:example.org"
+    user_id: "@bulle-bot:example.org"
     device_id: JLAFKJWSCS
     # access_token: ""            # empty plus the command below keeps the token here unset
-    access_token_command: tiroir get KORI_MATRIX_TOKEN
+    access_token_command: tiroir get BULLE_MATRIX_TOKEN
     # password: ""                # the alternative to a token, see "Choosing how the bot authenticates"
-    # password_command: tiroir get KORI_MATRIX_PASSWORD
+    # password_command: tiroir get BULLE_MATRIX_PASSWORD
     # pickle_key: ""              # empty plus the command below keeps the key here unset
-    pickle_key_command: tiroir get KORI_MATRIX_PICKLE_KEY
+    pickle_key_command: tiroir get BULLE_MATRIX_PICKLE_KEY
     allow:
       - "@you:example.org"
     rooms:
@@ -888,19 +888,19 @@ directory, which is what the unit's `WorkingDirectory=` sets. `max_age` takes a 
 
 There are two ways in, and they are alternatives rather than layers. Pick one and stay on it.
 
-**Password login** is the easier first run, because kori logs in itself and the crypto helper
+**Password login** is the easier first run, because bulle logs in itself and the crypto helper
 creates the device, so there is no device to name beforehand.
 
 ```yaml
 chat:
   matrix:
-    user_id: "@kori-bot:example.org"
-    password_command: tiroir get KORI_MATRIX_PASSWORD
+    user_id: "@bulle-bot:example.org"
+    password_command: tiroir get BULLE_MATRIX_PASSWORD
 ```
 
-`user_id` takes the full MXID or just the localpart (`kori-bot`); the homeserver accepts both
+`user_id` takes the full MXID or just the localpart (`bulle-bot`); the homeserver accepts both
 for `m.login.password`, and the login response supplies the full ID either way. On the run that
-creates the device kori names it `kori`, which is what you will see in Element's device list.
+creates the device bulle names it `bulle`, which is what you will see in Element's device list.
 Afterwards the homeserver ignores that name, so a restart does not rename a device you have
 already recognised.
 
@@ -910,13 +910,13 @@ password route works: nothing to store but the token, and no login on every star
 ```yaml
 chat:
   matrix:
-    user_id: "@kori-bot:example.org"
+    user_id: "@bulle-bot:example.org"
     device_id: JLAFKJWSCS
-    access_token_command: tiroir get KORI_MATRIX_TOKEN
+    access_token_command: tiroir get BULLE_MATRIX_TOKEN
 ```
 
 `device_id` is required on this route when the crypto database is empty, because the token
-belongs to a device and kori has to know which one. That is the run that creates the database,
+belongs to a device and bulle has to know which one. That is the run that creates the database,
 so on a fresh install you need both fields from your own login:
 
 ```sh
@@ -925,11 +925,11 @@ curl -s https://matrix.example.org/_matrix/client/v3/login
 
 curl -s -X POST https://matrix.example.org/_matrix/client/v3/login \
   -H 'Content-Type: application/json' \
-  -d '{"type":"m.login.password","identifier":{"type":"m.id.user","user":"kori-bot"},"password":"…"}'
+  -d '{"type":"m.login.password","identifier":{"type":"m.id.user","user":"bulle-bot"},"password":"…"}'
 ```
 
 ```json
-{"user_id":"@kori-bot:example.org","access_token":"syt_…","device_id":"JLAFKJWSCS"}
+{"user_id":"@bulle-bot:example.org","access_token":"syt_…","device_id":"JLAFKJWSCS"}
 ```
 
 Those three response fields are the three config keys: `user_id` goes to
@@ -940,14 +940,14 @@ Those three response fields are the three config keys: `user_id` goes to
 ```sh
 curl -s https://matrix.example.org/_matrix/client/v3/account/whoami \
   -H 'Authorization: Bearer syt_…'
-# {"user_id":"@kori-bot:example.org","device_id":"JLAFKJWSCS"}
+# {"user_id":"@bulle-bot:example.org","device_id":"JLAFKJWSCS"}
 ```
 
 **Do not set both.** A token always wins, so a leftover token silently keeps being used after
 you switch to a password. There is a second reason to keep to one route: the homeserver treats
 a login as authoritative for its device and invalidates that device's previous access token,
 so once the password route runs, any token you exported for the same `device_id` stops working.
-That is expected, not a bug in kori.
+That is expected, not a bug in bulle.
 
 An existing token works too. The one Element uses is a valid access token; ask the
 homeserver whose it is:
@@ -955,11 +955,11 @@ homeserver whose it is:
 ```sh
 curl -s https://matrix.example.org/_matrix/client/v3/account/whoami \
   -H 'Authorization: Bearer syt_…'
-# {"user_id":"@kori-bot:example.org","device_id":"JLAFKJWSCS"}
+# {"user_id":"@bulle-bot:example.org","device_id":"JLAFKJWSCS"}
 ```
 
 `whoami` is how a token from another client is turned into the `user_id` and `device_id`
-kori needs. A token and a password are alternatives, not layers: set one route or the other.
+bulle needs. A token and a password are alternatives, not layers: set one route or the other.
 
 ### Keeping the secret out of the file
 
@@ -972,10 +972,10 @@ chat:
   matrix:
     enabled: true
     homeserver: https://matrix.example.org
-    user_id: "@kori-bot:example.org"
+    user_id: "@bulle-bot:example.org"
     device_id: JLAFKJWSCS
-    access_token_command: tiroir get KORI_MATRIX_TOKEN
-    pickle_key_command: tiroir get KORI_MATRIX_PICKLE_KEY
+    access_token_command: tiroir get BULLE_MATRIX_TOKEN
+    pickle_key_command: tiroir get BULLE_MATRIX_PICKLE_KEY
 ```
 
 Each command runs through `sh -c` and its stdout is trimmed; a command that fails is refused
@@ -983,15 +983,15 @@ rather than left as an empty value.
 
 ### The crypto database
 
-Matrix end-to-end encryption keeps a device's keys, and kori keeps them in a sqlite database
-under `~/.kori/chat/`. The **pickle key** encrypts the stored device keys at rest, so losing
-it is the same as losing the database: kori comes up as a new device, which Element shows as
+Matrix end-to-end encryption keeps a device's keys, and bulle keeps them in a sqlite database
+under `~/.bulle/chat/`. The **pickle key** encrypts the stored device keys at rest, so losing
+it is the same as losing the database: bulle comes up as a new device, which Element shows as
 a new unverified device. Back the pickle key up somewhere other than beside the database. The
 plan names a backup story as an open risk; there is none beyond that yet.
 
 ### End-to-end encryption
 
-kori uses `mautrix-go` and encrypts with Olm and Megolm. The release build sets
+bulle uses `mautrix-go` and encrypts with Olm and Megolm. The release build sets
 `CGO_ENABLED=0` and the pure-Go implementation of Olm is selected with the `-tags goolm`
 build flag, because the default imports `libolm`, a C library, and the cross-compiled release
 cannot link it. For the same reason the crypto store is `modernc.org/sqlite`, a pure-Go
@@ -1017,7 +1017,7 @@ chat:
 Self-signing writes account data on the homeserver, so it stays off until you ask. It runs
 once, and it refuses to run again on an account that already has cross-signing keys, because a
 second identity would un-verify every device signed by the first. The run that creates the
-identity prints a **recovery key** once and writes it to `~/.kori/chat/recovery.key` with mode
+identity prints a **recovery key** once and writes it to `~/.bulle/chat/recovery.key` with mode
 0600. Keep it: the signing keys otherwise live only in the account's server-side secure secret
 storage, and the recovery key is the only way to get them onto a fresh database.
 
@@ -1029,15 +1029,15 @@ If the account already has cross-signing keys (for example, configured via Eleme
 the recovery key via `chat.matrix.recovery_key`, `chat.matrix.recovery_key_command`, or run:
 
 ```sh
-kori chat verify --recovery-key "EsTE s92N ..."
+bulle chat verify --recovery-key "EsTE s92N ..."
 ```
 
-kori verifies the device against the existing cross-signing identity and signs it.
+bulle verifies the device against the existing cross-signing identity and signs it.
 
 Replies thread onto the message that triggered them with `m.in_reply_to`, so an answer attaches
 to its question in a busy room. An answer too long for one event is split across several
 messages, and only the first carries the reply relation. A room that gets upgraded does not
-re-key itself: the room ID changes, the conversation is over, and kori logs the replacement
+re-key itself: the room ID changes, the conversation is over, and bulle logs the replacement
 room ID so you can decide whether to add it to `chat.matrix.rooms`.
 
 ### The allowlist
@@ -1045,7 +1045,7 @@ room ID so you can decide whether to add it to `chat.matrix.rooms`.
 Two lists decide who may make this machine run a tool. `chat.matrix.allow` holds MXIDs that
 may start a session; `chat.matrix.rooms` holds room IDs that are read at all.
 
-**Both empty refuses every message.** That is the default and the right one: kori runs in
+**Both empty refuses every message.** That is the default and the right one: bulle runs in
 your repos with shell access, so the allowlist is the security boundary of the whole feature,
 not a filter on top of it. The check runs **before** the agent is built, never inside the
 run: an agent asked to refuse its own input has already been given the input.
@@ -1056,7 +1056,7 @@ very differently here:
 
 - **`approve_tools: false` (the default)** means no tool call asks for approval, so a message
   from an allowlisted account runs tools unattended, including `run_command`. Nobody is
-  watching the terminal, so this is the posture to understand before pointing a room at kori:
+  watching the terminal, so this is the posture to understand before pointing a room at bulle:
   the allowlist is the only gate between a message and a shell.
 - **`approve_tools: true`** fails closed instead. `approval.Build(true)` with no UI wired
   returns false from `Ask`, so a run that would need approval is denied rather than prompting
@@ -1224,7 +1224,7 @@ rewrite too large to align line by line reads as one block of removals against a
 draw it; `write_file` carries only the new contents, so what the file held when the call was seen
 becomes the before side — empty for a file being created, which shows as all additions. Only
 these two tools get a diff: search, commands and MCP tools render exactly as they did before.
-Turn it off with `diffs: false` (`KORI_DIFFS`, `-diffs`) to restore the bare one-line report.
+Turn it off with `diffs: false` (`BULLE_DIFFS`, `-diffs`) to restore the bare one-line report.
 
 **Input with a repeated key is refused rather than summarised.** `encoding/json` keeps the last
 value of a duplicate key silently, so `{"command":"ls","command":"rm -rf /"}` can be shown as
@@ -1261,14 +1261,14 @@ than the workaround.
 
 ## Sandboxes & remote hosts
 
-kori always runs **on the host**, with the session's tools executing in the
+bulle always runs **on the host**, with the session's tools executing in the
 target over SSH. The model reaches the target's workspace, but no provider key,
 session recording or host file ever crosses the boundary — the tools are the
 only thing that does. Two groups configure the two kinds of target:
 
 ```yaml
-sandbox:                          # local boite microVMs, used by 'kori sandbox'
-  default: ""                     # VM entered when 'kori sandbox' has no argument
+sandbox:                          # local boite microVMs, used by 'bulle sandbox'
+  default: ""                     # VM entered when 'bulle sandbox' has no argument
   user: boite                     # default SSH user
   port: 2226                      # default port
   ssh_key_path: ~/.ssh/id_ed25519 # default identity file
@@ -1283,8 +1283,8 @@ sandbox:                          # local boite microVMs, used by 'kori sandbox'
       root: ""
       auto_snapshot: false
 
-remote:                           # SSH hosts, used by 'kori remote'
-  default: ""                     # host entered when 'kori remote' has no argument
+remote:                           # SSH hosts, used by 'bulle remote'
+  default: ""                     # host entered when 'bulle remote' has no argument
   user: ""                        # default SSH user (ssh's own config wins when empty)
   port: 0                         # 0 lets ssh choose: ssh_config's Port, then ssh's default (22)
   ssh_key_path: ""                # empty lets ssh choose: ssh_config IdentityFile, then the agent
@@ -1307,15 +1307,15 @@ host and the `ssh-keyscan` command that trusts it, so the step stays explicit
 rather than automatic. Boite microVMs are the exception — their key is generated
 per instance, never in `known_hosts`, and the connection is loopback — so only
 the `sandbox` path turns host-key checking off. A `remote` target that happens
-to be a local boite VM is better run through `kori sandbox`, which trusts the
+to be a local boite VM is better run through `bulle sandbox`, which trusts the
 VM's key without touching `known_hosts`.
 
 Commands:
-- `kori sandbox list`: lists configured `sandbox.targets` and local boite VMs.
-- `kori sandbox <vm> [prompt]`: interactive or headless session inside a boite VM.
-- `kori sandbox <vm> --snapshot`: snapshot the VM's overlay disk when the session ends.
-- `kori remote list`: lists the hosts configured under `remote.targets`.
-- `kori remote <host> [prompt]`: interactive or headless session on an SSH host.
+- `bulle sandbox list`: lists configured `sandbox.targets` and local boite VMs.
+- `bulle sandbox <vm> [prompt]`: interactive or headless session inside a boite VM.
+- `bulle sandbox <vm> --snapshot`: snapshot the VM's overlay disk when the session ends.
+- `bulle remote list`: lists the hosts configured under `remote.targets`.
+- `bulle remote <host> [prompt]`: interactive or headless session on an SSH host.
 
 `remote` accepts a `remote.targets` key, a direct `user@host:port` address, or
 an `~/.ssh/config` host alias — ssh itself resolves the last two. Everything
@@ -1328,7 +1328,7 @@ a key there that names a `backend:` or `host:` is refused at load, because a
 strict decoder only accepts the fields each group actually has.
 
 Preflight checks who the target answered as, and refuses a mismatch. It does not
-refuse `root`: `kori remote root@host` works, because connecting as root to a
+refuse `root`: `bulle remote root@host` works, because connecting as root to a
 machine you own is your call. A boite VM still resolves to `boite` unless you
 override `--user`, so an instance that unexpectedly lands you as root is caught
 by the user check rather than by a name.

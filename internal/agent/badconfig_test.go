@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // The coloured report has to survive the exact yaml error shape: one header
@@ -14,7 +14,7 @@ import (
 // fixes or deletes.
 func TestBadConfigReportNamesEveryUnknownField(t *testing.T) {
 	yamlErr := fmt.Errorf("yaml: unmarshal errors:\n  line 5: field session not found in type settings.Config\n  line 15: field run_command not found in type settings.Toggles")
-	bad := &settings.ParseError{Path: "/home/y/.kori.yml", Err: yamlErr}
+	bad := &settings.ParseError{Path: "/home/y/.bulle.yml", Err: yamlErr}
 
 	report := badConfigReport(bad)
 	for _, want := range []string{"line 5", "session", "line 15", "run_command"} {
@@ -33,7 +33,7 @@ func TestBadConfigReportNamesEveryUnknownField(t *testing.T) {
 // A parse error that is not an unknown-field list (bad indentation, tabs) must
 // still surface — dimmed, never swallowed.
 func TestBadConfigReportKeepsOtherYamlErrors(t *testing.T) {
-	bad := &settings.ParseError{Path: "/home/y/.kori.yml", Err: fmt.Errorf("yaml: line 3: found character that cannot start any token")}
+	bad := &settings.ParseError{Path: "/home/y/.bulle.yml", Err: fmt.Errorf("yaml: line 3: found character that cannot start any token")}
 	report := badConfigReport(bad)
 	if !strings.Contains(report, "found character") {
 		t.Errorf("report dropped a non-field yaml error:\n%s", report)

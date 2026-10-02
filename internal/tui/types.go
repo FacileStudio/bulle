@@ -6,13 +6,13 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/glamour/v2"
 
-	"github.com/FacileStudio/kori/internal/compaction"
-	"github.com/FacileStudio/kori/internal/herdr"
-	"github.com/FacileStudio/kori/internal/history"
-	"github.com/FacileStudio/kori/internal/menu"
-	"github.com/FacileStudio/kori/internal/queue"
-	"github.com/FacileStudio/kori/internal/status"
-	"github.com/FacileStudio/kori/internal/theme"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/history"
+	"github.com/FacileStudio/bulle/internal/menu"
+	"github.com/FacileStudio/bulle/internal/queue"
+	"github.com/FacileStudio/bulle/internal/status"
+	"github.com/FacileStudio/bulle/internal/theme"
 	"github.com/FacileStudio/nacelle"
 )
 

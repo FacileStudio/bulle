@@ -7,9 +7,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/compaction"
-	"github.com/FacileStudio/kori/internal/herdr"
-	"github.com/FacileStudio/kori/internal/overflow"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/herdr"
+	"github.com/FacileStudio/bulle/internal/overflow"
 )
 
 // armRecovery notes a context-length rejection for settle to answer, and reports

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func findCommand(name string) (prefix, sub []string, ok bool) {
@@ -41,7 +41,7 @@ func dispatchCron(sub []string) error {
 		return printCronUsage()
 	}
 	if len(sub) < 2 {
-		return usagef("usage: kori cron %s <name>", sub[0])
+		return usagef("usage: bulle cron %s <name>", sub[0])
 	}
 	switch sub[0] {
 	case "run":

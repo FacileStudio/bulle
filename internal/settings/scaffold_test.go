@@ -13,7 +13,7 @@ import (
 // the strict decoder, and merged with the defaults it must not disturb.
 func TestScaffoldRoundTripsToTheDefaults(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, ".kori.yml")
+	path := filepath.Join(dir, ".bulle.yml")
 
 	created, err := Scaffold(path)
 	if err != nil || !created {
@@ -64,16 +64,16 @@ func TestTemplateScaffoldsEditorFields(t *testing.T) {
 	}
 }
 
-// The README says example.kori.yml is the file the first boot writes, so the
+// The README says example.bulle.yml is the file the first boot writes, so the
 // two have to be one text and not two. It drifted before — rendering_mode,
 // transparent_blocks, the sandbox targets — which is why the promise is a test
 // rather than a comment above the constant.
 func TestExampleConfigIsTheScaffoldTemplate(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "example.kori.yml"))
+	raw, err := os.ReadFile(filepath.Join("..", "..", "example.bulle.yml"))
 	if err != nil {
-		t.Fatalf("reading example.kori.yml: %v", err)
+		t.Fatalf("reading example.bulle.yml: %v", err)
 	}
 	if string(raw) != Template {
-		t.Error("example.kori.yml has drifted from settings.Template: regenerate the file from internal/settings/scaffold.go")
+		t.Error("example.bulle.yml has drifted from settings.Template: regenerate the file from internal/settings/scaffold.go")
 	}
 }

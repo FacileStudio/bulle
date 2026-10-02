@@ -9,7 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // TestPromptBackdropCoversEveryRow: a two-line question — the first line away
@@ -87,7 +87,7 @@ func TestEditInExternalEditorWithMockEditor(t *testing.T) {
 // TestEditInExternalEditorWithMockEditorThatChanges: a mock editor
 // that appends a marker line proves the editor's output is read back.
 func TestEditInExternalEditorWithMockEditorThatChanges(t *testing.T) {
-	marker := filepath.Join(t.TempDir(), "kori-editor-marker.sh")
+	marker := filepath.Join(t.TempDir(), "bulle-editor-marker.sh")
 	script := "#!/bin/sh\ncat \"$1\"\necho 'edited by mock' >> \"$1\""
 	if err := os.WriteFile(marker, []byte(script), 0o700); err != nil {
 		t.Fatalf("writing mock editor: %v", err)

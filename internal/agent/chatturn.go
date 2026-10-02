@@ -7,8 +7,8 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/sessions"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 var chatConfigOnce = sync.OnceValues(func() (settings.Config, error) {

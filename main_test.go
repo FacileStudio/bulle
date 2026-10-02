@@ -7,7 +7,7 @@ import (
 )
 
 func TestTheLibraryPrefixIsNotPrintedTwice(t *testing.T) {
-	if got := unprefixed(errors.New("kori: backend \"anthropic\" does not support x")); got != `backend "anthropic" does not support x` {
+	if got := unprefixed(errors.New("bulle: backend \"anthropic\" does not support x")); got != `backend "anthropic" does not support x` {
 		t.Errorf("unprefixed = %q, want the library's own name dropped", got)
 	}
 	if got := unprefixed(errors.New("nacelle/openrouter: no API key")); got != "nacelle/openrouter: no API key" {

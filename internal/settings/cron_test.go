@@ -50,7 +50,7 @@ func TestLoadJobsReadsOneJobPerFile(t *testing.T) {
 }
 
 // TestAMissingJobsFolderLoadsAsNoJobs keeps first-run ordinary: no
-// ~/.kori/jobs/ yet is zero jobs, not an error.
+// ~/.bulle/jobs/ yet is zero jobs, not an error.
 func TestAMissingJobsFolderLoadsAsNoJobs(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 
@@ -112,7 +112,7 @@ func TestJobFilesDecodeStrictly(t *testing.T) {
 
 // TestTopLevelCronKeyIsRefused pins the migration: a config still carrying
 // the inline cron: list fails at load with an error pointing at
-// ~/.kori/jobs/, instead of the key being ignored and the scheduler
+// ~/.bulle/jobs/, instead of the key being ignored and the scheduler
 // quietly stopping.
 func TestTopLevelCronKeyIsRefused(t *testing.T) {
 	dir := t.TempDir()
@@ -125,7 +125,7 @@ func TestTopLevelCronKeyIsRefused(t *testing.T) {
 	if err == nil {
 		t.Fatal("a config with a top-level cron: key was accepted")
 	}
-	if !strings.Contains(err.Error(), ".kori/jobs") {
-		t.Errorf("err = %v; want it to point at ~/.kori/jobs/", err)
+	if !strings.Contains(err.Error(), ".bulle/jobs") {
+		t.Errorf("err = %v; want it to point at ~/.bulle/jobs/", err)
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
 func setupAgentToolsWithFlags(flags settings.Config, noConfig bool) (preparedTools, error) {

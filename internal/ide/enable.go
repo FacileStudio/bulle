@@ -8,7 +8,7 @@ import (
 
 // EnvVar turns the IDE surface on for every session in this environment,
 // without a flag on each one.
-const EnvVar = "KORI_IDE"
+const EnvVar = "BULLE_IDE"
 
 // switchOn is the switch the command line parsed --ide into.
 var switchOn atomic.Pointer[bool]
@@ -21,7 +21,7 @@ func BindFlag(on *bool) {
 }
 
 // Enabled reports whether this process publishes to an editor: --ide was
-// passed, or $KORI_IDE holds a true word. A session with the surface off
+// passed, or $BULLE_IDE holds a true word. A session with the surface off
 // creates nothing at all — no socket, no file, no goroutine, no hook.
 func Enabled() bool {
 	if on := switchOn.Load(); on != nil && *on {
@@ -31,7 +31,7 @@ func Enabled() bool {
 }
 
 // truthy reads the words that mean yes out of a switch's value. Empty, "0",
-// "false", "no" and "off" leave the surface off, so a stray KORI_IDE=0 in a
+// "false", "no" and "off" leave the surface off, so a stray BULLE_IDE=0 in a
 // shell profile does not open a socket somebody has to wonder about.
 func truthy(value string) bool {
 	switch strings.ToLower(strings.TrimSpace(value)) {

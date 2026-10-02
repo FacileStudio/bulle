@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FacileStudio/kori/internal/sandbox"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/sandbox"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 func writeBoiteInstance(t *testing.T, dir, name string, port int) {
@@ -176,7 +176,7 @@ func TestRunSandbox_UsesDefaultTarget(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("BOITE_INSTANCES_DIR", t.TempDir())
-	cfgPath := filepath.Join(home, ".kori.yml")
+	cfgPath := filepath.Join(home, ".bulle.yml")
 	if err := os.WriteFile(cfgPath, []byte("sandbox:\n  default: ghost-vm\n"), 0o644); err != nil {
 		t.Fatalf("writing config: %v", err)
 	}

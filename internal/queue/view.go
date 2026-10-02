@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/FacileStudio/kori/internal/layout"
+	"github.com/FacileStudio/bulle/internal/layout"
 )
 
 // Replace updates the message at index.

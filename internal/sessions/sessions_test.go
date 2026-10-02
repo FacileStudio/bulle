@@ -12,7 +12,7 @@ import (
 // opened points HOME at a temporary tree and returns this run's log together
 // with a reader of the lines it has written. HOME is redirected for every
 // test in this file: a test that records a question into the real
-// ~/.kori/sessions/ has polluted the transcript directory of whoever ran
+// ~/.bulle/sessions/ has polluted the transcript directory of whoever ran
 // it, and the one property this whole file exists to defend is what does and
 // does not end up in that directory.
 func opened(t *testing.T) (*sessionLog, func() []string) {
@@ -208,7 +208,7 @@ func TestSessionRotation(t *testing.T) {
 		log.Line(fromReader, strings.Repeat("x", 200))
 	}
 
-	checkRotatedFiles(t, filepath.Join(home, ".kori", "sessions"))
+	checkRotatedFiles(t, filepath.Join(home, ".bulle", "sessions"))
 }
 
 // TestHasWriteError verifies that write errors are tracked.

@@ -93,7 +93,7 @@ func TestPreflightCheckHostKeyHint(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected a host key failure")
 	}
-	for _, want := range []string{"not in ~/.ssh/known_hosts", "ssh -p 2226 boite@localhost", "ssh-keyscan -p 2226 localhost", "kori sandbox"} {
+	for _, want := range []string{"not in ~/.ssh/known_hosts", "ssh -p 2226 boite@localhost", "ssh-keyscan -p 2226 localhost", "bulle sandbox"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Fatalf("expected %q in error, got %v", want, err)
 		}

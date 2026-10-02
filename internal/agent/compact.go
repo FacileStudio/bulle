@@ -3,7 +3,7 @@ package agent
 import (
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // Budget is the resolved compaction ceiling for one session: the token count the

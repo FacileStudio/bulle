@@ -67,10 +67,10 @@ func TestReportSendsWorkingAndTransitions(t *testing.T) {
 	if len(calls()) != 2 {
 		t.Fatalf("two distinct states fired %d command(s), want 2", len(calls()))
 	}
-	if calls()[0] != "/bin/herdr pane report-agent w1:p1 --source kori --agent kori --state working" {
+	if calls()[0] != "/bin/herdr pane report-agent w1:p1 --source bulle --agent bulle --state working" {
 		t.Errorf("working report = %q", calls()[0])
 	}
-	if calls()[1] != "/bin/herdr pane report-agent w1:p1 --source kori --agent kori --state blocked" {
+	if calls()[1] != "/bin/herdr pane report-agent w1:p1 --source bulle --agent bulle --state blocked" {
 		t.Errorf("blocked report = %q", calls()[1])
 	}
 }
@@ -82,13 +82,13 @@ func TestReportCarriesTheSessionPathOnceSet(t *testing.T) {
 		t.Errorf("pre-session report = %+v, want no session reference yet", calls())
 	}
 
-	SetSession(h, "/home/me/.kori/sessions/2026-09-10T14-000Z.jsonl")
+	SetSession(h, "/home/me/.bulle/sessions/2026-09-10T14-000Z.jsonl")
 	Report(h, Blocked)
 	if len(calls()) != 2 {
 		t.Fatalf("two distinct states fired %d command(s), want 2", len(calls()))
 	}
-	expected := "/bin/herdr pane report-agent w1:p1 --source kori --agent kori --state blocked " +
-		"--agent-session-path /home/me/.kori/sessions/2026-09-10T14-000Z.jsonl"
+	expected := "/bin/herdr pane report-agent w1:p1 --source bulle --agent bulle --state blocked " +
+		"--agent-session-path /home/me/.bulle/sessions/2026-09-10T14-000Z.jsonl"
 	if calls()[1] != expected {
 		t.Errorf("session-bearing report = %q\nwant = %q", calls()[1], expected)
 	}
@@ -97,7 +97,7 @@ func TestReportCarriesTheSessionPathOnceSet(t *testing.T) {
 func TestReleaseSendsReleaseAndIsNilSafe(t *testing.T) {
 	h, calls := recording()
 	Release(h)
-	if len(calls()) != 1 || calls()[0] != "/bin/herdr pane release-agent w1:p1 --source kori --agent kori" {
+	if len(calls()) != 1 || calls()[0] != "/bin/herdr pane release-agent w1:p1 --source bulle --agent bulle" {
 		t.Errorf("release = %+v, want the release command", calls())
 	}
 	Report(nil, Working)

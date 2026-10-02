@@ -143,7 +143,7 @@ func buildTools(s *remoteSession) ([]nacelle.Tool, error) {
 // closer and must close it when the session ends.
 func RemoteTools(opts ToolsOptions) ([]nacelle.Tool, io.Closer, error) {
 	s := newRemoteSession(opts)
-	socketDir, err := os.MkdirTemp("", "kori-ssh-")
+	socketDir, err := os.MkdirTemp("", "bulle-ssh-")
 	if err != nil {
 		return nil, nil, fmt.Errorf("creating ssh control socket directory: %w", err)
 	}

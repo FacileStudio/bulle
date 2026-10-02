@@ -6,14 +6,14 @@
 # Wiki/CLI-STANDARD.md.
 #
 # Equivalent, once facile is on your PATH:
-#   facile install kori
+#   facile install bulle
 #
 # Every statement sits inside a function and main() is the last line, so a
 # download truncated mid-flight executes nothing at all.
 
 set -euo pipefail
 
-TOOL="kori"
+TOOL="bulle"
 BOOTSTRAP="https://get.facile.studio"
 BOOTSTRAP_FALLBACK="https://raw.githubusercontent.com/FacileStudio/facile/main/install.sh"
 

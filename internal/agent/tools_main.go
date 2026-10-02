@@ -7,8 +7,8 @@ import (
 	"github.com/FacileStudio/nacelle"
 	"github.com/FacileStudio/nacelle/tools"
 
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tasks"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tasks"
 )
 
 // localTools opens the file and command tools and, when asked, adds the web
@@ -110,7 +110,7 @@ func withPersistentShell(config Config, local []nacelle.Tool) []nacelle.Tool {
 // commandEnv is what run_command hands its children. With security
 // .env_isolation off — the default — the process environment is passed
 // whole, so a command sees the PATH, toolchains and exports of the shell
-// kori was launched from. With it on, CommandEnv stays nil and the
+// bulle was launched from. With it on, CommandEnv stays nil and the
 // tools package's own minimal base (PATH, HOME) applies, the same guarded
 // posture the MCP servers get.
 func commandEnv(config Config) []string {

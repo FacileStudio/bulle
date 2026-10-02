@@ -6,8 +6,8 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
-	"github.com/FacileStudio/kori/internal/compaction"
-	"github.com/FacileStudio/kori/internal/settings"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // fixedWindow is the package's answeringStub with a context window, so the

@@ -8,11 +8,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/FacileStudio/kori/internal/settings"
-	"github.com/FacileStudio/kori/internal/tui"
+	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/tui"
 )
 
-const configDocsURL = "https://github.com/FacileStudio/kori/blob/main/docs/configuration.md"
+const configDocsURL = "https://github.com/FacileStudio/bulle/blob/main/docs/configuration.md"
 
 var ansiField = regexp.MustCompile(`line (\d+): field (\S+) not found in type (\S+)`)
 

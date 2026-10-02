@@ -14,7 +14,7 @@ func runDetached(prompt string) error {
 	}
 	exe, err := os.Executable()
 	if err != nil {
-		exe = "kori"
+		exe = "bulle"
 	}
 	args := buildDetachedArgs(prompt)
 	cmd := exec.Command(exe, args...)
@@ -25,7 +25,7 @@ func runDetached(prompt string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	fmt.Printf("session detached in background (PID %d)\nresume with: kori sessions attach %d\n", cmd.Process.Pid, cmd.Process.Pid)
+	fmt.Printf("session detached in background (PID %d)\nresume with: bulle sessions attach %d\n", cmd.Process.Pid, cmd.Process.Pid)
 	return nil
 }
 

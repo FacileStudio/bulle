@@ -31,7 +31,7 @@ func searchTool(t *testing.T) nacelle.Tool {
 func writeHooks(t *testing.T, yaml string) string {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(root, ".kori"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, ".bulle"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, HooksFile), []byte(yaml), 0o644); err != nil {
