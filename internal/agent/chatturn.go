@@ -7,6 +7,7 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
+	"github.com/FacileStudio/bulle/internal/engine"
 	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -31,7 +32,7 @@ func ChatConfig() (settings.Config, error) {
 // supervisor reads, not a chat. The caller's context is the only stop signal,
 // so no handler is installed here.
 //
-// The run inherits config.ApproveTools untouched. buildHeadlessAgent wires no
+// The run inherits config.ApproveTools untouched. BuildHeadlessAgent wires no
 // approval UI, and approval.Build(true) with no send returns false from Ask, so
 // a tool that would need approval is refused rather than prompting into a void
 // nobody is watching. Nothing on this path may widen the tool policy: an
@@ -39,10 +40,25 @@ func ChatConfig() (settings.Config, error) {
 func ChatTurn(ctx context.Context, conv []nacelle.Message, config settings.Config) (string, error) {
 	var stats runStats
 	log := sessions.OpenSession(config.Backend, config.Model, config.Root)
-	agent, cleanup, err := buildHeadlessAgent(config, mergeHooks(stats.compactHook(), nil))
+	agent, cleanup, err := BuildHeadlessAgent(config, mergeHooks(stats.compactHook(), nil))
 	if err != nil {
 		return "", err
 	}
 	defer cleanup()
-	return consumeHeadlessEvents(ctx, agent, conv, streamTarget{w: io.Discard, stats: &stats, log: log})
+	sess := engine.NewSession(agent, engine.NewConversation(conv...))
+	events, err := sess.Submit(ctx, "")
+	if err != nil {
+		return "", err
+	}
+	return consumeHeadlessEvents(ctx, events, streamTarget{w: io.Discard, stats: &stats, log: log})
+}
+
+func (t *streamTarget) recordDone(usage nacelle.Usage, text string) {
+	if t.stats != nil {
+		t.stats.Usage = usage
+		t.stats.FinalContextTokens = usage.InputTokens + usage.CacheReadTokens + usage.CacheCreationTokens
+	}
+	if t.log != nil {
+		t.log.Line(sessions.FromModel, text)
+	}
 }

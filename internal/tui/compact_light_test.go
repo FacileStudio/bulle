@@ -68,8 +68,8 @@ func TestMaskOnlyPassReportsTheKeptTailAndCountsTowardThrash(t *testing.T) {
 	if cmd != nil {
 		t.Error("maskOnlyPass = a Cmd, want nil")
 	}
-	if m.thrashCount != 1 {
-		t.Errorf("thrashCount = %d, want 1 after a skip left the context over the threshold", m.thrashCount)
+	if m.engine().ThrashCount() != 1 {
+		t.Errorf("thrashCount = %d, want 1 after a skip left the context over the threshold", m.engine().ThrashCount())
 	}
 	if said := strings.Join(spoken(m), "\n"); !strings.Contains(said, "kept tail") {
 		t.Errorf("report = %q, want the kept-tail explanation", said)
@@ -81,7 +81,7 @@ func TestMaskOnlyPassReportsTheKeptTailAndCountsTowardThrash(t *testing.T) {
 func TestSoftTierTombstonesWithoutAModelCall(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 140_000
 
 	cmd := m.compactTiered(context.Background())
@@ -107,7 +107,7 @@ func TestSoftTierTombstonesWithoutAModelCall(t *testing.T) {
 // overshoot.
 func TestSoftTierSkipsAPassBelowTheClearFloor(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 140_000
 	m.conversation = []nacelle.Message{
 		nacelle.UserText("the task"),
@@ -139,7 +139,7 @@ func TestSoftTierSkipsAPassBelowTheClearFloor(t *testing.T) {
 // change of policy: the tier still trims as soon as trimming is worth it.
 func TestSoftTierRunsOnceThePassClearsTheFloor(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 140_000
 	m.conversation = []nacelle.Message{
 		nacelle.UserText("the task"),
@@ -175,14 +175,14 @@ func TestCheckThrashCountsAPassThatLeavesTheSizeInTheFiringBand(t *testing.T) {
 		nacelle.UserText("the newest turn"),
 		nacelle.AssistantText("the live answer"),
 	}
-	m.size = m.policy.Trigger() + compactSlack/2
+	m.size = m.engine().Policy.Trigger() + compactSlack/2
 
 	for i := range thrashLimit - 1 {
 		if cmd := m.beginCompaction(context.Background(), false); cmd != nil {
 			t.Fatalf("pass %d = a Cmd, want the mask-only pass of a history that cannot free the overshoot", i+1)
 		}
-		if m.thrashCount != i+1 {
-			t.Fatalf("thrashCount = %d after %d passes that did not land, want %d", m.thrashCount, i+1, i+1)
+		if m.engine().ThrashCount() != i+1 {
+			t.Fatalf("thrashCount = %d after %d passes that did not land, want %d", m.engine().ThrashCount(), i+1, i+1)
 		}
 		if m.thrashed() {
 			t.Errorf("thrashed after %d passes over the trigger, want the guard to wait for %d", i+1, thrashLimit)
@@ -204,13 +204,13 @@ func TestCheckThrashCountsAPassThatLeavesTheSizeInTheFiringBand(t *testing.T) {
 
 func TestCheckThrashResetsTheCounterWhenUnder(t *testing.T) {
 	m := sized()
-	m.thrashCount = thrashLimit - 1
-	m.size = m.policy.Trigger() - 1
+	m.engine().SetThrash(thrashLimit - 1)
+	m.size = m.engine().Policy.Trigger() - 1
 
 	m.checkThrash()
 
-	if m.thrashCount != 0 {
-		t.Errorf("thrashCount = %d after a pass landed under the threshold, want it reset", m.thrashCount)
+	if m.engine().ThrashCount() != 0 {
+		t.Errorf("thrashCount = %d after a pass landed under the threshold, want it reset", m.engine().ThrashCount())
 	}
 	if m.thrashed() {
 		t.Error("thrashed = true after a pass landed under, want it cleared")
@@ -232,9 +232,9 @@ func TestThePreSendGuardDispatchesASummarizingPassAtTheTrigger(t *testing.T) {
 	m := sized()
 	m.agent = agentOver(t, blind{})
 	m.conversation = heavyHistory()
-	m.size = m.policy.Trigger() + 1
+	m.size = m.engine().Policy.Trigger() + 1
 
-	if tier := m.policy.Tier(m.size); tier != compaction.Smart {
+	if tier := m.engine().Policy.Tier(m.size); tier != compaction.Smart {
 		t.Fatalf("tier at the trigger = %s, want smart with no window to measure a ratio against", tier)
 	}
 	if cmd := m.compactBeforeSend(context.Background()); cmd == nil {

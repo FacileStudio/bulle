@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -73,49 +72,25 @@ func runChatDaemon() error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	db, err := chat.OpenStore(settings.StorePath())
+	adapter, err := buildMatrixAdapter(m)
 	if err != nil {
 		return err
 	}
-	adapter, err := chat.NewMatrix(chat.MatrixConfig{
-		Homeserver: m.homeserver, UserID: m.userID, DeviceID: m.deviceID,
-		Token: m.token, Password: m.password, PickleKey: m.pickleKey, Database: db,
-		SelfSign: m.selfSign, RecoveryKey: m.recoveryKey,
-	})
-	if err != nil {
-		return errors.Join(err, db.Close())
-	}
-	if err := saveRecoveryKey(adapter.RecoveryKey()); err != nil {
-		return errors.Join(err, adapter.Close())
-	}
 	router := chat.Router{Allow: m.allow, Rooms: m.rooms, MaxAge: m.maxAge}
 	fmt.Fprintf(os.Stderr, "bulle chat: %s listening as %s on %s\n", adapter.Name(), m.userID, m.homeserver)
-	return errors.Join(chat.Run(ctx, adapter, chatResponder(config), router), adapter.Close())
+	rooms := newRoomRegistry(config)
+	defer func() { _ = rooms.Close() }()
+	return errors.Join(chat.Run(ctx, adapter, chatResponder(rooms), router), adapter.Close())
 }
 
-// chatResponder answers one message from that conversation's own file. It
-// records the question before the run and the answer after, so a crash mid-turn
-// can lose an answer but never the question that produced it. Chat history is
-// keyed by chat identity rather than by project: two chats in one repository
-// must not interleave into one conversation.
-func chatResponder(config settings.Config) chat.Responder {
+// chatResponder routes incoming messages through the room's session.
+func chatResponder(rooms *roomRegistry) chat.Responder {
 	return func(ctx context.Context, m chat.Message) (string, error) {
-		turns, err := loadChatTurns(m.Key())
+		room, err := rooms.get(m.Key())
 		if err != nil {
 			return "", err
 		}
-		if err := appendChatTurn(m.Key(), chatWhoUser, m.Text); err != nil {
-			return "", err
-		}
-		answer, err := agent.ChatTurn(ctx, chatMessages(turns, m.Text), config)
-		if err != nil {
-			return "", err
-		}
-		text := strings.TrimSpace(answer)
-		if err := appendChatTurn(m.Key(), chatWhoAssistant, text); err != nil {
-			return "", err
-		}
-		return text, nil
+		return room.answer(ctx, m.Text)
 	}
 }
 

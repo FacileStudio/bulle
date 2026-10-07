@@ -3,6 +3,7 @@ package tui
 import (
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/tasks"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -31,7 +32,7 @@ func (m *Model) routeTask(message tea.Msg) (tea.Cmd, bool) {
 		return m.recordUpdate(msg), true
 	case taskTitled:
 		return m.recordTitle(msg), true
-	case taskUpdate:
+	case tasks.TaskUpdate:
 		return m.recordTasks(msg), true
 	case hookReportMsg:
 		return m.recordHook(msg), true

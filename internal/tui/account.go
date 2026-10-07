@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/status"
+	"github.com/FacileStudio/bulle/internal/tasks"
 	"github.com/FacileStudio/bulle/internal/usage"
 	"github.com/FacileStudio/nacelle"
 )
@@ -72,7 +74,7 @@ type account struct {
 	// tasks is the plan the model is working to, as it last reported it.
 	// It is written only by the routed update, never by the tool that
 	// produces it — see tasks.go for why a tool goroutine cannot touch it.
-	tasks taskList
+	tasks tasks.TaskList
 
 	// grind is the per-run minimum spend this session demands, and how many
 	// continuations the current run has used of it. With no floor set it is
@@ -92,7 +94,7 @@ func (m *Model) total() nacelle.Usage {
 // other input; cache reads are left to the surfaces that name them, so the two
 // figures are never read as one.
 func tokenTotals(u nacelle.Usage) string {
-	return "↑" + shortTokens(u.InputTokens+u.CacheCreationTokens) + " ↓" + shortTokens(u.OutputTokens)
+	return "↑" + status.ShortTokens(u.InputTokens+u.CacheCreationTokens) + " ↓" + status.ShortTokens(u.OutputTokens)
 }
 
 // sized records what a finished turn cost on the input side.

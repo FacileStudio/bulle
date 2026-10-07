@@ -8,8 +8,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/engine"
 	"github.com/FacileStudio/bulle/internal/herdr"
-	"github.com/FacileStudio/bulle/internal/overflow"
 )
 
 // armRecovery notes a context-length rejection for settle to answer, and reports
@@ -27,7 +27,7 @@ import (
 // manage the window for them, so the rejection stands as the provider's own
 // answer.
 func (m *Model) armRecovery(err error) bool {
-	if !overflow.Detect(err) || m.run.overflowTried || m.agent == nil || m.compactAt <= 0 {
+	if !engine.DetectOverflow(err) || m.run.overflowTried || m.agent == nil || m.compactAt <= 0 {
 		return false
 	}
 	m.run.overflow = err

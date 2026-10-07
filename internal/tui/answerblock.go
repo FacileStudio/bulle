@@ -1,8 +1,11 @@
 package tui
 
-import "strings"
+import (
+	"strings"
 
-import "github.com/FacileStudio/bulle/internal/toolview"
+	"github.com/FacileStudio/bulle/internal/layout"
+	"github.com/FacileStudio/bulle/internal/toolview"
+)
 
 // answerPane paints the answer as a pane: the markdown rendered two columns
 // short, each row padded onto the block backdrop (or left on the terminal's
@@ -39,8 +42,8 @@ func (m *Model) answerBlock(text string, width int) string {
 func (m *Model) gap(prev, next string) string {
 	prevLines := strings.Split(strings.TrimRight(prev, "\n"), "\n")
 	nextLines := strings.Split(next, "\n")
-	if strings.HasPrefix(unstyled(prevLines[len(prevLines)-1]), "▌") &&
-		strings.HasPrefix(unstyled(nextLines[0]), "▌") {
+	if strings.HasPrefix(layout.Unstyled(prevLines[len(prevLines)-1]), "▌") &&
+		strings.HasPrefix(layout.Unstyled(nextLines[0]), "▌") {
 		return "\n" + m.answerPane("", max(m.width, 1)) + "\n"
 	}
 	return "\n\n"

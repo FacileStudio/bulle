@@ -55,13 +55,13 @@ func TestCompactReportNamesTheWholePass(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
 	start, end, _ := compaction.HistoryRange(m.plan())
-	outcome := compactOutcome{
-		before: 125_000,
-		after:  90_000,
-		done:   compacted{evictCut: end - start, turns: 2, kept: len(m.conversation) - end, tier: compaction.Smart},
+	outcome := compaction.Outcome{
+		Before: 125_000,
+		After:  90_000,
 	}
+	done := compacted{evictCut: end - start, turns: 2, kept: len(m.conversation) - end, tier: compaction.Smart}
 
-	line := compactReport(outcome)
+	line := compactReport(outcome, done)
 
 	for _, want := range []string{"✂", "Compaction summary", "verbatim", "summarized 2 turns", "freed", "(smart)"} {
 		if !strings.Contains(line, want) {
@@ -75,12 +75,12 @@ func TestSettleCompactionInstallsASummary(t *testing.T) {
 	m.conversation = bigConversation()
 	anchor := m.conversation[0]
 	plan := m.plan()
-	outcome := compactOutcome{
-		before:  int64(125_000),
-		plan:    plan,
-		fold:    compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
-		tier:    compaction.Smart,
-		summary: "Decisions:\n- done.",
+	outcome := compaction.Outcome{
+		Before:  int64(125_000),
+		Plan:    plan,
+		Fold:    compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
+		Tier:    compaction.Smart,
+		Summary: "Decisions:\n- done.",
 	}
 
 	m.settleCompaction(outcome)
@@ -94,8 +94,8 @@ func TestSettleCompactionInstallsASummary(t *testing.T) {
 	if !installedLedger(m.conversation) {
 		t.Errorf("conversation = %v, want a state ledger installed", m.conversation)
 	}
-	if m.size >= outcome.before {
-		t.Errorf("size = %d, want a summarized pass to shrink below %d", m.size, outcome.before)
+	if m.size >= outcome.Before {
+		t.Errorf("size = %d, want a summarized pass to shrink below %d", m.size, outcome.Before)
 	}
 	said := strings.Join(spoken(m), "\n")
 	if !strings.Contains(said, "✂ Compaction summary") || !strings.Contains(said, "summarized") {
@@ -108,7 +108,7 @@ func TestSettleCompactionInstallsASummary(t *testing.T) {
 func TestSettleCompactionKeepsRolesAlternating(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
-	outcome := compactOutcome{before: int64(125_000), plan: m.plan(), tier: compaction.Smart, summary: "Decisions:\n- done."}
+	outcome := compaction.Outcome{Before: int64(125_000), Plan: m.plan(), Tier: compaction.Smart, Summary: "Decisions:\n- done."}
 
 	m.settleCompaction(outcome)
 
@@ -126,7 +126,7 @@ func TestCompactPromptFeedsExactlyTheHistory(t *testing.T) {
 	history := compaction.HistoryMessages(m.conversation, plan)
 	fold := compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)}
 
-	prompt := compactPrompt(m.conversation, plan, fold, false)
+	prompt := compaction.Prompt(m.conversation, plan, fold, false)
 
 	if len(prompt) < len(history) || len(prompt) > len(history)+1 {
 		t.Fatalf("summarizer prompt = %d messages, want the %d history plus at most the ask", len(prompt), len(history))
@@ -163,13 +163,13 @@ func TestSettleCompactionReportsAJudgeFailure(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
 	m.size = compactAt + 25_000
-	outcome := compactOutcome{
-		before: m.size,
-		plan:   m.plan(),
-		tier:   compaction.Smart,
-		judged: true,
-		stage:  "judge",
-		err:    errors.New("typesafe: http 429"),
+	outcome := compaction.Outcome{
+		Before: m.size,
+		Plan:   m.plan(),
+		Tier:   compaction.Smart,
+		Judged: true,
+		Stage:  "judge",
+		Err:    errors.New("typesafe: http 429"),
 	}
 
 	m.settleCompaction(outcome)
@@ -183,19 +183,19 @@ func TestSettleCompactionReportsAJudgeFailure(t *testing.T) {
 }
 
 func TestCompactPromptScopesTheSummaryToItsChunk(t *testing.T) {
-	if !strings.Contains(compactSystem, "only the turns shown to you") {
-		t.Errorf("compactSystem = %q, want an explicit chunk-scoping rule", compactSystem)
+	if !strings.Contains(compaction.SystemPrompt, "only the turns shown to you") {
+		t.Errorf("compactSystem = %q, want an explicit chunk-scoping rule", compaction.SystemPrompt)
 	}
-	if !strings.Contains(compactSystem, "not part of this request") && !strings.Contains(compactAsk, "not part of this request") {
-		t.Errorf("prompts = %q / %q, want an explicit 'not part of this request' boundary", compactSystem, compactAsk)
+	if !strings.Contains(compaction.SystemPrompt, "not part of this request") && !strings.Contains(compaction.CompactAsk, "not part of this request") {
+		t.Errorf("prompts = %q / %q, want an explicit 'not part of this request' boundary", compaction.SystemPrompt, compaction.CompactAsk)
 	}
 	for _, section := range []string{"Decisions", "Constraints", "Plan", "State", "Artifacts", "Ruled out", "Open questions"} {
-		if !strings.Contains(compactSystem, section) {
+		if !strings.Contains(compaction.SystemPrompt, section) {
 			t.Errorf("compactSystem missing the %q section of the schema", section)
 		}
 	}
-	if !strings.Contains(compactSystem, "Never invent facts") {
-		t.Errorf("compactSystem = %q, want a no-invention rule", compactSystem)
+	if !strings.Contains(compaction.SystemPrompt, "Never invent facts") {
+		t.Errorf("compactSystem = %q, want a no-invention rule", compaction.SystemPrompt)
 	}
 }
 

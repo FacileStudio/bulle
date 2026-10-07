@@ -36,7 +36,7 @@ func (m *Model) compactBeforeSend(ctx context.Context) tea.Cmd {
 		return nil
 	}
 	size, ok := m.sendSize(ctx)
-	if !ok || size <= m.policy.Trigger() {
+	if !ok || size <= m.engine().Policy.Trigger() {
 		return nil
 	}
 	m.size = size
@@ -73,7 +73,7 @@ func (m *Model) shouldCompactIdle() bool {
 	if m.compacting || m.nextToSend() >= 0 || m.thrashed() {
 		return false
 	}
-	return m.compactAt > 0 && m.size > m.policy.Trigger()
+	return m.compactAt > 0 && m.size > m.engine().Policy.Trigger()
 }
 
 // maybeCompactIdle triggers a compaction pass after a run ends, when the model
@@ -121,6 +121,6 @@ func (m *Model) compactCmd() tea.Cmd {
 		m.say(fromClient, "nothing to compact — the conversation is too short")
 		return nil
 	}
-	m.thrashCount = 0
+	m.engine().ResetThrash()
 	return m.beginCompaction(context.Background(), false)
 }

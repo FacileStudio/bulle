@@ -8,6 +8,9 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/cost"
+	"github.com/FacileStudio/bulle/internal/layout"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -29,7 +32,7 @@ func (m *Model) status() string {
 	}
 	if m.run.pending != nil {
 		state = fmt.Sprintf("approve %s(%s)? y = once · a = always this session · n = deny",
-			m.run.pending.Name, truncate(unstyled(string(m.run.pending.Input)), 60))
+			m.run.pending.Name, layout.Truncate(layout.Unstyled(string(m.run.pending.Input)), 60))
 	}
 
 	if m.session != nil && m.session.HasWriteError() {
@@ -39,11 +42,11 @@ func (m *Model) status() string {
 
 	width := max(m.width, 1)
 	counts := strings.Join(m.footer(), " ")
-	stateLine := truncate(state, width)
+	stateLine := layout.Truncate(state, width)
 	if isReady {
 		stateLine = m.theme.Ready.Render(stateLine)
 	}
-	return stateLine + "\n" + m.theme.Muted.Render(truncate(counts, width))
+	return stateLine + "\n" + m.theme.Muted.Render(layout.Truncate(counts, width))
 }
 
 // footer is the stats line under the state line: the provider and model being
@@ -73,11 +76,11 @@ func (m *Model) footer() []string {
 	total.Cost += m.rate * float64(m.run.liveOut)
 
 	if total.Cost > 0 {
-		spent = append(spent, fmt.Sprintf("$%.4f", total.Cost))
+		spent = append(spent, cost.FormatCost(total.Cost))
 	}
 	spent = append(spent, tokenTotals(total))
 	if m.size > 0 {
-		spent = append(spent, contextLoad(m.size+m.run.liveOut, m.policy))
+		spent = append(spent, contextLoad(m.size+m.run.liveOut, m.engine().Policy))
 	}
 	run := m.run.usage
 	run.OutputTokens += m.run.liveOut
@@ -92,7 +95,7 @@ func (m *Model) working() string {
 	if m.compacting {
 		return m.theme.Compacting.Render(m.spin.View() + " compacting session")
 	}
-	doing := waitingVerb(time.Since(m.run.began))
+	doing := status.WaitingVerb(time.Since(m.run.began))
 	switch n := m.running(); n {
 	case 0:
 	case 1:
@@ -132,7 +135,7 @@ func (m *Model) ongoing() string {
 	if !m.run.busy || m.run.began.IsZero() {
 		return ""
 	}
-	return lasted(time.Since(m.run.began))
+	return status.Lasted(time.Since(m.run.began))
 }
 
 // spun advances the spinner. A compaction pass keeps it (and the running-row

@@ -10,6 +10,7 @@ import (
 	"github.com/FacileStudio/bulle/internal/provider"
 	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/bulle/internal/usage"
 )
 
@@ -70,7 +71,7 @@ func startupContextNote(c LaunchContext) string {
 		return "context: no files loaded"
 	}
 	return fmt.Sprintf("context: %s loaded · ~%s tokens · %s",
-		countedNoun(len(c.ContextPaths), "file"), shortTokens(c.ContextTokens),
+		countedNoun(len(c.ContextPaths), "file"), status.ShortTokens(c.ContextTokens),
 		strings.Join(c.ContextPaths, ", "))
 }
 

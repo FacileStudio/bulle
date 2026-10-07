@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/FacileStudio/bulle/internal/diff"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -157,7 +159,7 @@ func TestGroupMultipleDistinctFailures(t *testing.T) {
 func TestGroupPreservesDiffsOnPartialFailure(t *testing.T) {
 	m := sized()
 	m.groupTools = true
-	m.run.edits = map[string]editChange{"a": {Path: "view.go", Before: "old", After: "new"}}
+	m.run.edits = map[string]diff.EditChange{"a": {Path: "view.go", Before: "old", After: "new"}}
 
 	m.run.beginTool(nacelle.ToolEvent{ID: "a", Name: "edit_file", Input: `{"path":"view.go"}`}, true)
 	m.run.beginTool(nacelle.ToolEvent{ID: "b", Name: "edit_file", Input: `{"path":"run.go"}`}, true)
@@ -174,7 +176,7 @@ func TestGroupPreservesDiffsOnPartialFailure(t *testing.T) {
 }
 
 func TestSubMillisecondCallFlooredToMillisecond(t *testing.T) {
-	if got := took(400_000); got != "1ms" {
+	if got := status.Took(400_000); got != "1ms" {
 		t.Errorf("took(400µs) = %q, want 1ms", got)
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/cost"
+	"github.com/FacileStudio/bulle/internal/status"
 )
 
 // contextLoad is the status surface's name for the conversation's size against
@@ -19,9 +21,9 @@ import (
 // exactly the kind of disagreement the tier suffix exists to prevent; the raw
 // window and the reserve are named on their own line in /status.
 func contextLoad(size int64, policy compaction.Policy) string {
-	load := "↕" + shortTokens(size)
+	load := "↕" + status.ShortTokens(size)
 	if usable := policy.Usable(); usable > 0 {
-		load += "/" + shortTokens(usable)
+		load += "/" + status.ShortTokens(usable)
 		load += fmt.Sprintf(" · %.2f", float64(size)/float64(usable))
 	}
 	if tier := policy.Tier(size); tier != compaction.Below {
@@ -45,9 +47,9 @@ func compactAtLine(compactAt int64, policy compaction.Policy) string {
 	if compactAt <= 0 {
 		return ""
 	}
-	line := "compact at · " + shortTokens(compactAt)
+	line := "compact at · " + status.ShortTokens(compactAt)
 	if usable := policy.Usable(); usable > 0 {
-		line += " · " + fmt.Sprintf("%.2f", float64(compactAt)/float64(usable)) + " of " + shortTokens(usable) + " usable"
+		line += " · " + fmt.Sprintf("%.2f", float64(compactAt)/float64(usable)) + " of " + status.ShortTokens(usable) + " usable"
 	}
 	return line
 }
@@ -72,27 +74,28 @@ func compactAtLine(compactAt int64, policy compaction.Policy) string {
 // and the thresholds are tuned against a specific version behind it, so the id has
 // to be readable before it can be pinned.
 func (m *Model) compactionLines() []string {
+	policy := m.engine().Policy
 	var lines []string
 	if m.size > 0 {
-		lines = append(lines, contextLoad(m.size, m.policy))
+		lines = append(lines, contextLoad(m.size, policy))
 	}
-	if line := compactAtLine(m.compactAt, m.policy); line != "" {
+	if line := compactAtLine(m.compactAt, policy); line != "" {
 		lines = append(lines, line)
 	}
-	if window := m.policy.Window; window > 0 {
-		lines = append(lines, "window · "+shortTokens(window)+" raw, "+shortTokens(m.policy.Usable())+
-			" usable, "+shortTokens(m.policy.Reserve)+" reserved for the answer")
+	if window := policy.Window; window > 0 {
+		lines = append(lines, "window · "+status.ShortTokens(window)+" raw, "+status.ShortTokens(policy.Usable())+
+			" usable, "+status.ShortTokens(policy.Reserve)+" reserved for the answer")
 	}
 	if ledger := compaction.LedgerText(m.conversation, m.plan()); ledger != "" {
-		line := "ledger · ~" + shortTokens(compaction.EstTokens(len(ledger))) + " tokens"
+		line := "ledger · ~" + status.ShortTokens(compaction.EstTokens(len(ledger))) + " tokens"
 		if m.last.tier != compaction.Below {
 			line += " · last pass " + m.last.tier.String()
 		}
 		lines = append(lines, line)
 	}
-	if m.judge != nil {
+	if judge := m.engine().Judge; judge != nil {
 		lines = append(lines, "judge · on — each pass sends the history off the machine")
-		if answer := lastAnswer(m.judge); answer.Model != "" {
+		if answer := lastAnswer(judge); answer.Model != "" {
 			lines = append(lines, judgeModelLine(answer))
 		}
 	}
@@ -108,10 +111,10 @@ func judgeModelLine(answer compaction.Answer) string {
 		line += " via " + answer.Provider
 	}
 	if answer.InputTokens > 0 {
-		line += " · " + shortTokens(int64(answer.InputTokens)) + " tokens in"
+		line += " · " + status.ShortTokens(int64(answer.InputTokens)) + " tokens in"
 	}
 	if answer.CostUSD > 0 {
-		line += fmt.Sprintf(" · $%.4f", answer.CostUSD)
+		line += " · " + cost.FormatCost(answer.CostUSD)
 	}
 	return line
 }

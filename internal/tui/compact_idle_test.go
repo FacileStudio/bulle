@@ -8,6 +8,7 @@ package tui
 // thrashing.
 
 import (
+	"github.com/FacileStudio/bulle/internal/compaction"
 	"strings"
 	"testing"
 
@@ -66,12 +67,12 @@ func TestShouldCompactIdleSkipsWhenCompactionIsDisabled(t *testing.T) {
 func TestShouldCompactIdleSkipsWhenThrashed(t *testing.T) {
 	m := sized()
 	m.size = compactAt + 25_000
-	m.thrashCount = thrashLimit
+	m.engine().SetThrash(thrashLimit)
 
 	if m.shouldCompactIdle() {
 		t.Errorf("shouldCompactIdle = true at the thrash limit, want the auto trigger backed off")
 	}
-	m.thrashCount = thrashLimit - 1
+	m.engine().SetThrash(thrashLimit - 1)
 	if !m.shouldCompactIdle() {
 		t.Errorf("shouldCompactIdle = false below the thrash limit, want one near-miss not to disable auto-compaction")
 	}
@@ -196,7 +197,7 @@ func TestSettleCompactionDeliversLinesQueuedDuringThePass(t *testing.T) {
 		t.Fatalf("queue = %d, want the typed line queued while the pass runs", m.Len())
 	}
 
-	outcome := compactOutcome{before: int64(125_000), plan: m.plan(), summary: "Decisions:\n- done."}
+	outcome := compaction.Outcome{Before: int64(125_000), Plan: m.plan(), Summary: "Decisions:\n- done."}
 	m.settleCompaction(outcome)
 	defer m.run.cancel()
 

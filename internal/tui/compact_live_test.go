@@ -52,7 +52,7 @@ func TestCompactionArmsTheSpinnerAndStampsTheTimer(t *testing.T) {
 func TestSettleCompactionSaysWhenTheSummaryCameBackEmpty(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
-	outcome := compactOutcome{before: int64(125_000), plan: m.plan()}
+	outcome := compaction.Outcome{Before: int64(125_000), Plan: m.plan()}
 	m.settleCompaction(outcome)
 	if m.compacting {
 		t.Errorf("compacting still true after the empty fallback")
@@ -75,12 +75,12 @@ func TestSettleCompactionMasksWhenAJudgedPassHasNoSummary(t *testing.T) {
 	if len(blocks) == 0 {
 		t.Fatal("the sample produced no history blocks to fold")
 	}
-	outcome := compactOutcome{
-		before: int64(125_000),
-		plan:   plan,
-		tier:   compaction.Smart,
-		judged: true,
-		fold:   compaction.Fold{Ledger: blocks},
+	outcome := compaction.Outcome{
+		Before: int64(125_000),
+		Plan:   plan,
+		Tier:   compaction.Smart,
+		Judged: true,
+		Fold:   compaction.Fold{Ledger: blocks},
 	}
 
 	m.settleCompaction(outcome)
@@ -110,12 +110,12 @@ func TestSettleCompactionReportsARefusedFold(t *testing.T) {
 	}
 	before := len(m.conversation)
 
-	m.settleCompaction(compactOutcome{
-		before:  5,
-		plan:    m.plan(),
-		tier:    compaction.Smart,
-		judged:  true,
-		summary: strings.Repeat("decision, constraint, dead end. ", 400),
+	m.settleCompaction(compaction.Outcome{
+		Before:  5,
+		Plan:    m.plan(),
+		Tier:    compaction.Smart,
+		Judged:  true,
+		Summary: strings.Repeat("decision, constraint, dead end. ", 400),
 	})
 
 	if len(m.conversation) != before {

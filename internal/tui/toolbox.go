@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/FacileStudio/bulle/internal/diff"
+	"github.com/FacileStudio/bulle/internal/layout"
 	"github.com/FacileStudio/bulle/internal/toolview"
 	"github.com/FacileStudio/nacelle"
 )
@@ -59,7 +60,7 @@ func (m *Model) editBoxFor(id string, tool *nacelle.ToolEvent, ok bool) string {
 	}
 	var box strings.Builder
 	if edited {
-		if d := renderDiff(change, m.width, boxBorder(ok), m.theme.Muted, m.transparent); d != "" {
+		if d := diff.RenderDiff(change, m.width, boxBorder(ok), m.theme.Muted, m.transparent); d != "" {
 			box.WriteString(d)
 		}
 	}
@@ -71,14 +72,14 @@ func (m *Model) editBoxFor(id string, tool *nacelle.ToolEvent, ok bool) string {
 
 // drainEdit takes and clears the captured change for a call, applying the
 // prior-contents fallback a run_command or overwritten file needs.
-func (m *Model) drainEdit(id string) (editChange, bool) {
+func (m *Model) drainEdit(id string) (diff.EditChange, bool) {
 	change, edited := m.run.edits[id]
 	if !edited {
 		return change, false
 	}
 	delete(m.run.edits, id)
 	if change.After == "" && change.Before != "" {
-		change.After = priorContents(m.run.root, change.Path)
+		change.After = diff.PriorContents(m.run.root, change.Path)
 	}
 	return change, true
 }
@@ -86,13 +87,13 @@ func (m *Model) drainEdit(id string) (editChange, bool) {
 // boxedGroupRow is the single pane row a running edit or command draws in the
 // live region: its held line inside the same block background its result will
 // fill, so the box is continuous from "running" to "done".
-func (m *Model) boxedGroupRow(g toolGroup) string {
+func (m *Model) boxedGroupRow(g toolview.Group) string {
 	line := g.InFlightLine(m.width)
 	if line == "" {
 		return ""
 	}
 	content := max(m.width-2, 10)
-	return toolview.MatchBackground(m.theme.Muted, m.transparent).Width(content).Render(truncate(toolview.ToolLineRunning(line), content))
+	return toolview.MatchBackground(m.theme.Muted, m.transparent).Width(content).Render(layout.Truncate(toolview.ToolLineRunning(line), content))
 }
 
 // inFlightGroup draws one running tool's live row — boxed for an edit or
@@ -100,7 +101,7 @@ func (m *Model) boxedGroupRow(g toolGroup) string {
 // the ordinary held line, also yellow, for every other tool. A running
 // command's streamed output fills the box beneath its line as the lines
 // arrive.
-func (m *Model) inFlightGroup(g toolGroup) string {
+func (m *Model) inFlightGroup(g toolview.Group) string {
 	if !diff.IsEditTool(g.Name) {
 		line := g.InFlightLine(m.width)
 		if line == "" {
@@ -123,7 +124,7 @@ func (m *Model) inFlightGroup(g toolGroup) string {
 // to sit in the box under its held line. They only apply to a single call (a
 // batched group has no one output to name), and read the buffer absorbToolOutput
 // fills, so a backend that streams lets the box grow while the command runs.
-func (m *Model) liveOutputRows(g toolGroup) []string {
+func (m *Model) liveOutputRows(g toolview.Group) []string {
 	if g.Name != "run_command" || g.Count != 1 {
 		return nil
 	}
@@ -139,7 +140,7 @@ func (m *Model) liveOutputRows(g toolGroup) []string {
 		if i >= commandLineCap {
 			break
 		}
-		rows = append(rows, base.Render(truncate(unstyled(strings.ReplaceAll(ln, "\r", "")), content-1)))
+		rows = append(rows, base.Render(layout.Truncate(layout.Unstyled(strings.ReplaceAll(ln, "\r", "")), content-1)))
 	}
 	return rows
 }
@@ -160,7 +161,7 @@ func (m *Model) outputBox(result string, ok bool) string {
 			rows = append(rows, base.Render("… more"))
 			break
 		}
-		rows = append(rows, base.Render(truncate(unstyled(strings.ReplaceAll(ln, "\r", "")), content-1)))
+		rows = append(rows, base.Render(layout.Truncate(layout.Unstyled(strings.ReplaceAll(ln, "\r", "")), content-1)))
 	}
 	return toolview.Box(rows, boxBorder(ok), m.transparent, max(m.width, 10))
 }

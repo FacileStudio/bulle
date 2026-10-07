@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/FacileStudio/bulle/internal/layout"
 )
 
 // The kinds of message an attached editor sends this session. The first three
@@ -144,7 +146,7 @@ func (m *Model) editorOpen(path string) {
 		return
 	}
 	for i, row := range slices.Backward(m.hold) {
-		if strings.Contains(unstyled(row), path) {
+		if strings.Contains(layout.Unstyled(row), path) {
 			m.scrollTop = len(m.hold) - 1 - i
 			return
 		}

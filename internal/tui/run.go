@@ -8,9 +8,12 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/approval"
 	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/cost"
 	"github.com/FacileStudio/bulle/internal/herdr"
 	"github.com/FacileStudio/bulle/internal/skills"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -92,7 +95,7 @@ type UISession struct {
 	Banner            string
 	Skills            []skills.Skill
 	HookNotice        string
-	Gate              *Approvals
+	Gate              *approval.Approvals
 	DelegateConfig    nacelle.Config
 	Mode              string
 	TransparentBlocks bool
@@ -223,7 +226,7 @@ func (m *Model) recap() string {
 		return ""
 	}
 
-	shape := "session · " + lasted(time.Since(m.began))
+	shape := "session · " + status.Lasted(time.Since(m.began))
 	switch {
 	case m.tools == 1:
 		shape += " · 1 tool"
@@ -236,10 +239,10 @@ func (m *Model) recap() string {
 
 	spend := tokenTotals(total)
 	if total.CacheReadTokens > 0 {
-		spend += fmt.Sprintf(" · %s cached", shortTokens(total.CacheReadTokens))
+		spend += fmt.Sprintf(" · %s cached", status.ShortTokens(total.CacheReadTokens))
 	}
 	if total.Cost > 0 {
-		spend += fmt.Sprintf(" · $%.4f", total.Cost)
+		spend += " · " + cost.FormatCost(total.Cost)
 	}
 	return shape + "\n" + spend
 }

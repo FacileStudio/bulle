@@ -9,9 +9,14 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/bulle/internal/herdr"
 	"github.com/FacileStudio/bulle/internal/history"
 	"github.com/FacileStudio/bulle/internal/menu"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/skills"
 	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/bulle/internal/theme"
 	"github.com/FacileStudio/nacelle"
@@ -27,7 +32,7 @@ func initialInflight(c SessionConfig) inflight {
 		runControl:    runControl{cancel: func() {}},
 		promptEditKey: c.Editor.PromptEditKey,
 		editState: editState{
-			edits:      map[string]editChange{},
+			edits:      map[string]diff.EditChange{},
 			editorPath: c.Editor.Editor,
 		},
 	}
@@ -40,14 +45,15 @@ func initialInflight(c SessionConfig) inflight {
 // alongside the client's own commands in the dropdown menu. startMessage, when
 // non-empty, is printed as the first thing on screen — a welcome block or an
 // ascii banner — above the banner itself, each separated by a blank row.
-func NewModel(agent *nacelle.Agent, banner string, skills []skill, c SessionConfig) *Model {
-	byName := bySkillName(skills)
+func NewModel(agent *nacelle.Agent, banner string, sks []skills.Skill, c SessionConfig) *Model {
+	byName := skills.BySkillName(sks)
 	base := theme.Themed(true)
 
 	policy := resolvedPolicy(c.Compaction.Policy)
+	engine := compaction.NewEngine(policy, c.Compaction.Judge, nil)
 	m := &Model{
 		core:          core{agent: agent, banner: banner, autoResume: c.AutoResume, resumePath: c.Resume, herdrClient: herdr.NewFromEnv()},
-		transcript:    transcript{compactAt: policy.Ceiling, policy: policy, judge: c.Compaction.Judge},
+		transcript:    transcript{compactAt: policy.Ceiling, compactor: engine},
 		composer:      composer{prompt: newPrompt(c.PromptPlaceholder, base.Border), hist: history.New()},
 		look:          look{theme: base, spin: status.NewSpinner(), showHooks: c.Hooks.Show, showHookOutput: c.Hooks.ShowOutput},
 		account:       account{began: time.Now(), grind: grindBudget{cost: c.Grind.Cost, tokens: c.Grind.Tokens, cap: c.Grind.Continuations}},
@@ -55,6 +61,12 @@ func NewModel(agent *nacelle.Agent, banner string, skills []skill, c SessionConf
 		commandState:  commandState{skills: byName, menu: *menu.New(menuItems(byName))},
 		parallelState: parallelState{maxConcurrency: c.MaxConcurrency},
 		run:           initialInflight(c),
+	}
+	engine.Builder = func() (*nacelle.Agent, error) {
+		if m.agent == nil {
+			return nil, nil
+		}
+		return compaction.BackendAgent(m.agent.Backend())()
 	}
 	m.pretty = theme.Prettier(m.theme.Markdown, max(m.width-2, 1))
 	m.promptStyles = m.prompt.Styles()
@@ -64,7 +76,7 @@ func NewModel(agent *nacelle.Agent, banner string, skills []skill, c SessionConf
 	m.say(fromClient, banner+"\n")
 	if c.Startup.SystemTokens > 0 {
 		m.say(fromClient, startupContextNote(c.Startup))
-		m.say(fromClient, fmt.Sprintf("system prompt loaded · ~%s tokens", shortTokens(c.Startup.SystemTokens)))
+		m.say(fromClient, fmt.Sprintf("system prompt loaded · ~%s tokens", status.ShortTokens(c.Startup.SystemTokens)))
 	}
 	herdr.Report(m.herdrClient, herdr.Idle)
 	return m
@@ -83,7 +95,7 @@ func NewModel(agent *nacelle.Agent, banner string, skills []skill, c SessionConf
 // terminal's, positioned by View, and a blink tick for a cursor nobody renders
 // is a timer that wakes the program up to change nothing.
 func (m *Model) Init() tea.Cmd {
-	if res := restoreAtLaunch(m.resumePath, m.run.root, m.autoResume); res.Conversation != nil {
+	if res := sessions.RestoreAtLaunch(m.resumePath, m.run.root, m.autoResume); res.Conversation != nil {
 		m.conversation = res.Conversation
 		savedSession := m.session
 		m.session = nil
@@ -152,13 +164,13 @@ func (m *Model) route(message tea.Msg) tea.Cmd {
 		return m.retheme(message)
 	case spinner.TickMsg:
 		return m.spun(message)
-	case approvalRequest:
+	case approval.Request:
 		return m.parkApproval(message)
 	case result:
 		return m.consume(message)
 	case finished:
 		return m.settle()
-	case compactOutcome:
+	case compaction.Outcome:
 		return m.settleCompaction(message)
 	case compactFinished:
 		return m.finishCompaction()

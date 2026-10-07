@@ -43,25 +43,26 @@ func (m *Model) maskHistory(plan []compaction.Span) compaction.MicroStats {
 // replaced has no history spans to hand here, and tombstoning whatever sits at
 // those indices now would be an edit to a conversation the pass never measured.
 // The caller is what turns the false into a notice that says so.
-func (m *Model) applyMaskFallback(outcome compactOutcome) bool {
-	if !compaction.Covers(m.conversation, outcome.plan) {
+func (m *Model) applyMaskFallback(outcome compaction.Outcome) bool {
+	if !compaction.Covers(m.conversation, outcome.Plan) {
 		return false
 	}
 	before := m.size
-	stats := m.maskHistory(outcome.plan)
-	start, end, _ := compaction.HistoryRange(outcome.plan)
-	report := compactOutcome{
-		before: before,
-		after:  m.size,
-		done: compacted{
-			evictCut: end - start,
-			kept:     len(m.conversation) - end,
-			results:  stats.Results,
-			tier:     outcome.tier,
-		},
+	stats := m.maskHistory(outcome.Plan)
+	start, end, _ := compaction.HistoryRange(outcome.Plan)
+	report := compaction.Outcome{
+		Before: before,
+		After:  m.size,
+		Plan:   outcome.Plan,
+		Tier:   outcome.Tier,
 	}
-	m.last = report.done
-	m.say(fromCompact, compactReport(report))
+	m.last = compacted{
+		evictCut: end - start,
+		kept:     len(m.conversation) - end,
+		results:  stats.Results,
+		tier:     outcome.Tier,
+	}
+	m.say(fromCompact, compactReport(report, m.last))
 	return true
 }
 

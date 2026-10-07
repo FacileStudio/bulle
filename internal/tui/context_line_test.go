@@ -31,7 +31,7 @@ func (j reportingJudge) LastAnswer() compaction.Answer { return j.answer }
 // coming rather than only learning about it from the compaction report.
 func TestTheFooterShowsTheContextRatioAndTier(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 120_000
 
 	foot := visible(strings.Join(m.footer(), " "))
@@ -47,7 +47,7 @@ func TestTheFooterShowsTheContextRatioAndTier(t *testing.T) {
 // the plain size and takes the tier from the absolute ceiling instead.
 func TestTheFooterKeepsThePlainSizeWithoutAWindow(t *testing.T) {
 	m := sized()
-	m.policy = compaction.Policy{
+	m.engine().Policy = compaction.Policy{
 		Ratios:  compaction.Ratios{Soft: 0.65, Smart: 0.80},
 		Ceiling: 100_000,
 	}
@@ -66,7 +66,7 @@ func TestTheFooterKeepsThePlainSizeWithoutAWindow(t *testing.T) {
 // with the tier of the last pass that wrote it.
 func TestStatusReportsTheLedgerAndTheLastPassTier(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 150_000
 	m.conversation = []nacelle.Message{
 		nacelle.UserText("the original task"),
@@ -94,8 +94,8 @@ func TestStatusReportsTheLedgerAndTheLastPassTier(t *testing.T) {
 // disagreement the tier suffix exists to prevent.
 func TestStatusNamesTheReserveTheLadderHoldsBack(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
-	m.policy.Reserve = 40_000
+	m.engine().Policy = windowedPolicy()
+	m.engine().Policy.Reserve = 40_000
 	m.size = 120_000
 
 	m.statusCmd()
@@ -144,7 +144,7 @@ func windowedAt(ceiling int64) compaction.Policy {
 // explains itself.
 func TestStatusNamesTheCompactAtTheTierIsReadAgainst(t *testing.T) {
 	m := sized()
-	m.policy, m.compactAt, m.size = windowedAt(50_000), 50_000, 60_000
+	m.engine().Policy, m.compactAt, m.size = windowedAt(50_000), 50_000, 60_000
 
 	if foot := visible(strings.Join(m.footer(), " ")); !strings.Contains(foot, "↕60.0k/160k · 0.38 · soft") {
 		t.Fatalf("footer = %q, want the 0.38 share under a soft suffix, which is the disagreement /status has to explain", foot)
@@ -173,11 +173,10 @@ func TestStatusNamesTheCompactAtInEveryShapeItComesIn(t *testing.T) {
 		{"with no window", compaction.Policy{Ratios: compaction.Ratios{Soft: 0.65}, Ceiling: 100_000}, 100_000, "compact at · 100k"},
 		{"turned off", windowedAt(100_000), 0, ""},
 	}
-
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			m := sized()
-			m.policy, m.compactAt, m.size = tc.policy, tc.at, 60_000
+			m.engine().Policy, m.compactAt, m.size = tc.policy, tc.at, 60_000
 
 			m.statusCmd()
 
@@ -203,8 +202,8 @@ func namesTrigger(status, want string) bool {
 // is where they already look for the ladder, so the exposure is stated there.
 func TestStatusNamesAnOptedInJudge(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
-	m.judge = stubJudge{}
+	m.engine().Policy = windowedPolicy()
+	m.engine().Judge = stubJudge{}
 	m.size = 150_000
 
 	m.statusCmd()
@@ -219,9 +218,9 @@ func TestStatusNamesAnOptedInJudge(t *testing.T) {
 // behind it. Without this line there is nothing to pin the setting to.
 func TestStatusNamesTheModelThatAnsweredAndWhatItBilled(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 150_000
-	m.judge = reportingJudge{answer: compaction.Answer{Model: "jev-1.13.0", InputTokens: 12_400, CostUSD: 0.0012}}
+	m.engine().Judge = reportingJudge{answer: compaction.Answer{Model: "jev-1.13.0", InputTokens: 12_400, CostUSD: 0.0012}}
 
 	m.statusCmd()
 
@@ -238,9 +237,9 @@ func TestStatusNamesTheModelThatAnsweredAndWhatItBilled(t *testing.T) {
 // saw.
 func TestStatusSaysNothingAboutTheJudgeModelBeforeAnAnswer(t *testing.T) {
 	m := sized()
-	m.policy = windowedPolicy()
+	m.engine().Policy = windowedPolicy()
 	m.size = 150_000
-	m.judge = reportingJudge{}
+	m.engine().Judge = reportingJudge{}
 
 	m.statusCmd()
 

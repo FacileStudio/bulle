@@ -181,8 +181,8 @@ func TestARejectionOnATurnNobodyStoppedStillRecovers(t *testing.T) {
 // measured was already wrong.
 func TestARetryForcesTheFold(t *testing.T) {
 	m := overflowing(t)
-	m.size = m.policy.Trigger() + 1
-	m.judge = stubJudge{}
+	m.size = m.engine().Policy.Trigger() + 1
+	m.engine().Judge = stubJudge{}
 
 	if cmd := m.retryRun(); cmd == nil {
 		t.Fatal("retryRun = nil, want a pass before the run starts again")
@@ -190,7 +190,7 @@ func TestARetryForcesTheFold(t *testing.T) {
 	outcome := <-m.run.compactChan
 
 	for i := range m.conversation {
-		if outcome.fold.Survives(i) {
+		if outcome.Fold.Survives(i) {
 			t.Errorf("index %d survives the retry's fold, want the whole history folded", i)
 		}
 	}
@@ -203,14 +203,14 @@ func TestARetryForcesTheFold(t *testing.T) {
 // suite would not notice, because every other fixture also trips the derivation.
 func TestARetryForcesEvenWhenTheEstimateSaysTheFoldWouldLand(t *testing.T) {
 	m := overflowing(t)
-	m.judge = stubJudge{}
-	m.policy.Ceiling = 10_000_000
-	m.compactAt = m.policy.Ceiling
+	m.engine().Judge = stubJudge{}
+	m.engine().Policy.Ceiling = 10_000_000
+	m.compactAt = m.engine().Policy.Ceiling
 	m.size = 130_000
 
 	plan := m.plan()
 	keeps := compaction.Fold{Kept: compaction.Blocks(m.conversation, plan)}
-	if !compaction.LandsUnder(m.conversation, plan, keeps, m.policy.Trigger()) {
+	if !compaction.LandsUnder(m.conversation, plan, keeps, m.engine().Policy.Trigger()) {
 		t.Fatal("the fixture's gentle fold does not land, so the derived lever would fire and the flag is not being tested")
 	}
 
@@ -220,7 +220,7 @@ func TestARetryForcesEvenWhenTheEstimateSaysTheFoldWouldLand(t *testing.T) {
 	outcome := <-m.run.compactChan
 
 	for i := range m.conversation {
-		if outcome.fold.Survives(i) {
+		if outcome.Fold.Survives(i) {
 			t.Errorf("index %d survives, want the retry's flag to fold the history the estimate said it could keep", i)
 		}
 	}

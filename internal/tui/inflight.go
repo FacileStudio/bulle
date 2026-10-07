@@ -8,6 +8,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/bulle/internal/herdr"
 	"github.com/FacileStudio/bulle/internal/toolview"
 	"github.com/FacileStudio/nacelle"
@@ -37,11 +40,11 @@ type runControl struct {
 	usage   nacelle.Usage
 	stop    nacelle.Stop
 	busy    bool
-	pending *approvalRequest
+	pending *approval.Request
 
 	// compactChan is the open compaction pass's outcome channel, nil when no
-	// pass is in flight. compactOutcome lives in compact.go, same package.
-	compactChan <-chan compactOutcome
+	// pass is in flight. compaction.Outcome lives in compact.go, same package.
+	compactChan <-chan compaction.Outcome
 
 	// bgCtx is the run's background context, kept on the run so a compaction
 	// that finishes before the model starts can pass it back to startRun.
@@ -80,7 +83,7 @@ type inflight struct {
 	editState
 	clock
 	turn
-	groups        []toolGroup
+	groups        []toolview.Group
 	groupIndex    map[string]int
 	failures      failureCollapse
 	promptEditKey string
@@ -111,7 +114,7 @@ type turn struct {
 type editState struct {
 	root       string
 	diffs      bool
-	edits      map[string]editChange
+	edits      map[string]diff.EditChange
 	outputs    map[string]string
 	editorPath string
 }
@@ -140,7 +143,7 @@ func (r *inflight) appendToLastGroup(ev nacelle.ToolEvent) bool {
 
 func (r *inflight) beginTool(ev nacelle.ToolEvent, groupTools bool) {
 	if r.groups == nil {
-		r.groups = make([]toolGroup, 0, 4)
+		r.groups = make([]toolview.Group, 0, 4)
 	}
 	if r.groupIndex == nil {
 		r.groupIndex = make(map[string]int, 4)
@@ -148,7 +151,7 @@ func (r *inflight) beginTool(ev nacelle.ToolEvent, groupTools bool) {
 	if groupTools && r.appendToLastGroup(ev) {
 		return
 	}
-	g := toolGroup{
+	g := toolview.Group{
 		Name:      ev.Name,
 		Input:     ev.Input,
 		Count:     1,
@@ -185,7 +188,7 @@ func (r *inflight) finishTool(ev nacelle.ToolEvent) {
 	}
 }
 
-func (r *inflight) findGroup(id string) *toolGroup {
+func (r *inflight) findGroup(id string) *toolview.Group {
 	if id == "" {
 		return nil
 	}
@@ -222,7 +225,7 @@ func (r *inflight) clearGroups() {
 // or the session ending — is a refusal, never an implicit yes; an editor that
 // was never attached is asked nothing, and this terminal prompt is the decision
 // on its own.
-func (m *Model) parkApproval(req approvalRequest) tea.Cmd {
+func (m *Model) parkApproval(req approval.Request) tea.Cmd {
 	m.run.pending = &req
 	herdr.Report(m.herdrClient, herdr.Blocked)
 	return m.askEditor(req)

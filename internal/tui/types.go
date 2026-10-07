@@ -7,12 +7,15 @@ import (
 	"charm.land/glamour/v2"
 
 	"github.com/FacileStudio/bulle/internal/compaction"
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/bulle/internal/herdr"
 	"github.com/FacileStudio/bulle/internal/history"
 	"github.com/FacileStudio/bulle/internal/menu"
 	"github.com/FacileStudio/bulle/internal/queue"
+	"github.com/FacileStudio/bulle/internal/skills"
 	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/bulle/internal/theme"
+	"github.com/FacileStudio/bulle/internal/thinking"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -25,7 +28,7 @@ import (
 // exists only to keep model's own field count from growing by one every
 // time this list does.
 type commandState struct {
-	skills      map[string]skill
+	skills      map[string]skills.Skill
 	menu        menu.Menu
 	modelPicker bool
 }
@@ -78,7 +81,7 @@ type core struct {
 type heldEntry struct {
 	who  speaker
 	text string
-	diff *editChange
+	diff *diff.EditChange
 	ok   bool
 	out  string
 }
@@ -107,28 +110,11 @@ type transcript struct {
 	// tui-mode window back from the newest row. Held lines are drawn tail-first
 	// with the prompt pinned; scrolling up raises this so earlier rows surface
 	// above the live region, scrolling down returns it to 0 (the newest row).
-	scrollTop int
-	compactAt int64
-	// policy is the resolved tier ladder this session compacts by: the ratios,
-	// the window they are measured against, the absolute ceiling and the two
-	// ends a pass never touches. compactAt stays the absolute figure the gates
-	// read; policy is what decides how hard a pass is. judge is the opt-in
-	// classifier, nil while it is off — the default.
-	policy     compaction.Policy
-	judge      compaction.Judge
+	scrollTop  int
+	compactAt  int64
+	compactor  *compaction.Engine
 	compacting bool
-	// last is the numbers of the most recent pass of any tier — the soft
-	// tombstone, the smart fold, or the mask fallback. /status names the
-	// tier from it; the zero value (Below) means no pass has run this session.
-	last compacted
-	// thrashCount is how many consecutive compaction passes ended with the
-	// conversation still over the trigger threshold — a single very large
-	// result, usually in the kept tail, that eviction and summarization cannot
-	// clear. The automatic triggers back off only once it reaches thrashLimit,
-	// so a single failed pass does not disable auto-compaction for the rest of
-	// the session. A pass that lands under resets it, and a manual /compact
-	// or /clear clears it for a fresh attempt.
-	thrashCount int
+	last       compacted
 }
 
 // parallelTaskInfo holds info about a single task in a parallel subagent run.
@@ -195,7 +181,7 @@ type Model struct {
 	look
 	commandState
 	screen
-	thoughts
+	thinking.Thoughts
 
 	parallelState
 	run inflight

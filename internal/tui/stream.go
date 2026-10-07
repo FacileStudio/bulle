@@ -8,6 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -135,7 +136,7 @@ func (m *Model) absorbToolCall(tool nacelle.ToolEvent) {
 	m.run.reported = true
 	m.run.beginTool(tool, m.groupTools)
 	if m.run.diffs {
-		if change, ok := captureEdit(m.run.root, tool.Name, tool.Input); ok {
+		if change, ok := diff.CaptureEdit(m.run.root, tool.Name, tool.Input); ok {
 			m.run.edits[tool.ID] = change
 		}
 	}

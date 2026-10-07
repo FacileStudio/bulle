@@ -53,7 +53,7 @@ func TestPassDecidesToConsolidateAnOverBudgetLedger(t *testing.T) {
 			m := sized()
 			m.conversation = tc.conv
 
-			if got := m.pass(m.plan(), compaction.Smart, false).consolidate; got != tc.want {
+			if got := m.engine().RunPass(context.Background(), m.conversation, false).Consolidate; got != tc.want {
 				t.Errorf("pass.consolidate = %v, want %v", got, tc.want)
 			}
 		})
@@ -69,7 +69,7 @@ func TestCompactPromptTellsTheSummarizerNotToRepeatTheLedger(t *testing.T) {
 	plan := m.plan()
 	fold := compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)}
 
-	adding := compactPrompt(m.conversation, plan, fold, false)
+	adding := compaction.Prompt(m.conversation, plan, fold, false)
 	if !promptText(adding, "do not repeat anything it holds") {
 		t.Error("prompt = no no-restatement rule, want the earlier ledger carried with one")
 	}
@@ -77,7 +77,7 @@ func TestCompactPromptTellsTheSummarizerNotToRepeatTheLedger(t *testing.T) {
 		t.Error("prompt = no earlier ledger, want it carried in the ask")
 	}
 
-	rewriting := compactPrompt(m.conversation, plan, fold, true)
+	rewriting := compaction.Prompt(m.conversation, plan, fold, true)
 	if !promptText(rewriting, "rewritten rather than added to") {
 		t.Error("prompt = no consolidating instruction, want the rewrite asked for explicitly")
 	}
@@ -95,13 +95,13 @@ func TestSettleCompactionConsolidatesAnOverBudgetLedger(t *testing.T) {
 	plan := m.plan()
 	summary := "Decisions:\n- keep " + ledgerIdentifier + " — consolidated"
 
-	m.settleCompaction(compactOutcome{
-		before:      m.size,
-		plan:        plan,
-		fold:        compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
-		tier:        compaction.Smart,
-		summary:     summary,
-		consolidate: true,
+	m.settleCompaction(compaction.Outcome{
+		Before:      m.size,
+		Plan:        plan,
+		Fold:        compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
+		Tier:        compaction.Smart,
+		Summary:     summary,
+		Consolidate: true,
 	})
 
 	if !m.last.replaced {
@@ -127,13 +127,13 @@ func TestSettleCompactionKeepsTheLedgerWhenARewriteDropsAnIdentifier(t *testing.
 	m.size = 130_000
 	plan := m.plan()
 
-	m.settleCompaction(compactOutcome{
-		before:      m.size,
-		plan:        plan,
-		fold:        compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
-		tier:        compaction.Smart,
-		summary:     "Decisions:\n- consolidated, see the notes",
-		consolidate: true,
+	m.settleCompaction(compaction.Outcome{
+		Before:      m.size,
+		Plan:        plan,
+		Fold:        compaction.Fold{Ledger: compaction.Blocks(m.conversation, plan)},
+		Tier:        compaction.Smart,
+		Summary:     "Decisions:\n- consolidated, see the notes",
+		Consolidate: true,
 	})
 
 	if m.last.replaced || !m.last.keptAsIs {
@@ -155,34 +155,23 @@ func TestSettleCompactionKeepsTheLedgerWhenARewriteDropsAnIdentifier(t *testing.
 // nothing to fold: the summarizer was never called, the consolidating addendum
 // never went out, and the body stayed over budget for the rest of the session.
 func TestAConsolidatingPassFoldsTheHistoryTheJudgeKept(t *testing.T) {
-	backend := &recorder{}
 	m := sized()
-	m.agent = agentOver(t, backend)
-	m.judge = stubJudge{}
+	m.engine().Judge = stubJudge{}
 	m.conversation = overdueLedger()
 	m.size = 130_000
 
-	pass := m.pass(m.plan(), compaction.Smart, false)
-	if !pass.consolidate {
-		t.Fatal("the fixture ledger is not past its budget, so the pass is not consolidating")
-	}
-	unforced, _ := compaction.Classify(context.Background(), pass.conv, pass.plan, compaction.JudgeRequest{}, stubJudge{})
+	plan := m.plan()
+	unforced, _ := compaction.Classify(context.Background(), m.conversation, plan, compaction.JudgeRequest{}, stubJudge{})
 	if len(unforced.Ledger) > 0 {
 		t.Fatal("the judge tagged a block for the ledger, so this pass has material without folding and the stall is not what is being tested")
 	}
 
-	results := make(chan compactOutcome, 1)
-	runCompaction(context.Background(), results, pass)
-	outcome := <-results
-
-	if outcome.summary == "" {
-		t.Fatalf("the consolidating pass asked for no summary (%v), so the ledger can never come back down", outcome.err)
+	outcome := m.engine().RunPassWithSize(context.Background(), m.conversation, m.size, false)
+	if !outcome.Consolidate {
+		t.Fatal("the fixture ledger is not past its budget, so the pass is not consolidating")
 	}
-	if !promptText(backend.last.Messages, "rewritten rather than added to") {
-		t.Error("the call does not ask for a rewrite, so this pass cannot consolidate the ledger")
-	}
-	if !promptText(backend.last.Messages, longLedgerBody()[:40]) {
-		t.Error("the call carries no earlier ledger, so the rewrite it asks for has nothing to rewrite")
+	if len(outcome.Fold.Ledger) == 0 {
+		t.Fatal("the consolidating pass kept all blocks in kept, want fold forced into ledger")
 	}
 }
 

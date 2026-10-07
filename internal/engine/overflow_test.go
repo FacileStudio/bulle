@@ -1,15 +1,11 @@
-package overflow
+package engine
 
 import (
 	"errors"
 	"testing"
 )
 
-// The messages are the real shapes, not paraphrases: each one is what a provider
-// printed when a request outgrew the window, and a classifier that only
-// recognises Anthropic's would leave the OpenAI-compatible runner silently
-// unrecovered.
-func TestDetectRecognisesTheProvidersOwnWording(t *testing.T) {
+func TestDetectOverflowRecognisesWording(t *testing.T) {
 	refusals := []string{
 		"prompt is too long: 213000 tokens > 200000 maximum",
 		"This model's maximum context length is 128000 tokens. However, your messages resulted in 145000 tokens.",
@@ -21,15 +17,13 @@ func TestDetectRecognisesTheProvidersOwnWording(t *testing.T) {
 	}
 
 	for _, message := range refusals {
-		if !Detect(errors.New(message)) {
-			t.Errorf("Detect(%q) = false, want a context-length rejection", message)
+		if !DetectOverflow(errors.New(message)) {
+			t.Errorf("DetectOverflow(%q) = false, want true", message)
 		}
 	}
 }
 
-// Everything else is left alone: a recovered rate limit is still a rate limit,
-// and compacting for one would spend a pass on nothing.
-func TestDetectLeavesOtherFailuresAlone(t *testing.T) {
+func TestDetectOverflowLeavesOtherFailures(t *testing.T) {
 	others := []string{
 		"429 Too Many Requests: rate limit exceeded",
 		"401 invalid api key",
@@ -38,11 +32,11 @@ func TestDetectLeavesOtherFailuresAlone(t *testing.T) {
 	}
 
 	for _, message := range others {
-		if Detect(errors.New(message)) {
-			t.Errorf("Detect(%q) = true, want it left alone", message)
+		if DetectOverflow(errors.New(message)) {
+			t.Errorf("DetectOverflow(%q) = true, want false", message)
 		}
 	}
-	if Detect(nil) {
-		t.Error("Detect(nil) = true, want false")
+	if DetectOverflow(nil) {
+		t.Error("DetectOverflow(nil) = true, want false")
 	}
 }

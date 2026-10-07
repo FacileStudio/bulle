@@ -6,13 +6,16 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+
+	"github.com/FacileStudio/bulle/internal/layout"
+	"github.com/FacileStudio/bulle/internal/skills"
 )
 
-func skillTestModel(skills ...string) *Model {
+func skillTestModel(skillsList ...string) *Model {
 	m := &Model{}
-	m.skills = map[string]skill{}
-	for _, name := range skills {
-		m.skills[name] = skill{Name: name}
+	m.skills = map[string]skills.Skill{}
+	for _, name := range skillsList {
+		m.skills[name] = skills.Skill{Name: name}
 	}
 	return m
 }
@@ -74,14 +77,14 @@ func TestQuestionHighlightsSkills(t *testing.T) {
 	if !strings.Contains(got, "\x1b[1;33m/skill:review\x1b[22;39m") {
 		t.Errorf("question = %q, want the token highlighted", got)
 	}
-	if !strings.HasPrefix(unstyled(got), "▌") {
+	if !strings.HasPrefix(layout.Unstyled(got), "▌") {
 		t.Errorf("question = %q, want the spine intact", got)
 	}
 }
 
 func TestPromptViewHighlightsSkills(t *testing.T) {
 	m := skillTestModel("review")
-	m.skills["review"] = skill{Name: "review", Description: "d"}
+	m.skills["review"] = skills.Skill{Name: "review", Description: "d"}
 	m.prompt = newPrompt("", lipgloss.NewStyle())
 	m.prompt.SetValue("use /skill:review")
 	got := highlightSkills(m.prompt.View(), m.skillTokens())

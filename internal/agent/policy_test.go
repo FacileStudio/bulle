@@ -169,3 +169,17 @@ func surfaceStub(t *testing.T, call *recordedCall) http.HandlerFunc {
 		}
 	}
 }
+
+func TestChatCompactor(t *testing.T) {
+	cfg := settings.Defaults("")
+	comp := ChatCompactor(cfg, nil)
+	if comp == nil {
+		t.Fatal("expected non-nil compaction engine")
+	}
+	if comp.Policy.Ceiling != settings.DefaultCompactAt {
+		t.Fatalf("expected ceiling %d, got %d", settings.DefaultCompactAt, comp.Policy.Ceiling)
+	}
+	if comp.Policy.Trigger() != settings.DefaultCompactAt {
+		t.Fatalf("expected trigger %d, got %d", settings.DefaultCompactAt, comp.Policy.Trigger())
+	}
+}

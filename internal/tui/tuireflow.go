@@ -3,6 +3,7 @@ package tui
 import (
 	"strings"
 
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
@@ -55,7 +56,7 @@ func (m *Model) rebuildDiff(entry heldEntry, width int) string {
 	}
 	var box strings.Builder
 	if entry.diff != nil {
-		if d := renderDiff(*entry.diff, width, boxBorder(entry.ok), m.theme.Muted, m.transparent); d != "" {
+		if d := diff.RenderDiff(*entry.diff, width, boxBorder(entry.ok), m.theme.Muted, m.transparent); d != "" {
 			box.WriteString(d)
 		}
 	}

@@ -6,6 +6,8 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/FacileStudio/bulle/internal/approval"
 )
 
 // fakeSurface is an attached editor under a test's control: it answers whatever
@@ -59,15 +61,15 @@ func TestAnEditorApprovalDecidesTheCall(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		reply IDEDecision
-		want  approvalDecision
-	}{{"allow", IDEAllowed, allowedOnce}, {"deny", IDERefused, denied}} {
+		want  approval.Decision
+	}{{"allow", IDEAllowed, approval.AllowedOnce}, {"deny", IDERefused, approval.Denied}} {
 		t.Run(tc.name, func(t *testing.T) {
 			surface := &fakeSurface{answer: tc.reply}
 			m := attached(surface)
-			decision := make(chan approvalDecision, 1)
+			decision := make(chan approval.Decision, 1)
 			input := []byte(`{"command":"ls"}`)
 
-			cmd := m.parkApproval(approvalRequest{Name: "run_command", Input: input, Decision: decision})
+			cmd := m.parkApproval(approval.Request{Name: "run_command", Input: input, Decision: decision})
 			if cmd == nil {
 				t.Fatal("the attached editor was never asked")
 			}
@@ -97,15 +99,15 @@ func TestAnEditorApprovalDecidesTheCall(t *testing.T) {
 func TestAnEditorApprovalFailsClosedOnTimeout(t *testing.T) {
 	surface := &fakeSurface{answer: IDERefused}
 	m := attached(surface)
-	decision := make(chan approvalDecision, 1)
+	decision := make(chan approval.Decision, 1)
 
-	cmd := m.parkApproval(approvalRequest{Name: "run_command", Decision: decision})
+	cmd := m.parkApproval(approval.Request{Name: "run_command", Decision: decision})
 	if cmd == nil {
 		t.Fatal("the attached editor was never asked")
 	}
 	m.Update(cmd())
 
-	if got := <-decision; got != denied {
+	if got := <-decision; got != approval.Denied {
 		t.Errorf("decision = %v, want the call refused when the editor answers nothing", got)
 	}
 	if surface.deadline.IsZero() {
@@ -122,17 +124,17 @@ func TestAnEditorApprovalFailsClosedOnTimeout(t *testing.T) {
 func TestALateEditorAnswerDoesNotDecideTheNextCall(t *testing.T) {
 	surface := &fakeSurface{}
 	m := attached(surface)
-	first := make(chan approvalDecision, 1)
+	first := make(chan approval.Decision, 1)
 
-	m.parkApproval(approvalRequest{Name: "run_command", Decision: first})
+	m.parkApproval(approval.Request{Name: "run_command", Decision: first})
 	answered := m.ide.asked
 	m.key(tea.KeyPressMsg{Code: 'y'})
-	if got := <-first; got != allowedOnce {
+	if got := <-first; got != approval.AllowedOnce {
 		t.Fatalf("terminal decision = %v, want the keypress to have decided", got)
 	}
 
-	second := make(chan approvalDecision, 1)
-	m.parkApproval(approvalRequest{Name: "run_command", Decision: second})
+	second := make(chan approval.Decision, 1)
+	m.parkApproval(approval.Request{Name: "run_command", Decision: second})
 	m.Update(ideEvent{kind: ideAnswer, id: answered, decision: IDEAllowed})
 
 	select {
@@ -144,9 +146,9 @@ func TestALateEditorAnswerDoesNotDecideTheNextCall(t *testing.T) {
 
 func TestNoEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	m := sized()
-	decision := make(chan approvalDecision, 1)
+	decision := make(chan approval.Decision, 1)
 
-	cmd := m.parkApproval(approvalRequest{Name: "search", Decision: decision})
+	cmd := m.parkApproval(approval.Request{Name: "search", Decision: decision})
 	if cmd != nil {
 		t.Error("a session with no editor attached started one anyway")
 	}
@@ -156,7 +158,7 @@ func TestNoEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	if handled, _ := m.key(tea.KeyPressMsg{Code: 'y'}); !handled {
 		t.Fatal("the terminal could not answer the approval")
 	}
-	if got := <-decision; got != allowedOnce {
+	if got := <-decision; got != approval.AllowedOnce {
 		t.Errorf("decision = %v, want the keypress to decide", got)
 	}
 }
@@ -169,9 +171,9 @@ func TestNoEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 func TestAnUnattachedEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	surface := &fakeSurface{answer: IDEUnanswered}
 	m := attached(surface)
-	decision := make(chan approvalDecision, 1)
+	decision := make(chan approval.Decision, 1)
 
-	cmd := m.parkApproval(approvalRequest{Name: "run_command", Decision: decision})
+	cmd := m.parkApproval(approval.Request{Name: "run_command", Decision: decision})
 	if cmd == nil {
 		t.Fatal("the surface was never asked")
 	}
@@ -188,7 +190,7 @@ func TestAnUnattachedEditorLeavesTheApprovalToTheTerminal(t *testing.T) {
 	if handled, _ := m.key(tea.KeyPressMsg{Code: 'y'}); !handled {
 		t.Fatal("the terminal could not answer the call the editor left to it")
 	}
-	if got := <-decision; got != allowedOnce {
+	if got := <-decision; got != approval.AllowedOnce {
 		t.Errorf("decision = %v, want the keypress to decide", got)
 	}
 }

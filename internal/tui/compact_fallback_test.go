@@ -14,7 +14,7 @@ func TestMaskFallbackKeepsTheConversationStanding(t *testing.T) {
 	m.conversation = bigConversation()
 	m.size = compactAt + 25_000
 
-	if !m.applyMaskFallback(compactOutcome{before: m.size, plan: m.plan(), tier: compaction.Smart}) {
+	if !m.applyMaskFallback(compaction.Outcome{Before: m.size, Plan: m.plan(), Tier: compaction.Smart}) {
 		t.Fatal("the mask refused a plan that covers the conversation")
 	}
 
@@ -49,7 +49,7 @@ func TestMaskFallbackRefusesAStalePlan(t *testing.T) {
 	before := m.size
 	gone := []nacelle.Message{nacelle.UserText("a conversation that is gone"), nacelle.AssistantText("and its answer")}
 
-	if m.applyMaskFallback(compactOutcome{before: before, plan: compaction.Plan(gone, m.policy), tier: compaction.Smart}) {
+	if m.applyMaskFallback(compaction.Outcome{Before: before, Plan: compaction.Plan(gone, m.engine().Policy), Tier: compaction.Smart}) {
 		t.Error("the mask ran against a plan that does not cover the conversation")
 	}
 	if m.trimmed != 0 || m.size != before {
@@ -67,7 +67,7 @@ func TestSettleCompactionFallsBackToTheMaskOnFailure(t *testing.T) {
 	m := sized()
 	m.conversation = bigConversation()
 	m.size = compactAt + 25_000
-	outcome := compactOutcome{before: m.size, plan: m.plan(), tier: compaction.Smart, err: errors.New("summarizer hiccuped")}
+	outcome := compaction.Outcome{Before: m.size, Plan: m.plan(), Tier: compaction.Smart, Err: errors.New("summarizer hiccuped")}
 
 	m.settleCompaction(outcome)
 

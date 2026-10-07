@@ -11,6 +11,7 @@ import (
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/engine"
 	"github.com/FacileStudio/bulle/internal/ide"
 	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
@@ -147,8 +148,12 @@ func runHeadlessTools(prompt string, prep preparedTools) error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-	conv := []nacelle.Message{nacelle.UserText(prompt)}
+	sess := engine.NewSession(agent, nil)
+	events, err := sess.Submit(ctx, prompt)
+	if err != nil {
+		return err
+	}
 	target := streamTarget{w: os.Stdout, stats: &stats, log: log}
-	_, err = consumeHeadlessEvents(ctx, agent, conv, target)
+	_, err = consumeHeadlessEvents(ctx, events, target)
 	return err
 }

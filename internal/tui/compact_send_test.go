@@ -115,7 +115,7 @@ func drain(t *testing.T, m *Model) {
 func TestCompactBeforeSendTombstonesWhenTheBackendCannotCount(t *testing.T) {
 	m := sized()
 	m.agent = agentOver(t, blind{})
-	m.policy.Window = 200_000
+	m.engine().Policy.Window = 200_000
 	m.conversation = bigConversation()
 	m.size = 150_000
 
@@ -156,9 +156,9 @@ func TestCompactBeforeSendStartsAPassWhenTheBackendCannotCount(t *testing.T) {
 func TestCompactBeforeSendLeavesAnAffordableSendAlone(t *testing.T) {
 	m := sized()
 	m.agent = agentOver(t, blind{})
-	m.policy.Window = 200_000
+	m.engine().Policy.Window = 200_000
 	m.conversation = bigConversation()
-	m.size = m.policy.Trigger()
+	m.size = m.engine().Policy.Trigger()
 
 	m.compactBeforeSend(context.Background())
 
@@ -172,9 +172,9 @@ func TestCompactBeforeSendLeavesAnAffordableSendAlone(t *testing.T) {
 func TestCompactBeforeSendFiresOneTokenPastTheTrigger(t *testing.T) {
 	m := sized()
 	m.agent = agentOver(t, blind{})
-	m.policy.Window = 200_000
+	m.engine().Policy.Window = 200_000
 	m.conversation = bigConversation()
-	m.size = m.policy.Trigger() + 1
+	m.size = m.engine().Policy.Trigger() + 1
 
 	m.compactBeforeSend(context.Background())
 
@@ -190,7 +190,7 @@ func TestCompactBeforeSendStandsDownWhenThrashed(t *testing.T) {
 	m.agent = agentOver(t, blind{})
 	m.conversation = heavyHistory()
 	m.size = 130_000
-	m.thrashCount = thrashLimit
+	m.engine().SetThrash(thrashLimit)
 
 	if cmd := m.compactBeforeSend(context.Background()); cmd != nil {
 		t.Error("compactBeforeSend = a pass, want the automatic guard backed off")

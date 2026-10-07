@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"github.com/FacileStudio/nacelle"
+
 	"github.com/FacileStudio/bulle/internal/compaction"
 	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/bulle/internal/tui"
@@ -83,4 +85,28 @@ func firstSetting(explicit, derived string) string {
 		return explicit
 	}
 	return derived
+}
+
+// ChatCompactor builds a compaction Engine for an agent and settings.
+func ChatCompactor(config settings.Config, a *nacelle.Agent) *compaction.Engine {
+	turns, tokens, anchor := tailBounds(config.Compaction)
+	soft, smart := config.Compaction.Ratios()
+	ceiling := settings.DefaultCompactAt
+	if config.CompactAt != nil {
+		ceiling = *config.CompactAt
+	}
+	var window int64
+	if config.Compaction.WindowTokens != nil {
+		window = *config.Compaction.WindowTokens
+	}
+	policy := compaction.Policy{
+		Ratios:         compaction.Ratios{Soft: soft, Smart: smart},
+		Window:         window,
+		Ceiling:        ceiling,
+		KeepTurns:      turns,
+		KeepTokens:     tokens,
+		AnchorMessages: anchor,
+	}
+	builder := func() (*nacelle.Agent, error) { return a, nil }
+	return compaction.NewEngine(policy, Judge(config.Compaction), builder)
 }

@@ -7,6 +7,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/cost"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -52,16 +54,16 @@ func (m *Model) runRecap() {
 	}
 	dur := "0s"
 	if spent > 0 {
-		dur = took(spent)
+		dur = status.Took(spent)
 	}
 	tokens := m.run.usage.Total()
-	tokenStr := fmt.Sprintf("%s tokens", shortTokens(tokens))
+	tokenStr := fmt.Sprintf("%s tokens", status.ShortTokens(tokens))
 	if tokens == 1 {
 		tokenStr = "1 token"
 	}
 	pieces := []string{dur, tokenStr}
 	if m.run.usage.Cost > 0 {
-		pieces = append(pieces, fmt.Sprintf("$%.4f", m.run.usage.Cost))
+		pieces = append(pieces, cost.FormatCost(m.run.usage.Cost))
 	}
 	m.say(fromTurn, strings.Join(pieces, " · "))
 }

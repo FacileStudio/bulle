@@ -12,6 +12,7 @@ import (
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/approval"
+	"github.com/FacileStudio/bulle/internal/engine"
 	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -50,7 +51,7 @@ func runHeadlessConfigToContext(parent context.Context, w io.Writer, prompt stri
 	log := sessions.OpenSession(config.Backend, config.Model, config.Root)
 	log.Line(sessions.FromReader, prompt)
 
-	agent, cleanup, err := buildHeadlessAgent(config, mergeHooks(stats.compactHook(), extra))
+	agent, cleanup, err := BuildHeadlessAgent(config, mergeHooks(stats.compactHook(), extra))
 	if err != nil {
 		return "", stats, err
 	}
@@ -59,31 +60,40 @@ func runHeadlessConfigToContext(parent context.Context, w io.Writer, prompt stri
 	ctx, cancel := signal.NotifyContext(parent, os.Interrupt)
 	defer cancel()
 
-	conv := []nacelle.Message{nacelle.UserText(prompt)}
-	out, err := consumeHeadlessEvents(ctx, agent, conv, streamTarget{w: w, stats: &stats, log: log})
+	sess := engine.NewSession(agent, nil)
+	events, err := sess.Submit(ctx, prompt)
+	if err != nil {
+		return "", stats, err
+	}
+	out, err := consumeHeadlessEvents(ctx, events, streamTarget{w: w, stats: &stats, log: log})
 	return out, stats, err
 }
 
-func consumeHeadlessEvents(ctx context.Context, agent *nacelle.Agent, conv []nacelle.Message, target streamTarget) (string, error) {
+func consumeHeadlessEvents(ctx context.Context, events <-chan engine.Event, target streamTarget) (string, error) {
+	if target.w == nil {
+		target.w = io.Discard
+	}
+	if target.stats == nil {
+		target.stats = &runStats{}
+	}
 	var out strings.Builder
-	for event, err := range agent.Stream(ctx, conv) {
-		if err != nil {
-			return "", err
-		}
+	for event := range events {
 		switch event.Kind {
-		case nacelle.KindText:
+		case engine.EventError:
+			return "", event.Err
+		case engine.EventTextDelta:
 			if _, err := fmt.Fprint(target.w, event.Text); err != nil {
 				return "", err
 			}
 			out.WriteString(event.Text)
-		case nacelle.KindToolCall:
+		case engine.EventToolCall:
 			target.stats.ToolCalls++
-		case nacelle.KindTurn:
-			target.stats.FinalContextTokens = event.Usage.InputTokens + event.Usage.CacheReadTokens + event.Usage.CacheCreationTokens
-		case nacelle.KindDone:
-			target.stats.Usage = event.Usage
-			target.log.Line(sessions.FromModel, out.String())
+		case engine.EventTurnDone:
+			target.recordDone(event.Usage, out.String())
 		}
+	}
+	if ctx.Err() != nil {
+		return "", ctx.Err()
 	}
 	if _, err := fmt.Fprintln(target.w); err != nil {
 		return "", err
@@ -92,11 +102,11 @@ func consumeHeadlessEvents(ctx context.Context, agent *nacelle.Agent, conv []nac
 	return out.String(), nil
 }
 
-// buildHeadlessAgent assembles the agent the same way the TUI does,
+// BuildHeadlessAgent assembles the agent the same way the TUI does,
 // without approval-gate wiring or banner construction. It returns the
 // agent and a cleanup function the caller must defer. Extra hooks ride
 // the settings hooks.
-func buildHeadlessAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook) (*nacelle.Agent, func(), error) {
+func BuildHeadlessAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook) (*nacelle.Agent, func(), error) {
 	set, local, err := localTools(config)
 	if err != nil {
 		return nil, nil, err

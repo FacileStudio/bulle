@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/approval"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -161,9 +162,9 @@ func TestEscapeClosesTheDropdownBeforeItStopsAnything(t *testing.T) {
 
 func TestAnApprovalRequestShowsInTheStatusLine(t *testing.T) {
 	m := sized()
-	decision := make(chan approvalDecision, 1)
+	decision := make(chan approval.Decision, 1)
 
-	m.Update(approvalRequest{Name: "search_content", Input: []byte(`{"pattern":"x"}`), Decision: decision})
+	m.Update(approval.Request{Name: "search_content", Input: []byte(`{"pattern":"x"}`), Decision: decision})
 
 	if m.run.pending == nil {
 		t.Fatal("the request did not set run.pending")
@@ -180,16 +181,16 @@ func TestAnApprovalRequestShowsInTheStatusLine(t *testing.T) {
 func TestPressingAnswersApproval(t *testing.T) {
 	cases := []struct {
 		key      rune
-		decision approvalDecision
+		decision approval.Decision
 	}{
-		{'y', allowedOnce},
-		{'a', allowedForSession},
-		{'n', denied},
+		{'y', approval.AllowedOnce},
+		{'a', approval.AllowedForSession},
+		{'n', approval.Denied},
 	}
 	for _, tc := range cases {
 		m := sized()
-		decision := make(chan approvalDecision, 1)
-		m.run.pending = &approvalRequest{Name: "search", Decision: decision}
+		decision := make(chan approval.Decision, 1)
+		m.run.pending = &approval.Request{Name: "search", Decision: decision}
 		handled, _ := m.key(tea.KeyPressMsg{Code: tc.key})
 		if !handled {
 			t.Fatalf("key %c was not handled", tc.key)
@@ -205,8 +206,8 @@ func TestPressingAnswersApproval(t *testing.T) {
 
 func TestAnyOtherKeyIsSwallowedWhilePending(t *testing.T) {
 	m := sized()
-	decision := make(chan approvalDecision, 1)
-	m.run.pending = &approvalRequest{Name: "search", Decision: decision}
+	decision := make(chan approval.Decision, 1)
+	m.run.pending = &approval.Request{Name: "search", Decision: decision}
 
 	handled, _ := m.key(tea.KeyPressMsg{Code: 'x'})
 
@@ -228,8 +229,8 @@ func TestCtrlCClearsAPendingApprovalAndCancelsTheRun(t *testing.T) {
 	cancelled := false
 	m.run.busy = true
 	m.run.cancel = func() { cancelled = true }
-	decision := make(chan approvalDecision, 1)
-	m.run.pending = &approvalRequest{Name: "search", Decision: decision}
+	decision := make(chan approval.Decision, 1)
+	m.run.pending = &approval.Request{Name: "search", Decision: decision}
 
 	handled, cmd := m.key(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
 

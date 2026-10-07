@@ -5,70 +5,16 @@ import (
 	"strings"
 
 	"github.com/FacileStudio/bulle/internal/approval"
-	"github.com/FacileStudio/bulle/internal/diff"
-	"github.com/FacileStudio/bulle/internal/layout"
 	"github.com/FacileStudio/bulle/internal/menu"
-	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/bulle/internal/skills"
-	"github.com/FacileStudio/bulle/internal/status"
-	"github.com/FacileStudio/bulle/internal/tasks"
-	"github.com/FacileStudio/bulle/internal/thinking"
-	"github.com/FacileStudio/bulle/internal/toolview"
 	"github.com/FacileStudio/nacelle"
 )
-
-type editChange = diff.EditChange
-type skill = skills.Skill
-type taskList = tasks.TaskList
-type taskUpdate = tasks.TaskUpdate
-type toolGroup = toolview.Group
-type toolError = toolview.ToolError
-type thoughts = thinking.Thoughts
-
-var bySkillName = skills.BySkillName
-var skillCommandNames = skills.SkillCommandNames
-var skillPrompt = skills.SkillPrompt
-
-type approvalDecision = approval.Decision
-type approvalRequest = approval.Request
-
-// Approvals aliases approval.Approvals.
-type Approvals = approval.Approvals
-
-// ApprovalRequest aliases approval.Request.
-type ApprovalRequest = approval.Request
-
-const (
-	denied            = approval.Denied
-	allowedOnce       = approval.AllowedOnce
-	allowedForSession = approval.AllowedForSession
-)
-
-// Config aliases settings.Config.
-type Config = settings.Config
-
-var listSessionFiles = sessions.ListSessionFiles
-var loadSession = sessions.LoadSession
-var formatSessionEntry = sessions.FormatSessionEntry
-var restoreAtLaunch = sessions.RestoreAtLaunch
-
-var priorContents = diff.PriorContents
-var renderDiff = diff.RenderDiff
-var captureEdit = diff.CaptureEdit
-
-var truncate = layout.Truncate
-var unstyled = layout.Unstyled
-
-var shortTokens = status.ShortTokens
-var waitingVerb = status.WaitingVerb
-var lasted = status.Lasted
-var took = status.Took
 
 const statusDone = "completed"
 
 // BuildApprovals constructs the approval gate and returns the approval function.
-func BuildApprovals(config Config) (*Approvals, nacelle.Approve) {
+func BuildApprovals(config settings.Config) (*approval.Approvals, nacelle.Approve) {
 	return approval.Build(*config.ApproveTools)
 }
 
@@ -135,14 +81,6 @@ func (m *Model) closeTurn(stop nacelle.Stop) {
 
 func (m *Model) dropUnanswered() { m.run.asked = nil }
 
-// editing is the queued line being actively rewritten, or -1 when none is.
-//
-// The marker (hist.FromEnd) is only meaningful while the prompt actually holds
-// a draft: deliver skips the edited line so a settle does not send half a
-// rewrite, but that skip must be released the moment the user leaves the
-// prompt. Walking through the queue with up/down leaves FromEnd pointing at a
-// line long after the user stopped editing it — with no prompt it is stale,
-// so it is cleared here and the line is free to go out with its turn.
 func (m *Model) editing() int {
 	i := m.hist.Editing(m.Len())
 	if i < 0 || m.prompt.Value() != "" {
@@ -152,9 +90,9 @@ func (m *Model) editing() int {
 	return -1
 }
 
-func menuItems(skills map[string]skill) []menu.Item {
+func menuItems(sks map[string]skills.Skill) []menu.Item {
 	names := commandNames()
-	skillNames := skillCommandNames(skills)
+	skillNames := skills.SkillCommandNames(sks)
 	items := make([]menu.Item, 0, len(names)+len(skillNames))
 	for _, name := range names {
 		items = append(items, menu.Item{Value: name})
@@ -162,7 +100,7 @@ func menuItems(skills map[string]skill) []menu.Item {
 	for _, name := range skillNames {
 		items = append(items, menu.Item{
 			Value:       name,
-			Description: skills[strings.TrimPrefix(name, "/skill:")].Description,
+			Description: sks[strings.TrimPrefix(name, "/skill:")].Description,
 		})
 	}
 	return items

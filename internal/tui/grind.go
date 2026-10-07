@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -68,7 +69,7 @@ func (g grindBudget) unspent(spend nacelle.Usage) string {
 		pieces = append(pieces, fmt.Sprintf("$%.2f of $%.2f", max(g.cost-spend.Cost, 0), g.cost))
 	}
 	if g.tokens > 0 {
-		pieces = append(pieces, fmt.Sprintf("%s of %s output tokens", shortTokens(max(g.tokens-spend.OutputTokens, 0)), shortTokens(g.tokens)))
+		pieces = append(pieces, fmt.Sprintf("%s of %s output tokens", status.ShortTokens(max(g.tokens-spend.OutputTokens, 0)), status.ShortTokens(g.tokens)))
 	}
 	return strings.Join(pieces, " · ")
 }
@@ -91,7 +92,7 @@ func (g grindBudget) left(spend nacelle.Usage) string {
 	}
 	if g.tokens > 0 {
 		if remaining := g.tokens - spend.OutputTokens; remaining > 0 {
-			pieces = append(pieces, shortTokens(remaining)+" tok")
+			pieces = append(pieces, status.ShortTokens(remaining)+" tok")
 		}
 	}
 	return strings.Join(pieces, "/")

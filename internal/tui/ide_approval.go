@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/FacileStudio/bulle/internal/approval"
 	"github.com/FacileStudio/bulle/internal/herdr"
 )
 
@@ -26,7 +27,7 @@ const ideApprovalTimeout = 2 * time.Minute
 // A surface with no editor attached answers Unanswered, immediately, and the
 // parked call is left to the terminal. That is the difference between opening a
 // socket and handing the session's approvals to nobody.
-func (m *Model) askEditor(req approvalRequest) tea.Cmd {
+func (m *Model) askEditor(req approval.Request) tea.Cmd {
 	surface := m.ide.surface
 	if surface == nil {
 		return nil
@@ -56,9 +57,9 @@ func (m *Model) editorAnswer(answer ideEvent) {
 		return
 	}
 	m.run.pending = nil
-	decision := denied
+	decision := approval.Denied
 	if answer.decision == IDEAllowed {
-		decision = allowedOnce
+		decision = approval.AllowedOnce
 	}
 	pending.Decision <- decision
 	herdr.Report(m.herdrClient, herdr.Working)

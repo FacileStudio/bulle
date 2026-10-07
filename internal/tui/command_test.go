@@ -8,11 +8,12 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/FacileStudio/bulle/internal/menu"
+	"github.com/FacileStudio/bulle/internal/skills"
 	"github.com/FacileStudio/nacelle"
 )
 
 func TestMenuItemsListsCommandsBeforeSkillsWithDescriptions(t *testing.T) {
-	items := menuItems(map[string]skill{"deploy": {Name: "deploy", Description: "ships the app"}})
+	items := menuItems(map[string]skills.Skill{"deploy": {Name: "deploy", Description: "ships the app"}})
 
 	if len(items) != len(commands)+1 {
 		t.Fatalf("menuItems = %+v, want every command plus the one skill", items)
@@ -31,7 +32,7 @@ func TestMenuItemsListsCommandsBeforeSkillsWithDescriptions(t *testing.T) {
 // TestMenuItemsListsCommandsBeforeSkillsWithDescriptionsShort tests that menuItems
 // returns the correct number of items when the skills map is empty.
 func TestMenuItemsListsCommandsBeforeSkillsWithDescriptionsShort(t *testing.T) {
-	items := menuItems(map[string]skill{})
+	items := menuItems(map[string]skills.Skill{})
 
 	if len(items) != len(commands) {
 		t.Fatalf("menuItems = %+v, want only commands", items)

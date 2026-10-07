@@ -5,7 +5,9 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 
+	"github.com/FacileStudio/bulle/internal/diff"
 	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
@@ -78,7 +80,7 @@ func (m *Model) finished(tool *nacelle.ToolEvent) {
 	}
 
 	m.flushFailures()
-	m.say(fromTool, toolview.ColorGlyph(line, toolview.ToolSourceColor(tool.Name, tool.Source, true), toolview.ToolSourceRestore(tool.Name, tool.Source))+" · "+took(tool.Duration))
+	m.say(fromTool, toolview.ColorGlyph(line, toolview.ToolSourceColor(tool.Name, tool.Source, true), toolview.ToolSourceRestore(tool.Name, tool.Source))+" · "+status.Took(tool.Duration))
 	m.finishEdit(tool.ID, tool, true)
 }
 
@@ -87,7 +89,7 @@ func (m *Model) finishGroup(line string, tool *nacelle.ToolEvent) bool {
 	if g == nil || g.Count <= 1 {
 		return false
 	}
-	dur := took(g.Duration())
+	dur := status.Took(g.Duration())
 	if g.Failed {
 		m.printGroupFailure(line, tool.Name, g.Errors, dur)
 	} else {
@@ -99,7 +101,7 @@ func (m *Model) finishGroup(line string, tool *nacelle.ToolEvent) bool {
 	return true
 }
 
-func (m *Model) printGroupFailure(line, name string, errs []toolError, dur string) {
+func (m *Model) printGroupFailure(line, name string, errs []toolview.ToolError, dur string) {
 	styled := toolview.ColorGlyph(line, toolview.ToolSourceColor(name, "", false), toolview.ToolSourceRestore(name, "")) + " · " + dur
 	toolStr := m.paint(fromTool, styled)
 	m.session.Line(sessions.Speaker(fromTool), styled)
@@ -108,7 +110,7 @@ func (m *Model) printGroupFailure(line, name string, errs []toolError, dur strin
 		return
 	}
 	type collapse struct {
-		toolError
+		toolview.ToolError
 		count int
 	}
 	var collapsed []collapse
@@ -117,14 +119,14 @@ func (m *Model) printGroupFailure(line, name string, errs []toolError, dur strin
 			collapsed[n-1].count++
 			collapsed[n-1].Duration = e.Duration
 		} else {
-			collapsed = append(collapsed, collapse{toolError: e, count: 1})
+			collapsed = append(collapsed, collapse{ToolError: e, count: 1})
 		}
 	}
 	m.unprinted = append(m.unprinted, toolStr)
 	for _, c := range collapsed {
-		text := fmt.Sprintf("%s failed after %s: %s", c.Name, took(c.Duration), c.Err)
+		text := fmt.Sprintf("%s failed after %s: %s", c.Name, status.Took(c.Duration), c.Err)
 		if c.count > 1 {
-			text = fmt.Sprintf("%s failed %d times · last: %s: %s", c.Name, c.count, took(c.Duration), c.Err)
+			text = fmt.Sprintf("%s failed %d times · last: %s: %s", c.Name, c.count, status.Took(c.Duration), c.Err)
 		}
 		m.unprinted = append(m.unprinted, m.paint(fromResult, text))
 		m.session.Line(sessions.Speaker(fromResult), text)
@@ -175,9 +177,9 @@ func (m *Model) flushFailures() {
 	toolStr := m.paint(fromTool, toolview.ColorGlyph(m.run.failures.toolLine, toolview.ToolSourceColor(m.run.failures.name, "", false), toolview.ToolSourceRestore(m.run.failures.name, "")))
 	var errLine string
 	if m.run.failures.count == 1 {
-		errLine = fmt.Sprintf("%s failed after %s: %s", m.run.failures.name, took(m.run.failures.duration), m.run.failures.err)
+		errLine = fmt.Sprintf("%s failed after %s: %s", m.run.failures.name, status.Took(m.run.failures.duration), m.run.failures.err)
 	} else {
-		errLine = fmt.Sprintf("%s failed %d times · last: %s: %s", m.run.failures.name, m.run.failures.count, took(m.run.failures.duration), m.run.failures.err)
+		errLine = fmt.Sprintf("%s failed %d times · last: %s: %s", m.run.failures.name, m.run.failures.count, status.Took(m.run.failures.duration), m.run.failures.err)
 	}
 	resultStr := m.paint(fromResult, errLine)
 	lines := []string{toolStr, resultStr}
@@ -210,7 +212,7 @@ func (m *Model) stranded() {
 		m.say(fromTool, g.GroupLine(m.width))
 	}
 	m.run.clearGroups()
-	m.run.edits = map[string]editChange{}
+	m.run.edits = map[string]diff.EditChange{}
 	m.run.outputs = map[string]string{}
 	m.dropFinishedParallel()
 }

@@ -11,6 +11,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/FacileStudio/bulle/internal/cost"
+	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/skills"
+	"github.com/FacileStudio/bulle/internal/status"
 	"github.com/FacileStudio/bulle/internal/tasks"
 	"github.com/FacileStudio/nacelle"
 )
@@ -78,7 +81,7 @@ func (m *Model) clear() tea.Cmd {
 	m.spent = nacelle.Usage{}
 	m.rate = 0
 	m.size, m.trimmed = 0, 0
-	m.thrashCount = 0
+	m.engine().ResetThrash()
 	m.last = compacted{}
 	m.tasks = nil
 	tasks.SetCurrentPlan(nil)
@@ -122,13 +125,13 @@ func (m *Model) help() tea.Cmd {
 
 func (m *Model) statusCmd() tea.Cmd {
 	var lines []string
-	lines = append(lines, fmt.Sprintf("session · %s", lasted(time.Since(m.began))))
+	lines = append(lines, fmt.Sprintf("session · %s", status.Lasted(time.Since(m.began))))
 	lines = append(lines, fmt.Sprintf("model · %s/%s", m.activeBackend, m.activeModel))
 	lines = append(lines, fmt.Sprintf("tools · %d total · %d failed", m.tools, m.failed))
 	total := m.total()
 	lines = append(lines, "tokens · "+tokenTotals(total))
 	if total.Cost > 0 {
-		lines = append(lines, fmt.Sprintf("cost · $%.4f", total.Cost))
+		lines = append(lines, fmt.Sprintf("cost · %s", cost.FormatCost(total.Cost)))
 	}
 	if m.session != nil {
 		if info, err := os.Stat(m.session.Path()); err == nil {
@@ -139,7 +142,7 @@ func (m *Model) statusCmd() tea.Cmd {
 		}
 	}
 	if total.CacheReadTokens > 0 {
-		lines = append(lines, fmt.Sprintf("cached · %s", shortTokens(total.CacheReadTokens)))
+		lines = append(lines, fmt.Sprintf("cached · %s", status.ShortTokens(total.CacheReadTokens)))
 	}
 	lines = append(lines, m.compactionLines()...)
 	if m.trimmed > 0 {
@@ -157,13 +160,13 @@ func (m *Model) resumeCmd() tea.Cmd {
 	if projectRoot == "" {
 		projectRoot = "."
 	}
-	sessionFiles := listSessionFiles(projectRoot)
+	sessionFiles := sessions.ListSessionFiles(projectRoot)
 	if len(sessionFiles) == 0 {
 		m.say(fromClient, "no previous sessions found for this project")
 		return nil
 	}
 	mostRecent := sessionFiles[0]
-	conversation := loadSession(mostRecent)
+	conversation := sessions.LoadSession(mostRecent)
 	if conversation == nil {
 		m.say(fromClient, "failed to load session: "+mostRecent)
 		return nil
@@ -179,7 +182,7 @@ func (m *Model) sessionsCmd() tea.Cmd {
 	if projectRoot == "" {
 		projectRoot = "."
 	}
-	sessionFiles := listSessionFiles(projectRoot)
+	sessionFiles := sessions.ListSessionFiles(projectRoot)
 	if len(sessionFiles) == 0 {
 		m.say(fromClient, "no previous sessions found for this project")
 		return nil
@@ -187,15 +190,15 @@ func (m *Model) sessionsCmd() tea.Cmd {
 	var lines []string
 	lines = append(lines, fmt.Sprintf("sessions for project %s:", projectRoot))
 	for _, filePath := range sessionFiles {
-		lines = append(lines, formatSessionEntry(filePath))
+		lines = append(lines, sessions.FormatSessionEntry(filePath))
 	}
 	m.say(fromClient, strings.Join(lines, "\n"))
 	return nil
 }
 
-func runSkill(s skill, args string) command {
+func runSkill(s skills.Skill, args string) command {
 	return func(m *Model) tea.Cmd {
-		text, err := skillPrompt(s, args)
+		text, err := skills.SkillPrompt(s, args)
 		if err != nil {
 			m.say(fromClient, "reading "+s.Path+": "+err.Error())
 			return nil

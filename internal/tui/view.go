@@ -60,7 +60,7 @@ func (m *Model) margined(rows []string) []string {
 				continue
 			}
 			trimmed := layout.Shave(padded[i], max(m.width-2, 1))
-			if strings.HasPrefix(unstyled(padded[i]), "▌") {
+			if strings.HasPrefix(layout.Unstyled(padded[i]), "▌") {
 				padded[i] = trimmed + " "
 				continue
 			}
