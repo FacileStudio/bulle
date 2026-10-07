@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.82.0] - 2026-10-07
+
+### Added
+
+- feat(compaction): pick the judge's decision model with `limits.compaction.judge.provider` — `jev` (TypeSafe System One, the default) or `clef` (Cloudflare's decision model through OpenRouter's Decisions API). The provider derives the endpoint, host, model and vendor key (`TYPESAFE_API_KEY` / `OPENROUTER_API_KEY`); an explicit `model` or `base_url` still wins as an escape hatch for a proxy or a pinned build. Clef is calibrated against the labeled corpus before shipping: zero false prunes at the shipped threshold, 65% label agreement (`internal/compaction`, `internal/jev`, `internal/agent`, `internal/settings`, `docs/configuration.md`)
+- feat(compaction): the judge classifies against where the session stands — session goal plus the latest user directive — instead of the anchor alone, capped at 4000 runes; `GoalText` keeps its pinned-task contract for ledger consolidation (`internal/compaction/goal.go`)
+- feat(status): the judge's answer line names the serving provider when the Decisions API reports one and prints its billed cost (`internal/compaction`, `internal/tui`)
+
+### Changed
+
+- refactor(settings): first boot writes a minimal scaffold carrying only real user decisions, and compaction's ratios, tail bounds, judge internals and the grind knobs are sunstopped — still read when present, no longer documented or scaffolded, never removed from the schema, so old files keep parsing unchanged (`internal/settings`, `example.bulle.yml`, `docs/configuration.md`, `docs/development.md`, `README.md`)
+
+### Fixed
+
+- fix(chat): gopls did not carry the repo's `-tags=goolm`, so the local filet gate could not type-check `internal/chat` and reported build-constraint errors on `mautrix`; `.gopls.json` now declares the build flag the repo already builds with, and `chat.go` uses `WaitGroup.Go` (`.gopls.json`, `internal/chat`)
+
 ## [0.81.0] - 2026-10-02
 
 ### Changed
