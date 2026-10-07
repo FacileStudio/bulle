@@ -86,8 +86,13 @@ func consumeHeadlessEvents(ctx context.Context, events <-chan engine.Event, targ
 				return "", err
 			}
 			out.WriteString(event.Text)
+		case engine.EventThinking:
+			fmt.Fprint(os.Stderr, event.Text)
 		case engine.EventToolCall:
 			target.stats.ToolCalls++
+			fmt.Fprintf(os.Stderr, "\n> Tool: %s()\n", event.Tool.Name)
+		case engine.EventToolResult:
+			fmt.Fprintln(os.Stderr, "> Done")
 		case engine.EventTurnDone:
 			target.recordDone(event.Usage, out.String())
 		}
