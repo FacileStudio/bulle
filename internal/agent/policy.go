@@ -52,21 +52,35 @@ func tailBounds(c settings.Compaction) (turns int, tokens int64, anchor int) {
 	return turns, tokens, anchor
 }
 
-// Judge builds the opt-in System One classifier from the compaction settings, or
-// nil while the judge is off — the default, because enabling it sends
-// conversation history to a third party. The key prefers TYPESAFE_API_KEY, which
-// the settings layer has already resolved into the config.
+// Judge builds the opt-in decision-model classifier from the compaction
+// settings, or nil while the judge is off — the default, because enabling it
+// sends conversation history to a third party. The provider picks the endpoint
+// and the defaults for model and host through compaction.SpecFor; an explicit
+// model or base URL wins over them, which is the escape hatch for a proxy or a
+// pinned build. The key prefers the vendor's own environment variable and the
+// settings layer has already resolved it into the config.
 func Judge(c settings.Compaction) compaction.Judge {
 	judge := c.Judge
 	if !settings.DerefBool(judge.Enabled) {
 		return nil
 	}
+	spec := compaction.SpecFor(judge.Provider)
 	return compaction.NewJevJudge(compaction.JudgeConfig{
 		Enabled:        true,
-		Model:          judge.Model,
-		BaseURL:        judge.BaseURL,
+		Endpoint:       spec.Endpoint,
+		Model:          firstSetting(judge.Model, spec.Model),
+		BaseURL:        firstSetting(judge.BaseURL, spec.BaseURL),
 		APIKey:         judge.APIKey,
 		PruneThreshold: settings.DerefFloat(judge.PruneThreshold),
 		MaxBlocks:      settings.DerefInt(judge.MaxBlocks),
 	})
+}
+
+// firstSetting is an explicit value over a derived default: a model or host
+// anybody wrote down wins over what the provider suggests.
+func firstSetting(explicit, derived string) string {
+	if explicit != "" {
+		return explicit
+	}
+	return derived
 }

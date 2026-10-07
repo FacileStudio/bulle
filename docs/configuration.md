@@ -93,9 +93,9 @@ could tell apart.
 | Layer | Source | Notes |
 |---|---|---|
 | Flags | `-backend`, `-model`, `-effort`, `-root`, `-system-prompt`, `-additional-prompt`, `-bash`, `-thinking`, `-project-context`, `-skills`, `-trust-skills`, `-skill-dir`, `-mcp`, `-fetch`, `-approve-tools`, `-diffs`, `-show-hooks`, `-show-hook-output`, `-max-iterations`, `-compact-at`, `-max-concurrency`, `-max-parallel-agents`, `-tasks`, `-continue`, `-resume`, `-gates-file`, `-no-config` | Only flags actually **typed** are collected, via `flag.Visit` — Go's `flag` package cannot otherwise tell a flag left alone from one passed its own default value. `-skill-dir` and `-mcp` are repeatable (`-mcp a.json -mcp b.json`); every other flag keeps only its last occurrence. `-resume` names one session by id or file path and, when given, beats `-continue`. `-no-config` skips `~/.bulle.yml` entirely: defaults plus environment plus flags. An invalid file gets a coloured report and one prompt — yes boots with defaults, no exits with the documentation link |
-| Environment | `BULLE_BACKEND`, `BULLE_MODEL`, `BULLE_PROVIDER_BASE_URL`, `BULLE_PROVIDER_API_KEY`, `BULLE_EFFORT`, `BULLE_REASONING_BUDGET`, `BULLE_ROOT`, `BULLE_SYSTEM_PROMPT`, `BULLE_ADDITIONAL_PROMPT`, `BULLE_BASH`, `BULLE_THINKING`, `BULLE_PROJECT_CONTEXT`, `BULLE_SKILLS`, `BULLE_TRUST_SKILLS`, `BULLE_SKILL_DIRS`, `BULLE_APPROVE_TOOLS`, `BULLE_DIFFS`, `BULLE_SHOW_HOOKS`, `BULLE_SHOW_HOOK_OUTPUT`, `BULLE_MAX_ITERATIONS`, `BULLE_COMPACT_AT`, `BULLE_MAX_CONCURRENCY`, `BULLE_MAX_PARALLEL_AGENTS`, `BULLE_COMPACTION_SOFT_RATIO`, `BULLE_COMPACTION_SMART_RATIO`, `BULLE_COMPACTION_WINDOW_TOKENS`, `BULLE_COMPACTION_RESERVE_TOKENS`, `BULLE_COMPACTION_KEEP_TURNS`, `BULLE_COMPACTION_KEEP_TOKENS`, `BULLE_COMPACTION_ANCHOR_MESSAGES`, `BULLE_COMPACTION_JUDGE`, `BULLE_COMPACTION_JUDGE_MODEL`, `BULLE_COMPACTION_JUDGE_BASE_URL`, `BULLE_COMPACTION_JUDGE_API_KEY`, `BULLE_COMPACTION_PRUNE_THRESHOLD`, `BULLE_COMPACTION_MAX_BLOCKS`, `BULLE_FETCH`, `BULLE_TASKS`, `TYPESAFE_API_KEY` | A misspelt boolean (`BULLE_BASH=yez`) is treated as unmentioned, not as `false`, and falls through to the layer below. `BULLE_SKILL_DIRS` is colon-separated, the same convention `PATH` itself uses for a list of directories. `BULLE_PROVIDER_BASE_URL` and `BULLE_PROVIDER_API_KEY` belong to the active provider — see [Custom providers](#custom-providers). `TYPESAFE_API_KEY` is the compaction judge's key and beats `BULLE_COMPACTION_JUDGE_API_KEY`; it is the one credential to keep in the environment rather than the file |
+| Environment | `BULLE_PROFILE`, `BULLE_BACKEND`, `BULLE_MODEL`, `BULLE_PROVIDER_BASE_URL`, `BULLE_PROVIDER_API_KEY`, `BULLE_EFFORT`, `BULLE_ROOT`, `BULLE_SYSTEM_PROMPT`, `BULLE_ADDITIONAL_PROMPT`, `BULLE_BASH`, `BULLE_THINKING`, `BULLE_PROJECT_CONTEXT`, `BULLE_SKILLS`, `BULLE_TRUST_SKILLS`, `BULLE_SKILL_DIRS`, `BULLE_APPROVE_TOOLS`, `BULLE_DIFFS`, `BULLE_SHOW_HOOKS`, `BULLE_SHOW_HOOK_OUTPUT`, `BULLE_MAX_ITERATIONS`, `BULLE_COMPACT_AT`, `BULLE_MAX_CONCURRENCY`, `BULLE_MAX_PARALLEL_AGENTS`, `BULLE_COMPACTION_JUDGE`, `BULLE_COMPACTION_JUDGE_PROVIDER`, `BULLE_FETCH`, `BULLE_TASKS`, `TYPESAFE_API_KEY` | A misspelt boolean (`BULLE_BASH=yez`) is treated as unmentioned, not as `false`, and falls through to the layer below. `BULLE_SKILL_DIRS` is colon-separated, the same convention `PATH` itself uses for a list of directories. `BULLE_PROVIDER_BASE_URL` and `BULLE_PROVIDER_API_KEY` belong to the active provider — see [Custom providers](#custom-providers). `TYPESAFE_API_KEY` is the compaction judge's key and beats `BULLE_COMPACTION_JUDGE_API_KEY`; it is the one credential to keep in the environment rather than the file. The compaction ladder's own ratios and tail bounds are sunstopped — they are read when present and still take effect, but they are no longer documented or scaffolded. `BULLE_COMPACTION_JUDGE_PROVIDER` names the judge's decision model (`jev` or `clef`) and is the one new judge key. |
 | File | `~/.bulle.yml` | Preferences only, **no credentials** — those already have two homes: the environment, and the Anthropic SDK's own profile. A file can avoid holding one even where it needs one: `api_key_command` names the program that prints the key (`provider.api_key_command`, `limits.compaction.judge.api_key_command`) — see [Keeping the key out of the file](#keeping-the-key-out-of-the-file). `KnownFields(true)`: an unrecognised key (`max_iteration:`, one letter short) is refused rather than silently ignored |
-| Defaults | — | `provider.backend: anthropic`, `root: .`, `tools.run_command: true`, `reasoning.thinking: true`, `discovery.project_context: true`, `discovery.skills: true`, `discovery.trust_skills: false`, `discovery.trust_hooks: false`, `sources.skill_dirs: []`, `sources.mcp: {}`, `security.approve_tools: false`, `security.deny_elevation: true`, `ui.diffs: true`, `ui.show_hooks: true`, `ui.show_hook_output: true`, `limits.max_iterations: 5`, `limits.compact_at: unset` (an absolute override when set; unset derives the ceiling from `soft_ratio` × the context window, `0` disables), `limits.max_concurrency: 16`, `limits.max_parallel_agents: 16`, `limits.compaction.soft_ratio: 0.65`, `limits.compaction.smart_ratio: 0.80`, `limits.compaction.keep_turns: 1`, `limits.compaction.keep_tokens: 40000`, `limits.compaction.anchor_messages: 1`, `limits.compaction.judge.enabled: false`, (`limits.compaction.window_tokens` and `reserve_tokens` are unset: the first is the backend's own window, the second a fifth of it), `tools.web_fetch: true`, `tools.tasks: true`, `tools.parallel_agents: true`, `ui.rendering_mode: tui`, `ui.group_tools: true`, `ui.show_thinking: true` |
+| Defaults | — | `provider.backend: anthropic`, `root: .`, `tools.run_command: true`, `reasoning.thinking: true`, `discovery.project_context: true`, `discovery.skills: true`, `discovery.trust_skills: false`, `discovery.trust_hooks: false`, `sources.skill_dirs: []`, `sources.mcp: {}`, `security.approve_tools: false`, `security.deny_elevation: true`, `ui.diffs: true`, `ui.show_hooks: true`, `ui.show_hook_output: true`, `limits.max_iterations: 5`, `limits.compact_at: unset` (an absolute override when set; unset derives the ceiling from `soft_ratio` × the context window, `0` disables), `limits.max_concurrency: 16`, `limits.max_parallel_agents: 16`, `limits.compaction.judge.enabled: false`, `limits.compaction.judge.provider: jev` (`limits.compaction.window_tokens` and `reserve_tokens` are unset: the first is the backend's own window, the second a fifth of it), `tools.web_fetch: true`, `tools.tasks: true`, `tools.parallel_agents: true`, `ui.rendering_mode: tui`, `ui.group_tools: true`, `ui.show_thinking: true` |
 
 `project_context` and `skills` default **on**, unlike `bash`: each fails soft to nothing when
 there is nothing to find — no `AGENTS.md`/`CLAUDE.md` anywhere above `root`, no
@@ -129,44 +129,17 @@ reasoning:
   thinking: true
   budget: 8192
 limits:
-  # compact_at is an absolute token ceiling. Left unset (the default) the
-  # ceiling comes from the context window and soft_ratio below; 0 turns
-  # compaction off outright.
-  # compact_at: 75000
   max_iterations: 5
   max_concurrency: 16
   max_parallel_agents: 16
-  # compaction decides, per history block, what to keep, prune or fold into the
-  # state ledger. Two of its settings are yours to decide: judge.enabled below,
-  # and compact_at above. The rest are defaults that are right for most sessions.
-  #
-  # The ratios are fractions of the window a turn can fill: the backend's window
-  # less reserve_tokens, the runway held back for the model's own answer.
-  # soft_ratio is the free rung; smart_ratio is the paid one. Raise soft_ratio
-  # before touching smart_ratio.
+  # compact_at is an absolute token ceiling. Left unset (the default) the
+  # ceiling comes from the backend's context window; 0 turns compaction
+  # off outright.
+  # compact_at: 75000
   compaction:
-    soft_ratio: 0.65
-    smart_ratio: 0.80
-    # window_tokens overrides what the backend reports — gateways under-report
-    # and some runners report nothing at all. reserve_tokens left out is a fifth
-    # of the window, between 8k and 64k.
-    # window_tokens: 200000
-    # reserve_tokens: 40000
-    # keep_turns is a floor in messages the verbatim tail never drops below, and
-    # keep_tokens is the budget that sizes it.
-    keep_turns: 1
-    keep_tokens: 40000
-    anchor_messages: 1
-    # The judge is opt-in and off by default: enabling it sends conversation
-    # history to TypeSafe (see "Compaction" below).
     judge:
       enabled: false
-      model: jev-latest
-      base_url: https://api.typesafe.ai
-      api_key: ""
-      # api_key_command: tiroir get TYPESAFE_API_KEY
-      prune_threshold: 0.75
-      max_blocks_per_call: 64
+      provider: jev
 session:
   root: .
   system_prompt: You are a terminal coding assistant.
@@ -422,116 +395,76 @@ The conversation history remains intact when switching models mid-session.
 
 ### Compaction
 
-Compaction used to trip at one absolute token count. It now has a ladder: the session measures
-itself against the backend's context window and acts at the ratio it crossed, before it reaches
-any ceiling at all.
+The session measures itself against the backend's context window and compacts
+at the ratio it has crossed, instead of at one absolute token count. Two tiers:
 
 | Tier | Crossed at | What it does | Model calls |
 |---|---|---|---|
-| soft | `soft_ratio` × usable window | Tombstones oversized history tool results older than the active window — deterministic, no model call | 0 |
-| smart | `smart_ratio` × usable window | Classifies each history block and keeps, prunes or folds it into one `[state ledger]` message, forcing the fold when the gentle one would not land | 1 judge + 1 ledger |
+| soft | `soft_ratio` × usable window | Tombstones oversized old tool results — deterministic, no model call | 0 |
+| smart | `smart_ratio` × usable window | Classifies each history block and folds it into one `[state ledger]` message, keeping, pruning or folding; forces the fold when the gentle one would not land | 1 judge + 1 ledger |
 
-Whether a pass **forces** — folding the whole history rather than the blocks the judge left in
-place — is not a third threshold. It is derived: the pass forces when the gentle fold it just
-built would not leave the conversation under its trigger. Asking that directly is more precise
-than a second ratio, which had to serve every window size at once, and it is safe because
-forcing only ever moves a block from kept to folded. A `prune` still needs the judge's
-probability and confidence, so forcing costs verbatim fidelity and never a fact.
+Only four keys are the user's decisions. The ratios and tail bounds below are
+internalised defaults — they are read when present and still take effect from old
+files, but they are no longer scaffolded or documented; delete them from anyone's
+file once they know why the ladder works.
 
-The **usable window** is the backend's context window less `reserve_tokens`, the
-runway held back for the model's own answer. Measuring the ladder against it is
-what stops the top rung from leaving a reasoning model nothing to think in: against
-the raw window a ratio at 0.90 would leave only a tenth of it for the response,
-where against the usable window the top rung leaves the reserve *and* a fifth of
-what a turn can fill. The reserve defaults to a fifth of the window within the
-shipped bounds (8k–64k); set `reserve_tokens` when you know what the model needs,
-and `window_tokens` when the backend under-reports a window or reports none at
-all — an OpenAI-compatible runner reports zero, which otherwise leaves every
-session on one global `75000`.
+`limits.compact_at` (the absolute ceiling; `0` disables; unset derives the
+ceiling from the ratios and the backend's reported window) is the override for
+gateways that under-report the window and the one escape hatch the ladder does
+not own. `limits.compaction.window_tokens` pins the figure the ladder is
+measured against when the backend reports nothing, and the reserve the top rung
+leaves for the model's own answer is a fifth of that window within shipped
+bounds.
 
-Only tool results are tombstoned, not reasoning: every backend drops a `Reasoning` block when it
-builds a request (Anthropic wants the signature it was issued with, and the stream never carries
-one), so a stub on it would free no context while editing a transcript you can still scroll back
-to. What the soft tier reclaims is the tool output. A ratio outside `(0,1]`, or a ladder whose
-rungs are out of order, is refused at load rather than quietly never firing — `soft_ratio: 0` would
-derive a zero ceiling, which every trigger reads as "compaction off".
+| Key | Default | What it does |
+|---|---|---|
+| `limits.compact_at` | unset (backend's window or 75000) | Absolute ceiling; `0` disables compaction |
+| `limits.compaction.judge.enabled` | `false` | Opt-in. Sends history to the judge's provider — the one setting that leaves the machine |
+| `limits.compaction.judge.provider` | `jev` | Decision model: `jev` (TypeSafe System One) or `clef` (Cloudflare via OpenRouter) |
+| `limits.compaction.window_tokens` | unset | Override for gateways that under-report the context window |
 
-`limits.compact_at` still speaks last: a value someone set is an absolute ceiling and beats the
-ratios, `0` turns compaction off, and leaving it unset is what puts the ladder in charge. A
-backend that reports no context window cannot use a ratio at all and falls back to `75000`, the
-same number `DefaultCompactAt` has always carried. `keep_tokens` sizes the verbatim tail as a
-token budget and `anchor_messages` pins the head: two heavy file reads can no longer hold the
-window open by virtue of being the newest turns, and the first user turn is never rewritten,
-summarized or pruned, so the original task cannot be summarized away. `keep_turns` is the floor
-under the budget — how few messages the tail may ever shrink to, one by default, the live turn
-alone, which is also the one turn no summary may stand in for. Neither bound may take more than
-half of what a pass may fill — a `keep_turns` whose own turns would is refused at load, whenever a
-`window_tokens` or a `compact_at` is there to bound the cap — so a tail can never defeat the pass it triggers. With the judge off (the default), a pass folds the whole history into the ledger. With it on, a pass classifies each history block and keeps, prunes or folds it — and folds the rest too when the keeps would not land the conversation under its trigger.
+**The judge is opt-in and off by default.** Turning on
+`limits.compaction.judge` sends conversation history — which can include
+source code and secrets — to the judge's provider for classification, so it is
+never a shipped default and has to be asked for. Its key prefers its vendor's
+own environment variable — `TYPESAFE_API_KEY` for `jev`, `OPENROUTER_API_KEY`
+for `clef` — over `limits.compaction.judge.api_key`.
+With the judge off, compaction behaves exactly as it did before this ladder
+existed.
 
-The ledger is only ever *merged* into: a later pass folds new facts in line by line, and a
-summarizer that restates what the ledger already holds adds nothing to it. It is never handed to a
-summarizer alone — every call that rewrites it also carries turns no earlier pass compressed — and
-once the body outgrows one summary (2000 tokens, the ceiling the summarizer itself writes under) the
-pass *consolidates* it instead: one rewritten block, accepted only if it still names every
-identifier the old body named, and otherwise the merge stands. If a provider refuses a request for
-length anyway, bulle compacts once and sends the turn again — one forced pass, at most once per
-turn, and not at all while `compact_at` is `0`.
-
-**The judge is opt-in and off by default.** Turning on `limits.compaction.judge` sends
-conversation history — which can include source code and secrets — to TypeSafe's System One model
-for classification, so it is never a shipped default and has to be asked for. It is the only
-setting here that leaves the machine. Its key prefers the `TYPESAFE_API_KEY` environment variable
-over `limits.compaction.judge.api_key`. With the judge off, compaction behaves exactly as it did
-before this ladder existed.
-
-Enabling it is one key in `~/.bulle.yml`. No flag and no environment variable are required:
+Enabling it is one key in `~/.bulle.yml`. No flag and no environment variable are
+required:
 
 ```yaml
 limits:
   compaction:
     judge:
-      enabled: true          # sends history to TypeSafe on every summarizing pass
-      model: jev-latest
-      base_url: https://api.typesafe.ai
-      api_key: ""            # empty is fine: export TYPESAFE_API_KEY instead
-      prune_threshold: 0.75  # a block is pruned at this probability and over
-      max_blocks_per_call: 64
+      enabled: true          # sends history to the judge's provider on every summarizing pass
+      provider: jev
+      # model, base_url, api_key, prune_threshold, max_blocks_per_call are
+      # internalised defaults — read from the file when present but not
+      # documented or scaffolded. Leave them out unless you know you need them.
+      # api_key_command: tiroir get TYPESAFE_API_KEY
 ```
 
-A missing key is not a startup error, because `base_url` may point at a proxy that wants none. The
-first pass is what reports it: it fails with `typesafe: unauthorized (401)`, prunes nothing, and
-falls back to the deterministic mask, so a misconfigured judge costs an attempt and never a broken
-conversation.
+`/status` reports the provider and model version that actually answered the last
+call.
 
-`/status` names the model version that actually answered the last call, because `model` defaults to
-the vendor's drifting `jev-latest` alias and the thresholds were tuned against one build behind it.
-Once the ladder behaves the way you want, pin `model` to that versioned id so the tuning survives
-the next release.
-
-### Tuning the judge thresholds
-
-`prune_threshold` and the confidence floor are the two numbers that decide whether a block is
-deleted, and both are shipped defaults rather than measured ones. The calibration harness is how you
-check them against the model: it classifies a corpus of labeled history blocks in one call, re-scores
-the answers across a sweep of thresholds, and prints where the model's confidence and its accuracy
-part company.
+**Calibrating the threshold.** The prune threshold and the confidence floor are the two numbers
+that decide whether a block is deleted. The calibration harness classifies a corpus of labeled
+history blocks in one call, re-scores the answers across a sweep of thresholds, and prints where
+the model's confidence and its accuracy diverge. It talks to the network and it bills, so it is
+opt-in with `BULLE_CALIBRATION=1`, and each provider runs it against its own vendor key:
 
 ```sh
-TYPESAFE_API_KEY=... go test ./internal/compaction -run JudgeCalibration -v
+BULLE_CALIBRATION=1 TYPESAFE_API_KEY=... go test ./internal/compaction -run JudgeCalibration -v
+BULLE_CALIBRATION=1 BULLE_CALIBRATION_PROVIDER=clef OPENROUTER_API_KEY=... go test ./internal/compaction -run JudgeCalibration -v
 ```
 
-It skips without a key, so it stays out of CI. The corpus is
-`internal/compaction/testdata/judge_labels.json` — a seed of seventeen cases with the verdict a careful
-operator would give each one. Extend it with blocks from your own traces before trusting the numbers;
-the harness fails when a block labeled `keep` is pruned at the shipped threshold, and when agreement
-with the labels drops under its floor.
-
-The ladder is visible while it fills: the status line shows the live load against the usable
-window with its ratio and the tier that load has reached (`↕120k/160k · 0.75 · soft`), and `/status` adds the
-window it came from with the reserve held back (`window · 200k raw, 160k usable, 40k reserved for
-the answer`), the
-accumulated ledger's size, the tier of the last pass that wrote it, and the judge while it is on —
-the one setting here that leaves the machine is named where a reader already looks.
+Every provider ships with its own measured numbers: on the current corpus `jev-1.13.0` agrees with
+the labels 76% of the time at the shipped threshold, and `cloudflare/clef` 65% with zero false
+prunes across the whole sweep (measured 2026-10-07, see `internal/compaction/calibration_test.go`).
+Re-run the harness against a provider before moving its numbers.
 
 ## Context and skills
 

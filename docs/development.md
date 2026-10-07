@@ -51,6 +51,14 @@ The version lives in exactly one place: the git tag. goreleaser stamps it into `
 at build time, and a source build reports `dev`. Do not introduce a second copy of the number
 — a literal that tooling does not read is a copy that drifts.
 
+### Settings budget
+
+A new user-facing setting needs a justification note in the same PR that adds it, and the
+default is pinned in a test instead of exposed through the scaffold. If the setting is not
+something a newcomer should be asked about at first boot, it is internalised: the struct field
+and the merge rule stay so old files keep working, but the scaffold, the example file and the
+docs drop it.
+
 ### Cutting a release
 
 Check first with the suite-wide flow:

@@ -79,15 +79,13 @@ func Run(ctx context.Context, a Adapter, respond Responder, router Router) error
 			return
 		}
 		gate, release := inTurn.wait(m.Key())
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if gate != nil {
 				<-gate
 			}
 			defer release()
 			answer(ctx, a, respond, m)
-		}()
+		})
 	})
 	wg.Wait()
 	return err

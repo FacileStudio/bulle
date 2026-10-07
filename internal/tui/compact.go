@@ -116,7 +116,7 @@ func runCompaction(ctx context.Context, results chan compactOutcome, pass compac
 
 	judgeCtx, cancel := context.WithTimeout(ctx, compactJudgeTimeout)
 	fold, err := compaction.Classify(judgeCtx, pass.conv, pass.plan, compaction.JudgeRequest{
-		Goal: compaction.GoalText(pass.conv, pass.plan),
+		Goal: compaction.JudgeGoal(pass.conv, pass.plan),
 	}, pass.judge)
 	cancel()
 	if err != nil {

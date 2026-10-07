@@ -31,14 +31,17 @@ func TestCompactionDefaults(t *testing.T) {
 	if DerefBool(c.Judge.Enabled) {
 		t.Error("judge enabled = true, want the judge off by default")
 	}
-	if c.Judge.Model != "jev-latest" || c.Judge.BaseURL != "https://api.typesafe.ai" {
-		t.Errorf("judge endpoint = %q %q, want the TypeSafe defaults", c.Judge.Model, c.Judge.BaseURL)
+	if c.Judge.Model != "" || c.Judge.BaseURL != "" {
+		t.Errorf("judge model/base_url = %q %q, want both unset and derived from the provider where the judge is built", c.Judge.Model, c.Judge.BaseURL)
 	}
 	if c.Judge.PruneThreshold == nil || *c.Judge.PruneThreshold != DefaultPruneThreshold {
 		t.Errorf("prune_threshold = %v, want the shipped %v", c.Judge.PruneThreshold, DefaultPruneThreshold)
 	}
 	if c.Judge.MaxBlocks == nil || *c.Judge.MaxBlocks != 64 {
 		t.Errorf("max_blocks_per_call = %v, want 64", c.Judge.MaxBlocks)
+	}
+	if c.Judge.Provider != JudgeProviderJEV {
+		t.Errorf("judge provider = %q, want %q", c.Judge.Provider, JudgeProviderJEV)
 	}
 }
 

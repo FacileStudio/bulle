@@ -68,9 +68,9 @@ func reportConfidenceBands(t *testing.T, verdicts []Verdict, want []Decision) {
 // assertCalibration holds the shipped threshold to two things: no block labeled
 // keep may be pruned — a false prune is the one error the conversation cannot
 // recover from, and the asymmetric gate exists to make it impossible rather than
-// unlikely — and the corpus accuracy has to clear the floor, which is what
-// catches a threshold that has come loose from the model behind it.
-func assertCalibration(t *testing.T, scores []calibration) {
+// unlikely — and the corpus accuracy has to clear the provider's floor, which is
+// what catches a threshold that has come loose from the model behind it.
+func assertCalibration(t *testing.T, floor float64, scores []calibration) {
 	t.Helper()
 	for _, score := range scores {
 		if score.threshold != DefaultPruneThreshold {
@@ -80,9 +80,9 @@ func assertCalibration(t *testing.T, scores []calibration) {
 			t.Errorf("%d block(s) labeled keep were pruned at the shipped threshold %v: the gate is letting the one destructive verdict through",
 				score.falsePrune, DefaultPruneThreshold)
 		}
-		if score.accuracy < minCalibrationAccuracy {
+		if score.accuracy < floor {
 			t.Errorf("accuracy at the shipped threshold = %.0f%%, under the %.0f%% floor — the corpus or the thresholds have moved",
-				score.accuracy*100, minCalibrationAccuracy*100)
+				score.accuracy*100, floor*100)
 		}
 	}
 }

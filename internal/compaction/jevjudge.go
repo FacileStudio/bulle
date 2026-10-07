@@ -14,9 +14,10 @@ import (
 // caps are spent from the recent end, where a prune is most useful.
 const defaultMaxState = 256 * 1024
 
-// jevJudge is the System One adapter: one state, one choice question per block,
-// one batched call. It is the only place in this package that knows a network
-// exists.
+// jevJudge is the decision-model adapter: one state, one choice question per
+// block, one batched call, over whichever wire surface the config chose —
+// System One or the OpenRouter Decisions API. It is the only place in this
+// package that knows a network exists.
 type jevJudge struct {
 	client    *jev.Client
 	threshold float64
@@ -30,13 +31,14 @@ type jevJudge struct {
 }
 
 // NewJevJudge builds the opt-in classifier, or nil when the judge is off — a
-// small, tool-free surface the TUI can hold and test without a network.
+// small, tool-free surface the TUI can hold and test without a network. The
+// config's endpoint picks the wire surface; a zero value speaks System One.
 func NewJevJudge(cfg JudgeConfig) Judge {
 	if !cfg.Enabled {
 		return nil
 	}
 	return &jevJudge{
-		client:    jev.New(jev.Config{BaseURL: cfg.BaseURL, APIKey: cfg.APIKey, Model: cfg.Model}),
+		client:    jev.New(jev.Config{Endpoint: cfg.Endpoint, BaseURL: cfg.BaseURL, APIKey: cfg.APIKey, Model: cfg.Model}),
 		threshold: pruneThreshold(cfg.PruneThreshold),
 		maxBlocks: cfg.MaxBlocks,
 	}
@@ -114,8 +116,10 @@ func (j *jevJudge) record(response jev.Response) {
 	defer j.mu.Unlock()
 	j.last = Answer{
 		Model:        response.Model,
+		Provider:     response.Provider,
 		InputTokens:  response.Usage.InputTokens,
 		OutputTokens: response.Usage.OutputTokens,
+		CostUSD:      response.Usage.Cost,
 	}
 }
 

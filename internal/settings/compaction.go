@@ -33,17 +33,27 @@ type Compaction struct {
 	Judge          Judge  `yaml:"judge"`
 }
 
-// Judge is the TypeSafe System One classifier that ranks history blocks
-// keep / prune / ledger before the summarizer writes the ledger. It is off by
-// default: enabling it sends conversation history to a third party, so it is
-// an explicit opt-in and never a shipped default. The key prefers the
-// TYPESAFE_API_KEY environment variable over the file; api_key_command is the
-// alternative that leaves a file carrying no credential at all (see keycmd.go).
+// Judge is the decision model that ranks history blocks keep / prune /
+// ledger before the summarizer writes the ledger. It is off by default:
+// enabling it sends conversation history to a third party, so it is an
+// explicit opt-in and never a shipped default.
+//
+// Provider names the decision model: jev is TypeSafe's System One (the
+// default), clef is Cloudflare's fine-tune served on Workers AI through
+// OpenRouter. Model and BaseURL are derived from it where the judge is built;
+// setting them explicitly still wins, which is an escape hatch for pointing
+// at a proxy or a versioned build rather than something to advertise. The
+// key prefers the vendor's own environment variable over the file, and
+// api_key_command is the alternative that leaves a file carrying no
+// credential at all (see keycmd.go).
 type Judge struct {
-	Enabled *bool  `yaml:"enabled"`
-	Model   string `yaml:"model"`
-	BaseURL string `yaml:"base_url"`
-	APIKey  string `yaml:"api_key"`
+	Enabled *bool `yaml:"enabled"`
+	// Provider is the decision model: "jev" (TypeSafe direct, the default) or
+	// "clef" (Cloudflare through OpenRouter). Empty means the default.
+	Provider string `yaml:"provider"`
+	Model    string `yaml:"model"`
+	BaseURL  string `yaml:"base_url"`
+	APIKey   string `yaml:"api_key"`
 	// APIKeyCommand is run to obtain the judge's key when APIKey is empty, the
 	// same arrangement the provider's key has. See keycmd.go.
 	APIKeyCommand  string   `yaml:"api_key_command"`
@@ -87,6 +97,9 @@ func (j *Judge) merge(over Judge) {
 	if over.Enabled != nil {
 		j.Enabled = over.Enabled
 	}
+	if over.Provider != "" {
+		j.Provider = over.Provider
+	}
 	if over.Model != "" {
 		j.Model = over.Model
 	}
@@ -122,7 +135,10 @@ func (c Compaction) Ratios() (soft, smart float64) {
 
 // defaultCompaction is the tier ladder and judge a session with no opinion of
 // its own runs on. The judge is off: it is the one setting that sends history
-// off the machine, so a machine nobody opted in on never makes that call.
+// off the machine, so a machine nobody opted in on never makes that call. The
+// model and base URL stay unset here and are derived from the provider where
+// the judge is built, so an explicit provider cannot be silently overridden by
+// a default that pre-filled the jev values.
 func defaultCompaction() Compaction {
 	soft, smart := DefaultSoftRatio, DefaultSmartRatio
 	keepTurns, anchorMessages, maxBlocks := DefaultKeepTurns, 1, 64
@@ -136,8 +152,7 @@ func defaultCompaction() Compaction {
 		AnchorMessages: &anchorMessages,
 		Judge: Judge{
 			Enabled:        &judgeEnabled,
-			Model:          "jev-latest",
-			BaseURL:        "https://api.typesafe.ai",
+			Provider:       JudgeProviderJEV,
 			PruneThreshold: &pruneThreshold,
 			MaxBlocks:      &maxBlocks,
 		},
@@ -158,23 +173,36 @@ func compactionEnv() Compaction {
 		AnchorMessages: envInt(EnvPrefix + "COMPACTION_ANCHOR_MESSAGES"),
 		Judge: Judge{
 			Enabled:        envBool(EnvPrefix + "COMPACTION_JUDGE"),
+			Provider:       envGet("COMPACTION_JUDGE_PROVIDER"),
 			Model:          envGet("COMPACTION_JUDGE_MODEL"),
 			BaseURL:        envGet("COMPACTION_JUDGE_BASE_URL"),
-			APIKey:         judgeKeyEnv(),
+			APIKey:         judgeKeyEnv(envGet("COMPACTION_JUDGE_PROVIDER")),
 			PruneThreshold: envFloat(EnvPrefix + "COMPACTION_PRUNE_THRESHOLD"),
 			MaxBlocks:      envInt(EnvPrefix + "COMPACTION_MAX_BLOCKS"),
 		},
 	}
 }
 
-// judgeKeyEnv reads the judge's key, preferring TYPESAFE_API_KEY — the vendor's
-// own name, so a key already exported for TypeSafe needs no second copy — over
-// the namespaced setting when both are set.
-func judgeKeyEnv() string {
-	if key := os.Getenv("TYPESAFE_API_KEY"); key != "" {
+// judgeKeyEnv reads the judge's key, preferring the provider's own vendor
+// variable — so a key already exported for that vendor needs no second copy —
+// over the namespaced setting when both are set. An unnamed provider is the
+// default one: jev.
+func judgeKeyEnv(provider string) string {
+	if key := vendorJudgeKey(provider); key != "" {
 		return key
 	}
 	return envGet("COMPACTION_JUDGE_API_KEY")
+}
+
+// vendorJudgeKey is the vendor's own environment variable for one judge
+// provider: clef is reached through OpenRouter and carries its key under that
+// vendor's name, everything else is TypeSafe's. It reads the ambient
+// environment, not the settings chain, so it can fill a key no layer supplied.
+func vendorJudgeKey(provider string) string {
+	if provider == JudgeProviderClef {
+		return os.Getenv("OPENROUTER_API_KEY")
+	}
+	return os.Getenv("TYPESAFE_API_KEY")
 }
 
 // ValidateCompaction rejects a tier ladder that cannot work. It runs on the
@@ -217,19 +245,4 @@ func ValidateCompaction(c Compaction, compactAt *int64) error {
 		return err
 	}
 	return validateJudge(c.Judge)
-}
-
-// validateJudge rejects a prune threshold that cannot mean anything. It is the
-// one setting guarding a deletion, so a value outside (0,1] is refused rather
-// than reinterpreted: the adapter's own fallback is the floor under a config
-// built in code, not a licence to write an unusable one in a file.
-func validateJudge(j Judge) error {
-	if j.PruneThreshold == nil {
-		return nil
-	}
-	if !(*j.PruneThreshold > 0 && *j.PruneThreshold <= 1) {
-		return &ParseError{Path: "limits.compaction.judge.prune_threshold", Err: fmt.Errorf(
-			"want a probability in (0,1], got %v", *j.PruneThreshold)}
-	}
-	return nil
 }

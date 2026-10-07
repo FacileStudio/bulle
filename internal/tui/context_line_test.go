@@ -221,12 +221,12 @@ func TestStatusNamesTheModelThatAnsweredAndWhatItBilled(t *testing.T) {
 	m := sized()
 	m.policy = windowedPolicy()
 	m.size = 150_000
-	m.judge = reportingJudge{answer: compaction.Answer{Model: "jev-1.13.0", InputTokens: 12_400}}
+	m.judge = reportingJudge{answer: compaction.Answer{Model: "jev-1.13.0", InputTokens: 12_400, CostUSD: 0.0012}}
 
 	m.statusCmd()
 
 	got := strings.Join(m.unprinted, "\n")
-	for _, want := range []string{"judge · on", "judge model · jev-1.13.0", "12.4k tokens in"} {
+	for _, want := range []string{"judge · on", "judge model · jev-1.13.0", "12.4k tokens in", "$0.0012"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("status missing %q in %q", want, got)
 		}

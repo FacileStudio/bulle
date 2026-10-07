@@ -31,6 +31,15 @@ const (
 	DefaultKeepTokens = compaction.DefaultKeepTokens
 )
 
+// JudgeProvider names the decision model the compaction judge runs on. jev is
+// TypeSafe's System One, the default and the one the shipped thresholds are
+// calibrated against; clef is Cloudflare's fine-tune, served through OpenRouter.
+// Both are accepted at load; only these two names build a judge.
+const (
+	JudgeProviderJEV  = "jev"
+	JudgeProviderClef = "clef"
+)
+
 // Defaults is the bottom layer, and the only one that answers everything.
 func Defaults(system string) Config {
 	bash, thinking, projectContext, skills, trustSkills, approveTools, trustHooks, diffs, tasks, strict :=

@@ -104,8 +104,14 @@ func (m *Model) compactionLines() []string {
 // place. The bill is left off when the vendor reported none.
 func judgeModelLine(answer compaction.Answer) string {
 	line := "judge model · " + answer.Model
+	if answer.Provider != "" {
+		line += " via " + answer.Provider
+	}
 	if answer.InputTokens > 0 {
 		line += " · " + shortTokens(int64(answer.InputTokens)) + " tokens in"
+	}
+	if answer.CostUSD > 0 {
+		line += fmt.Sprintf(" · $%.4f", answer.CostUSD)
 	}
 	return line
 }

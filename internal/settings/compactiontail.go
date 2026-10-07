@@ -114,3 +114,28 @@ func halfCap(c Compaction, compactAt *int64) (int64, bool) {
 	}
 	return limit / 2, true
 }
+
+// validateJudge rejects a prune threshold that cannot mean anything. It is the
+// one setting guarding a deletion, so a value outside (0,1] is refused rather
+// than reinterpreted: the adapter's own fallback is the floor under a config
+// built in code, not a licence to write an unusable one in a file.
+//
+// Provider is validated the same way. An unknown name is not a preference, it
+// is a config that builds a judge against a transport that does not exist —
+// and unlike a typo in a ratio, which at worst never fires, this one sends
+// history to an endpoint that answers nothing, so the failure arrives as a
+// silent fallback rather than at the time it was written.
+func validateJudge(j Judge) error {
+	if j.Provider != "" && j.Provider != JudgeProviderJEV && j.Provider != JudgeProviderClef {
+		return &ParseError{Path: "limits.compaction.judge.provider", Err: fmt.Errorf(
+			"want %q or %q, got %q", JudgeProviderJEV, JudgeProviderClef, j.Provider)}
+	}
+	if j.PruneThreshold == nil {
+		return nil
+	}
+	if !(*j.PruneThreshold > 0 && *j.PruneThreshold <= 1) {
+		return &ParseError{Path: "limits.compaction.judge.prune_threshold", Err: fmt.Errorf(
+			"want a probability in (0,1], got %v", *j.PruneThreshold)}
+	}
+	return nil
+}

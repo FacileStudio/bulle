@@ -5,13 +5,18 @@ import (
 	"testing"
 )
 
-// classifyCorpus asks the live judge about the whole corpus in one batched call.
-// The verdicts carry the probability and the choice behind them, which is what
-// lets the sweep re-threshold the answers without paying for the corpus again.
-func classifyCorpus(t *testing.T, key, goal string, blocks []Block) []Verdict {
+// classifyCorpus asks the live judge about the whole corpus in one batched call,
+// on the wire the provider derives. The verdicts carry the probability and the
+// choice behind them, which is what lets the sweep re-threshold the answers
+// without paying for the corpus again.
+func classifyCorpus(t *testing.T, provider, key, goal string, blocks []Block) []Verdict {
 	t.Helper()
+	spec := SpecFor(provider)
 	judge := NewJevJudge(JudgeConfig{
 		Enabled:        true,
+		Endpoint:       spec.Endpoint,
+		BaseURL:        spec.BaseURL,
+		Model:          spec.Model,
 		APIKey:         key,
 		PruneThreshold: DefaultPruneThreshold,
 		MaxBlocks:      len(blocks),
@@ -25,7 +30,7 @@ func classifyCorpus(t *testing.T, key, goal string, blocks []Block) []Verdict {
 	}
 	if reporter, ok := judge.(Reporter); ok {
 		if answer := reporter.LastAnswer(); answer.Model != "" {
-			t.Logf("answered by %s · %d input tokens", answer.Model, answer.InputTokens)
+			t.Logf("%s on %s answered by %s · %d input tokens", provider, spec.BaseURL, answer.Model, answer.InputTokens)
 		}
 	}
 	return verdicts

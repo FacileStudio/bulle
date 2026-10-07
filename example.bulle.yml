@@ -1,214 +1,58 @@
-# bulle settings — every setting, every default, explicit.
-# Written here on first boot; delete this file and it is written again.
+# bulle settings — written on first boot, edited from here.
+# Delete this file and bulle writes it again. Every setting is documented in
+# docs/configuration.md; this file holds only the four choices a first run
+# actually has to make, with the rest left to defaults that are right for most
+# sessions.
 provider:
   backend: anthropic
   model: ""
   base_url: ""
   api_key: ""
   # api_key_command is run to obtain the key when api_key is empty, so this file
-  # can carry no secret: "tiroir get ANTHROPIC_API_KEY", "op read op://v/k". The
-  # command prints the key on stdout. A key from a flag, the environment, a file
-  # or a profile wins over it, so an exported ANTHROPIC_API_KEY keeps working
-  # untouched; the command is refused at startup, not ignored, when it fails.
+  # can carry no secret: "tiroir get ANTHROPIC_API_KEY", "op read op://v/k".
+  # The command prints the key on stdout. A key from a flag, the environment,
+  # a profile or another file wins; the command is refused at startup, not
+  # ignored, when it fails.
   # api_key_command: ""
 
 session:
   root: .
-  # system_prompt replaces the built-in harness prompt outright; leave it empty
-  # to keep bulle's own tool and safety guidance.
-  system_prompt: ""
-  # additional_prompt is appended after the base prompt and everything layered
-  # onto it: the place for a specialist persona that must not cost the harness
-  # guidance. It composes with system_prompt rather than competing with it.
-  additional_prompt: ""
-  continue: false
 
 limits:
   max_iterations: 5
-  # compact_at is an absolute token ceiling. Left unset (the default) the
-  # ceiling comes from the backend's context window and soft_ratio below; 0
-  # turns compaction off outright.
-  # compact_at: 75000
   max_concurrency: 16
-  # max_parallel_agents: 16
-  # grind budget: the per-run minimum spend a run must reach before stopping
-  # counts as finished. Both floors at 0 turn it off; grind_continuations caps
-  # how many continuation notices one run can be given. grind_continuations: 0
-  # turns the budget off even when a floor is set.
-  grind_min_cost: 0
-  grind_min_tokens: 0
-  grind_continuations: 2
-  # compaction decides, per history block, what to keep, prune or fold into the
-  # state ledger.
-  #
-  # Two of its settings are yours to decide: judge.enabled below, and compact_at
-  # above. The rest are defaults that are right for most sessions — they are
-  # listed so you can grep for them, and they want changing only if you know why.
+  # compact_at is an absolute token ceiling. Left unset (the default) the
+  # ceiling comes from the backend's context window and the compaction ratios;
+  # 0 turns compaction off outright.
+  # compact_at: 75000
+  # The compaction judge is opt-in and off by default. Enabling it sends
+  # conversation history — which can include source code and secrets — to a
+  # third-party decision model. provider names the model: "jev" (TypeSafe
+  # System One, the default) or "clef" (Cloudflare via OpenRouter). An explicit
+  # model/base_url still wins when set, as an escape hatch rather than a
+  # supported choice. The key prefers TYPESAFE_API_KEY over judge.api_key.
   compaction:
-    # soft_ratio is the free rung: it tombstones old tool output with no model
-    # call. smart_ratio is the paid one — it classifies the history and folds it
-    # into the ledger, forcing the fold when the gentle one would not land under
-    # the trigger. Raise soft_ratio before touching smart_ratio: the soft tier
-    # costs nothing and the smart tier is a call.
-    soft_ratio: 0.65
-    smart_ratio: 0.80
-    # window_tokens overrides what the backend reports — gateways under-report
-    # and some runners report nothing at all — so a session can pin the figure
-    # the ladder is measured against. Left out it is the backend's own.
-    # window_tokens: 200000
-    # reserve_tokens is the part of the window kept free for the model's answer;
-    # the ratios above are read against the window minus it. Left out it is a
-    # fifth of the window, between 8k and 64k.
-    # reserve_tokens: 40000
-    # keep_turns is a floor in messages the verbatim tail never drops below, and
-    # keep_tokens is the budget that sizes it beyond that floor.
-    keep_turns: 1
-    keep_tokens: 40000
-    anchor_messages: 1
-    # judge is the one setting here that leaves the machine: turning it on sends
-    # conversation history to TypeSafe. It is off by default, and its key is
-    # TYPESAFE_API_KEY, with judge.api_key as the file-side alternative.
     judge:
       enabled: false
-      model: jev-latest
-      base_url: https://api.typesafe.ai
-      api_key: ""
-      # judge.api_key_command is the same arrangement for the judge's own key,
-      # so a profile need not carry the TypeSafe secret either.
-      # api_key_command: ""
-      prune_threshold: 0.75
-      max_blocks_per_call: 64
-
-tools:
-  run_command: true
-  web_fetch: true
-  tasks: true
-  parallel_agents: true
-  diagnostics: true
-  search_content: true
-  find_files: true
+      provider: jev
+      # model, base_url, api_key and prune_threshold are internalised defaults:
+      # they are read from the file when present but no longer scaffolded or
+      # documented. Leave them out unless you know you need them.
+      # api_key_command: tiroir get TYPESAFE_API_KEY
 
 security:
-  approve_tools: false
-  path_isolation: false
   # deny_elevation refuses sudo-style elevation in run_command: a policy guard
   # against accidents and injected instructions, not a security boundary.
   # OS-level enforcement is the real wall.
   deny_elevation: true
   env_isolation: false
 
-reasoning:
-  effort: ""
-  thinking: true
-  budget: 0
-
-discovery:
-  project_context: true
-  skills: true
-  trust_skills: false
-  trust_hooks: false
-
-ui:
-  rendering_mode: tui
-  group_tools: true
-  show_thinking: true
-  diffs: true
-  prompt_placeholder: "Ask something. Esc stops a run, ctrl+c stops or quits, ctrl+\\ forces it."
-  transparent_blocks: true
-  cron_list_json: false
-  show_hooks: true
-  show_hook_output: true
-
 editor:
-  editor: ""              # empty uses the system EDITOR; set a path to force one (e.g. /usr/bin/vim)
-  prompt_edit_key: ctrl+g # opens the external editor on the prompt
+  # empty uses the system EDITOR; set a path to force one (e.g. /usr/bin/vim)
+  # editor: ""
+  # prompt_edit_key: ctrl+g # opens the external editor on the prompt
 
-sources:
-  skill_dirs: []
-  mcp_files: []
-  mcp: {}
-
-hooks: []
-# Scheduled jobs live under ~/.bulle/jobs/ (trusted with: bulle cron trust <name>)
-gates: []
-
-# Chat is the inbound surface: one long-lived process holding a platform
-# connection, turning a message from an allowlisted identity into one bulle run.
-# Its allowlist is the security boundary of the feature.
-chat:
-  matrix:
-    enabled: false
-    # homeserver is the base URL, the address Element points at, e.g.
-    # https://matrix.example.org
-    homeserver: ""
-    # user_id is the bot's MXID. device_id is only needed with an access_token.
-    user_id: ""
-    device_id: ""
-    # access_token authenticates the bot without a login. Empty with the command
-    # below set keeps the token out of this file.
-    access_token: ""
-    # access_token_command prints the token on stdout, the same arrangement
-    # provider.api_key_command has.
-    # access_token_command: tiroir get BULLE_MATRIX_TOKEN
-    # password is the alternative to a token: bulle logs in and creates the
-    # device itself, the easier first run because there is no device to name.
-    password: ""
-    # password_command: tiroir get BULLE_MATRIX_PASSWORD
-    # pickle_key encrypts the stored device keys. Losing it, or the database
-    # beside it, means a new device, which Element shows as unverified.
-    pickle_key: ""
-    # pickle_key_command: tiroir get BULLE_MATRIX_PICKLE_KEY
-    # recovery_key verifies the bot against account cross-signing keys.
-    # recovery_key: ""
-    # recovery_key_command: tiroir get BULLE_MATRIX_RECOVERY_KEY
-    # allow lists the MXIDs that may start a session; rooms limits which rooms
-    # are read. Both empty refuses every message, which is the safe default.
-    allow: []
-    rooms: []
-    # self_sign gives the bot its own cross-signing identity and signs its
-    # device, so it keeps decrypting once senders stop sharing keys with
-    # unverified devices; the recovery key it prints is the only copy.
-    # self_sign: false
-    # max_age drops an inbound message older than this, so a restart does not
-    # answer a stale backlog. Empty keeps every message.
-    # max_age: 1h
-    # workdir is the directory chat runs start in, ~ expanded. Empty uses the
-    # daemon's working directory, which is what the systemd unit sets.
-    # workdir: ~/Code
-
-# Sandbox: the sandbox command runs bulle on the host and sends every tool
-# call into a local boite microVM over SSH. Uncomment targets: to name one.
-sandbox:
-  default: ""
-  vm_name: ""
-  port: 2226
-  ssh_key_path: ~/.ssh/id_ed25519
-  # an empty root uses the VM's own workspace, where boite mounted the project
-  root: ""
-  auto_snapshot: false
-  # targets:
-  #   dev-vm:
-  #     vm_name: ""
-  #     port: 2226
-  #     ssh_key_path: ~/.ssh/id_ed25519
-  #     root: ""
-  #     auto_snapshot: false
-
-# Remote: the remote command runs bulle on the host and sends every tool call
-# to an SSH host. A bare user@host:port argument works without an entry here.
-remote:
-  default: ""
-  user: ""
-  # 0 lets ssh choose: ssh_config's Port, then ssh's own default (22)
-  port: 0
-  # an empty ssh_key_path lets ssh choose: ssh_config's IdentityFile, then the agent
-  ssh_key_path: ""
-  # an empty root starts in the SSH login directory, which is the user's home
-  root: ""
-  # targets:
-  #   staging:
-  #     host: staging.example.com
-  #     port: 22
-  #     user: deploy
-  #     ssh_key_path: ""
-  #     root: /srv/app
+# tools, discovery, ui, editor, sources, hooks, gates, sandbox, remote and the
+# rest are all in docs/configuration.md. The only ones worth naming here at first
+# boot are the ones above: the provider, the session root, the judge, and
+# compact_at. Everything else ships a default that is right for most sessions.

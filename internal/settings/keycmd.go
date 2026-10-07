@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -41,6 +42,7 @@ func ResolveKeys(c *Config) error {
 		c.APIKey = key
 	}
 	judge := &c.Compaction.Judge
+	judge.APIKey = resolveVendorKey(judge)
 	if judge.APIKey == "" {
 		key, err := KeyFromCommand(judge.APIKeyCommand)
 		if err != nil {
@@ -49,6 +51,37 @@ func ResolveKeys(c *Config) error {
 		judge.APIKey = key
 	}
 	return nil
+}
+
+// resolveVendorKey keeps the ambient key in step with the provider the merged
+// config names. The environment layer offers the vendor key it could see — its
+// own provider, defaulting to jev — so a file that named the other provider is
+// re-checked here, where the merged provider is known. A key that came from the
+// wrong vendor's ambient variable is dropped rather than kept: that clears the
+// field so the command below fills it from the right store, instead of a judge
+// on OpenRouter carrying TypeSafe's credential into a request that will 401.
+func resolveVendorKey(judge *Judge) string {
+	want := vendorJudgeKey(judge.Provider)
+	switch {
+	case judge.APIKey == "":
+		return want
+	case judge.APIKey == want:
+		return judge.APIKey
+	case !isAmbientVendorKey(judge.APIKey):
+		return judge.APIKey
+	case want != "":
+		return want
+	default:
+		return ""
+	}
+}
+
+// isAmbientVendorKey reports whether a key is one the machine has exported for
+// a judge vendor. A file's own literal is never ambient, so it survives every
+// provider arrangement — an explicit value is the one thing no derivation may
+// overwrite.
+func isAmbientVendorKey(key string) bool {
+	return key != "" && (key == os.Getenv("TYPESAFE_API_KEY") || key == os.Getenv("OPENROUTER_API_KEY"))
 }
 
 // KeyFromCommand runs one key command through the shell and returns the key it

@@ -20,8 +20,14 @@ const (
 	// a caller may override it without a code change.
 	DefaultModel = "jev-latest"
 
-	// endpoint is the one path this client speaks.
+	// endpoint is the TypeSafe System One surface. It is the path a client
+	// speaks when its Config names no endpoint, so a client built before the
+	// Decisions surface existed keeps hitting it with no code change.
 	endpoint = "/v1/systemone"
+
+	// decisionsPath is the OpenRouter Decisions surface, the route that also
+	// serves Cloudflare's clef.
+	decisionsPath = "/api/alpha/decisions"
 
 	defaultTimeout  = 10 * time.Second
 	defaultAttempts = 4
@@ -32,38 +38,64 @@ const (
 	maxBody = 1 << 20
 )
 
+// Endpoint names the API surface a client speaks. A zero value is System One,
+// so a Config that never mentions it talks to TypeSafe exactly as before.
+type Endpoint string
+
+const (
+	// EndpointSystemOne speaks POST {base}/v1/systemone, TypeSafe's own
+	// surface. It is the default.
+	EndpointSystemOne Endpoint = "systemone"
+
+	// EndpointDecisions speaks POST {base}/api/alpha/decisions, the OpenRouter
+	// surface that also serves Cloudflare's clef.
+	EndpointDecisions Endpoint = "decisions"
+)
+
 // Config is one client's settings. Empty fields take the defaults; APIKey falls
 // back to TYPESAFE_API_KEY when it is unset, so a key already exported for the
-// vendor needs no second copy.
+// vendor needs no second copy. Endpoint selects the API surface; BaseURL is the
+// host the chosen surface is reached at, so a Decisions client points at
+// https://openrouter.ai and a System One client at https://api.typesafe.ai.
 type Config struct {
 	BaseURL  string
 	APIKey   string
 	Model    string
+	Endpoint Endpoint
 	Timeout  time.Duration
 	Attempts int
 	Backoff  time.Duration
 }
 
-// Client is the System One client. It is safe for concurrent use; the judge
-// only ever calls it from one pass goroutine.
+// Client is a decision client. It is safe for concurrent use; the judge only
+// ever calls it from one pass goroutine.
 type Client struct {
 	baseURL  string
 	apiKey   string
 	model    string
+	endpoint Endpoint
 	http     *http.Client
 	attempts int
 	backoff  time.Duration
 }
 
-// New builds a client, filling every unset field from the defaults.
-func New(c Config) *Client {
-	if c.BaseURL == "" {
+// applyDefaults fills unset client settings from defaults.
+func applyDefaults(c *Config) {
+	switch {
+	case c.BaseURL != "":
+	case c.Endpoint == EndpointDecisions:
+		c.BaseURL = "https://openrouter.ai"
+	default:
 		c.BaseURL = DefaultBaseURL
 	}
 	if c.Model == "" {
 		c.Model = DefaultModel
 	}
-	if c.APIKey == "" {
+	switch {
+	case c.APIKey != "":
+	case c.Endpoint == EndpointDecisions:
+		c.APIKey = os.Getenv("OPENROUTER_API_KEY")
+	default:
 		c.APIKey = os.Getenv("TYPESAFE_API_KEY")
 	}
 	if c.Timeout <= 0 {
@@ -75,10 +107,18 @@ func New(c Config) *Client {
 	if c.Backoff <= 0 {
 		c.Backoff = defaultBackoff
 	}
+}
+
+// New builds a client, filling every unset field from the defaults. A Config
+// that carries no Endpoint speaks System One on DefaultBaseURL, byte-identical
+// to a client built before the second surface existed.
+func New(c Config) *Client {
+	applyDefaults(&c)
 	return &Client{
 		baseURL:  strings.TrimRight(c.BaseURL, "/"),
 		apiKey:   c.APIKey,
 		model:    c.Model,
+		endpoint: c.Endpoint,
 		http:     &http.Client{Timeout: c.Timeout},
 		attempts: c.Attempts,
 		backoff:  c.Backoff,
@@ -123,7 +163,7 @@ func (c *Client) Evaluate(ctx context.Context, state any, questions map[string]Q
 // error. The bearer key is the only credential this package ever touches and is
 // never logged.
 func (c *Client) post(ctx context.Context, payload []byte) (Response, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+endpoint, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url(), bytes.NewReader(payload))
 	if err != nil {
 		return Response{}, err
 	}
@@ -143,7 +183,7 @@ func (c *Client) post(ctx context.Context, payload []byte) (Response, error) {
 		return Response{}, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return Response{}, statusError(res.StatusCode, strings.TrimSpace(string(body)))
+		return Response{}, errorFor(c.endpoint, res.StatusCode, strings.TrimSpace(string(body)))
 	}
 
 	var out Response
@@ -164,10 +204,32 @@ func (c *Client) doer() *http.Client {
 	return c.http
 }
 
+// path returns the request path for this client's chosen surface. A zero-value
+// endpoint is System One, so a Client built before the second surface existed
+// keeps hitting the old path with no code change.
+func (c *Client) path() string {
+	if c.endpoint == EndpointDecisions {
+		return decisionsPath
+	}
+	return endpoint
+}
+
+// url builds the request URL, ensuring that a BaseURL ending with /api does not
+// duplicate the /api prefix of the Decisions route.
+func (c *Client) url() string {
+	base := strings.TrimRight(c.baseURL, "/")
+	p := c.path()
+	if strings.HasSuffix(base, "/api") && strings.HasPrefix(p, "/api/") {
+		base = strings.TrimSuffix(base, "/api")
+	}
+	return base + p
+}
+
 // pause waits out one backoff interval, doubling per attempt, and gives up the
 // moment the caller's context does.
 func (c *Client) pause(ctx context.Context, attempt int) error {
-	timer := time.NewTimer(c.backoff << attempt)
+	shift := min(attempt, 30)
+	timer := time.NewTimer(c.backoff << shift)
 	defer timer.Stop()
 	select {
 	case <-ctx.Done():

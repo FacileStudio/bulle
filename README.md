@@ -118,151 +118,56 @@ provider:
 
 session:
   root: .
-  system_prompt: ""
-  additional_prompt: ""
-  continue: false
 
 limits:
   max_iterations: 5
-  # compact_at is an absolute token ceiling when set, 0 disables compaction,
-  # and unset derives the ceiling from the context window and the ratios here.
+  max_concurrency: 16
+  # compact_at: 75000
   compaction:
-    # Two of these are yours to decide: judge.enabled below, and compact_at
-    # above. The rest are defaults that are right for most sessions.
-    #
-    # Ratios are fractions of the window a turn can fill: the backend's window
-    # less reserve_tokens, the runway held back for the model's answer.
-    # soft_ratio is the free rung; smart_ratio is the paid one. Raise soft_ratio
-    # before touching smart_ratio.
-    soft_ratio: 0.65
-    smart_ratio: 0.80
-    # window_tokens overrides what the backend reports; reserve_tokens defaults
-    # to a fifth of it, between 8k and 64k.
-    keep_turns: 1
-    keep_tokens: 40000
-    anchor_messages: 1
-    # The judge is OPT-IN and off by default: enabling it sends conversation
-    # history to TypeSafe. Its key prefers the TYPESAFE_API_KEY env var.
     judge:
       enabled: false
-      model: jev-latest
-      base_url: https://api.typesafe.ai
-      api_key: ""
-      prune_threshold: 0.75
-      max_blocks_per_call: 64
-
-tools:
-  run_command: true
-  web_fetch: true
-  tasks: true
-  parallel_agents: true
+      provider: jev
 
 security:
-  approve_tools: false
-  path_isolation: false
-  env_isolation: false
   deny_elevation: true
+  env_isolation: false
 
-reasoning:
-  effort: ""
-  thinking: true
-  budget: 0
-
-discovery:
-  project_context: true
-  skills: true
-  trust_skills: false
-  trust_hooks: false
-
-ui:
-  rendering_mode: tui
-  group_tools: true
-  show_thinking: true
-  prompt_placeholder: "Ask something. Esc stops a run, ctrl+c stops or quits, ctrl+\\ forces it."
-  transparent_blocks: true
-  cron_list_json: false
+editor:
+  # editor: /usr/bin/vim
+  # prompt_edit_key: ctrl+g
 
 sources:
   skill_dirs: []
   mcp: {}
-
-hooks: []
-
-sandbox:
-  default: ""
-  vm_name: ""
-  port: 2226
-  ssh_key_path: ~/.ssh/id_ed25519
-  root: ""
-  auto_snapshot: false
-  targets: {}
-
-remote:
-  default: ""
-  user: ""
-  port: 0
-  ssh_key_path: ""
-  root: ""
-  targets: {}
 ```
+
+The block above is the full scaffold — the file bulle writes on first boot,
+and the `TestExampleConfigIsTheScaffoldTemplate` test checks it is byte-identical
+to `example.bulle.yml`. The rest of the surface (tools, reasoning, discovery,
+ui, sandbox, remote, chat, gates, sources, hooks) is documented in
+[docs/configuration.md](docs/configuration.md); a key missing from the block
+above is not a broken setting, it is a setting kept to its default.
 
 ## Context compaction
 
-A long session is measured against the backend's context window and compacted at
-the ratio it has crossed, instead of at one absolute token count. Two tiers, the
-second a superset of the first:
+Two tiers: soft (deterministic, no model call) and smart (a judge pass
+that classifies each history block and keeps, prunes or folds it).
+Only four keys are the user's decisions; the ratios and tail bounds
+are internalised defaults — read when present, not documented or
+scaffolded:
 
-| Tier | Crossed at | What it does | Model calls |
-|---|---|---|---|
-| soft | `soft_ratio` (0.65) × usable window | Tombstones oversized old tool results — deterministic, no model call | 0 |
-| smart | `smart_ratio` (0.80) × usable window | Classifies each history block and folds it into one `[state ledger]` message, keeping, pruning or folding; forces the fold when the gentle one would not land | 1 judge + 1 ledger |
-
-Whether a pass *forces* — folding the whole history rather than the blocks the
-judge left in place — is not a third threshold. It is derived: the pass forces
-when the gentle fold it just built would not leave the conversation under its
-trigger. Asking that question directly is more precise than a second ratio, which
-had to serve every window size at once, and it is safe because forcing only ever
-moves a block from kept to folded: a prune still needs the judge's probability and
-confidence, so forcing costs verbatim fidelity and never a fact.
-
-The *usable window* is the backend's context window less `reserve_tokens` — the
-runway the model needs to finish its own answer — so the top rung still leaves the
-reserve plus a fifth of the usable window, instead of a fifth of the raw one.
-That reserve is an engineering hypothesis rather than a measurement: it defaults
-to a fifth of the window between 8k and 64k, and a session that knows what its
-model needs should set `reserve_tokens`. A backend that reports no window at all
-can be given one with `window_tokens`.
-
-The verbatim tail is sized by `keep_tokens` (40k by default), a budget rather
-than a count of messages, so two heavy reads can no longer pin the window open.
-`keep_turns` is the floor underneath it — how few messages the tail may ever
-shrink to, one by default, the live turn alone — and the first
-`anchor_messages` messages, the original task, are never rewritten, summarized or
-pruned, so the goal cannot be compacted away. The ledger is rebuilt, and it is
-rebuilt by *merging*: a later pass folds new facts into the existing one line by
-line, so a summarizer that restates what the ledger already holds adds nothing to
-it. Never a summary of a summary — the ledger is only ever shown to a call that
-also carries turns no earlier pass compressed. Once the body outgrows one summary
-(2000 tokens, the same ceiling the summarizer writes under) the next pass
-*consolidates* it: one rewritten block instead of an addition, accepted only if
-it still names every identifier the old body named, otherwise the merge stands.
-`limits.compact_at` still speaks last (an absolute ceiling when set, `0` disables
-compaction), and a backend that reports no context window falls back to it.
-
-If a provider refuses a request for length anyway — the ladder is measured
-against an estimate, so it can — bulle compacts once and sends the turn again.
-That retry forces the fold, it happens at most once per turn, and it is
-skipped entirely when `compact_at` is `0`.
+| Key | Default | What it does |
+|---|---|---|
+| `limits.compact_at` | unset (backend's window or 75000) | Absolute ceiling; `0` disables compaction |
+| `limits.compaction.judge.enabled` | `false` | Opt-in. Sends history to the judge's provider |
+| `limits.compaction.judge.provider` | `jev` | `jev` (TypeSafe System One) or `clef` (Cloudflare via OpenRouter) |
+| `limits.compaction.window_tokens` | unset | Override for gateways that under-report the window |
 
 The judge is **opt-in and off by default**: turning on
 `limits.compaction.judge` sends conversation history — which can include source
-code and secrets — to TypeSafe's System One model for classification, so it is
-the one setting here that leaves the machine. Its key prefers the
-`TYPESAFE_API_KEY` environment variable over `limits.compaction.judge.api_key`.
-With the judge off, compaction behaves exactly as it did before the ladder
-existed. The status line shows the live load and tier against the usable window
-(`↕120k/160k · 0.75 · soft`), and `/status` reports the ledger and the last
-pass's tier.
+code and secrets — to the judge's provider for classification.
+`/status` reports the provider and model version that actually answered the
+last call.
 
 ## Sandboxes & remote hosts
 

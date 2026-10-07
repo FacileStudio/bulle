@@ -1,6 +1,10 @@
 package compaction
 
-import "context"
+import (
+	"context"
+
+	"github.com/FacileStudio/bulle/internal/jev"
+)
 
 // Decision is what the judge wants done with one history block.
 type Decision uint8
@@ -55,8 +59,13 @@ type Judge interface {
 // it — so a session has to be able to read both back.
 type Answer struct {
 	Model        string
+	Provider     string
 	InputTokens  int
 	OutputTokens int
+	// CostUSD is the bill the Decisions surface reports on its usage. System
+	// One reports tokens but no price, so it stays zero there and a display
+	// leaves it off rather than inventing a number.
+	CostUSD float64
 }
 
 // Reporter is the optional half of Judge that a judge backed by a versioned
@@ -75,6 +84,10 @@ type JudgeConfig struct {
 	Model   string
 	BaseURL string
 	APIKey  string
+	// Endpoint selects the wire surface: System One (the zero value, TypeSafe
+	// direct) or the OpenRouter Decisions API that serves clef. The factory
+	// derives it from the judge's provider.
+	Endpoint jev.Endpoint
 	// PruneThreshold is the prune probability a block must reach to be dropped.
 	// A value outside (0,1] is unusable and falls back to DefaultPruneThreshold,
 	// so a config that never mentions it cannot prune on any probability at all.

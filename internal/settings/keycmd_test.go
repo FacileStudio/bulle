@@ -117,6 +117,27 @@ limits:
 	}
 }
 
+// With no api_key anywhere, ResolveKeys fills the judge's key from the vendor
+// variable the merged provider names — so a file that says clef needs no
+// command at all on a machine that already exports OPENROUTER_API_KEY, and the
+// command stays the last resort.
+func TestResolveKeysFillsTheJudgeKeyFromTheProviderVendor(t *testing.T) {
+	clearEnv(t, "TYPESAFE_API_KEY", "BULLE_COMPACTION_JUDGE_API_KEY", "NACELLE_COMPACTION_JUDGE_API_KEY")
+	t.Setenv("OPENROUTER_API_KEY", "sk-openrouter")
+	written(t, "limits:\n  compaction:\n    judge:\n      enabled: true\n      provider: clef\n")
+
+	cfg, err := settings(Config{})
+	if err != nil {
+		t.Fatalf("settings: %v", err)
+	}
+	if err := ResolveKeys(&cfg); err != nil {
+		t.Fatalf("ResolveKeys: %v", err)
+	}
+	if got := cfg.Compaction.Judge.APIKey; got != "sk-openrouter" {
+		t.Errorf("judge key = %q, want the provider's vendor variable", got)
+	}
+}
+
 // A profile is where this setting earns its keep — one file per identity, none
 // of them carrying a secret — so the profile's own command has to survive the
 // layer that applies it, over a file that names no command at all.
