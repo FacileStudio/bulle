@@ -38,11 +38,11 @@ func withParallelAgents(config settings.Config, backend nacelle.Backend, local [
 		MaxConcurrency: concurrency,
 		Registry:       registry,
 		Callbacks: nacelle.ParallelSubAgentCallbacks{
-			Usage:          tui.DelegateUsage,
-			Results:        tui.PostDetached,
-			Tool:           tui.ReportSubagentTool,
-			ToolDone:       tui.ReportSubagentDone,
-			LiveUsage:      tui.ReportSubagentUsage,
+			Usage:     tui.DelegateUsage,
+			Results:   tui.PostDetached,
+			Tool:      tui.ReportSubagentTool,
+			ToolDone:  tui.ReportSubagentDone,
+			LiveUsage: tui.ReportSubagentUsage,
 		},
 	})
 	if err != nil {

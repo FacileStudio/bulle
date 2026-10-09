@@ -51,9 +51,11 @@ func (m *Model) launchDetached(tasks []string, titles ...[]string) tea.Cmd {
 	ctx, cancel := context.WithCancel(context.Background())
 	m.parallelCancels[id] = cancel
 	cbs := nacelle.ParallelSubAgentCallbacks{
-		Tool:      func(b string, i int, t string) { subagentUpdates <- subagentUpdate{batch: id, idx: i, tool: t} },
-		LiveUsage: func(b string, i int, u nacelle.Usage) { subagentUpdates <- subagentUpdate{batch: id, idx: i, usage: u, spend: true} },
-		ToolDone:  ReportSubagentDone,
+		Tool: func(b string, i int, t string) { subagentUpdates <- subagentUpdate{batch: id, idx: i, tool: t} },
+		LiveUsage: func(b string, i int, u nacelle.Usage) {
+			subagentUpdates <- subagentUpdate{batch: id, idx: i, usage: u, spend: true}
+		},
+		ToolDone: ReportSubagentDone,
 	}
 	go func() {
 		results, err := nacelle.DelegateParallel(ctx, m.delegate, tasks, nacelle.ParallelSubAgentOptions{

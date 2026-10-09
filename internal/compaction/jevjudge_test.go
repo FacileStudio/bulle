@@ -2,10 +2,10 @@ package compaction
 
 import (
 	"encoding/json"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"maps"
 	"sync/atomic"
 	"testing"
 )

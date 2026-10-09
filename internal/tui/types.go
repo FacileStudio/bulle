@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"time"
 	"context"
+	"time"
 
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/glamour/v2"
@@ -154,12 +154,12 @@ type parallelTaskInfo struct {
 // path keys by nacelle's tool ID, and a model-incrementing counter keeps the
 // detached keys apart from them.
 type parallelState struct {
-	parallelTasks  map[string][]parallelTaskInfo
+	parallelTasks   map[string][]parallelTaskInfo
 	parallelCancels map[string]context.CancelFunc
-	detachedSeq    int
-	maxConcurrency int
-	pending        map[string][]string
-	pendingTitles  map[string][]string
+	detachedSeq     int
+	maxConcurrency  int
+	pending         map[string][]string
+	pendingTitles   map[string][]string
 }
 
 // composer groups the prompt's own textarea and its recall history, so model
