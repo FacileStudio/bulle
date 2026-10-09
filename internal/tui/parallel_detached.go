@@ -48,25 +48,18 @@ func watchDetached() tea.Cmd {
 func (m *Model) launchDetached(tasks []string, titles ...[]string) tea.Cmd {
 	id := m.nextDetachID()
 	tick := m.registerParallel(id, tasks, titles...)
-
-	cfg := m.delegate
-	concurrency := m.maxConcurrency
-	if concurrency <= 0 {
-		concurrency = 16
+	ctx, cancel := context.WithCancel(context.Background())
+	m.parallelCancels[id] = cancel
+	cbs := nacelle.ParallelSubAgentCallbacks{
+		Tool:      func(b string, i int, t string) { subagentUpdates <- subagentUpdate{batch: id, idx: i, tool: t} },
+		LiveUsage: func(b string, i int, u nacelle.Usage) { subagentUpdates <- subagentUpdate{batch: id, idx: i, usage: u, spend: true} },
+		ToolDone:  ReportSubagentDone,
 	}
 	go func() {
-		results, err := nacelle.DelegateParallel(context.Background(), cfg, tasks, nacelle.ParallelSubAgentOptions{
-			Approve: delegateApprove(cfg),
-			Tool: func(batch string, idx int, tool string) {
-				subagentUpdates <- subagentUpdate{batch: id, idx: idx, tool: tool}
-			},
-			LiveUsage: func(batch string, idx int, usage nacelle.Usage) {
-				subagentUpdates <- subagentUpdate{batch: id, idx: idx, usage: usage, spend: true}
-			},
-			ToolDone: func(batch string, idx int, tool string, err error) {
-				ReportSubagentDone(id, idx, tool, err)
-			},
-			MaxConcurrency: concurrency,
+		results, err := nacelle.DelegateParallel(ctx, m.delegate, tasks, nacelle.ParallelSubAgentOptions{
+			Approve:        delegateApprove(m.delegate),
+			Callbacks:      cbs,
+			MaxConcurrency: max(m.maxConcurrency, 16),
 		})
 		if err != nil {
 			detached <- detachedResult{batch: id, idx: -1, err: err.Error()}
@@ -79,6 +72,7 @@ func (m *Model) launchDetached(tasks []string, titles ...[]string) tea.Cmd {
 			}
 			detached <- detachedResult{batch: id, idx: next.Index, result: next.Result, err: next.Err, usage: next.Usage}
 		}
+		delete(m.parallelCancels, id)
 	}()
 	return tick
 }
@@ -92,6 +86,7 @@ func (m *Model) launchDetached(tasks []string, titles ...[]string) tea.Cmd {
 func (m *Model) registerParallel(batch string, tasks []string, titles ...[]string) tea.Cmd {
 	if m.parallelTasks == nil {
 		m.parallelTasks = make(map[string][]parallelTaskInfo)
+		m.parallelCancels = make(map[string]context.CancelFunc)
 	}
 	var provided []string
 	if len(titles) > 0 {

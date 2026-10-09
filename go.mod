@@ -8,9 +8,10 @@ require (
 	charm.land/fang/v2 v2.0.1
 	charm.land/glamour/v2 v2.0.1
 	charm.land/lipgloss/v2 v2.0.5
-	github.com/FacileStudio/nacelle v0.28.2
+	github.com/FacileStudio/nacelle v0.29.0
 	github.com/adhocore/gronx v1.20.3
 	github.com/charmbracelet/x/ansi v0.11.8
+	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
 	go.mau.fi/util v0.10.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.2
@@ -60,7 +61,6 @@ require (
 	github.com/petermattis/goid v0.0.0-20260820044319-269ab09b5261 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/segmentio/encoding v0.5.4 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
@@ -85,3 +85,5 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
+
+replace github.com/FacileStudio/nacelle => ../nacelle

@@ -20,6 +20,7 @@ func withParallelAgents(config settings.Config, backend nacelle.Backend, local [
 		return local, nil
 	}
 	concurrency := resolveConcurrency(config.MaxConcurrency, config.MaxParallelAgents)
+	registry := nacelle.NewParallelRegistry()
 	parallel, err := nacelle.NewParallelSubAgentTool(nacelle.Config{
 		Backend:       backend,
 		System:        config.System,
@@ -33,19 +34,22 @@ func withParallelAgents(config settings.Config, backend nacelle.Backend, local [
 			"issuing further tool calls after the fan-out has started. Provide a short 4-7 word title " +
 			"describing each session for the status line alongside the task instructions.",
 		Approve:        delegateApprovals(approve),
-		Usage:          tui.DelegateUsage,
 		Detach:         true,
-		Results:        tui.PostDetached,
-		Tool:           tui.ReportSubagentTool,
-		ToolDone:       tui.ReportSubagentDone,
-		LiveUsage:      tui.ReportSubagentUsage,
 		MaxConcurrency: concurrency,
+		Registry:       registry,
+		Callbacks: nacelle.ParallelSubAgentCallbacks{
+			Usage:          tui.DelegateUsage,
+			Results:        tui.PostDetached,
+			Tool:           tui.ReportSubagentTool,
+			ToolDone:       tui.ReportSubagentDone,
+			LiveUsage:      tui.ReportSubagentUsage,
+		},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return withParallelCancelTool(append(local, returnControl{parallel}))
+	return withParallelCancelTool(append(local, returnControl{parallel}), registry)
 }
 
 // returnControl wraps the parallel tool so the stub the model reads — a bare
@@ -110,8 +114,8 @@ func normalizeParallelInput(input json.RawMessage) json.RawMessage {
 	return out
 }
 
-func withParallelCancelTool(local []nacelle.Tool) ([]nacelle.Tool, error) {
-	cancel, err := nacelle.NewParallelCancelTool()
+func withParallelCancelTool(local []nacelle.Tool, registry *nacelle.ParallelRegistry) ([]nacelle.Tool, error) {
+	cancel, err := nacelle.NewParallelCancelTool(registry)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"maps"
 	"sync/atomic"
 	"testing"
 )
@@ -21,7 +22,10 @@ func answerServer(t *testing.T, body string, asked *map[string]json.RawMessage, 
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Errorf("decode request: %v", err)
 		}
-		*asked = request.Questions
+		if *asked == nil {
+			*asked = make(map[string]json.RawMessage)
+		}
+		maps.Copy(*asked, request.Questions)
 		if _, err := w.Write([]byte(body)); err != nil {
 			t.Errorf("write response: %v", err)
 		}
@@ -80,9 +84,9 @@ func TestJevJudgeDegradesOnFailure(t *testing.T) {
 	}
 }
 
-// Only the newest max_blocks_per_call blocks are asked about; the rest are
-// folded, which the summarizer can undo by never losing the content.
-func TestJevJudgeFoldsWhatItCannotBatch(t *testing.T) {
+// When blocks exceed max_blocks_per_call, they are chunked and asked about
+// in multiple requests to avoid exceeding the context limit.
+func TestJevJudgeChunksWhatItCannotBatch(t *testing.T) {
 	var asked map[string]json.RawMessage
 	var requests atomic.Int32
 	server := answerServer(t, `{"answers":{"block-3":{"choice":"prune","confidence":0.95,"probabilities":{"prune":0.9}}}}`, &asked, &requests)
@@ -90,18 +94,15 @@ func TestJevJudgeFoldsWhatItCannotBatch(t *testing.T) {
 	judge := NewJevJudge(JudgeConfig{Enabled: true, BaseURL: server.URL, MaxBlocks: 1, PruneThreshold: 0.85})
 	blocks := Blocks(judgeSample(), judgePlan(judgeSample()))
 
-	verdicts, err := judge.Classify(t.Context(), "the task", blocks)
+	_, err := judge.Classify(t.Context(), "the task", blocks)
 	if err != nil {
 		t.Fatalf("Classify: %v", err)
 	}
-	if len(asked) != 1 {
-		t.Errorf("questions = %d, want only the newest block asked", len(asked))
+	if got := requests.Load(); got != 2 {
+		t.Errorf("requests = %d, want two requests for two chunks", got)
 	}
-	if verdicts[0].Decision != Ledger {
-		t.Errorf("overflow verdict = %v, want the unasked block folded", verdicts[0].Decision)
-	}
-	if verdicts[1].Decision != Prune {
-		t.Errorf("asked verdict = %v, want the newest block's answer", verdicts[1].Decision)
+	if len(asked) != 2 {
+		t.Errorf("questions = %d, want all blocks asked", len(asked))
 	}
 }
 
@@ -136,9 +137,9 @@ func TestNewJevJudgeIsNilWhenDisabled(t *testing.T) {
 }
 
 // The count cap is not the only bound on a batch: a block carries a whole tool
-// result, so the request is capped in bytes too. The oldest blocks that do not
-// fit are folded — the summarizer can compress what the judge never saw.
-func TestJevJudgeFoldsWhatItCannotFitInTheStateBudget(t *testing.T) {
+// result, so the request is capped in bytes too. If blocks exceed the budget,
+// they are chunked and asked in multiple requests.
+func TestJevJudgeChunksWhatItCannotFitInTheStateBudget(t *testing.T) {
 	var asked map[string]json.RawMessage
 	var requests atomic.Int32
 	server := answerServer(t, `{"answers":{}}`, &asked, &requests)
@@ -150,15 +151,15 @@ func TestJevJudgeFoldsWhatItCannotFitInTheStateBudget(t *testing.T) {
 		{Key: "new", Text: "a small recent turn"},
 	}
 
-	verdicts, err := judge.Classify(t.Context(), "the task", blocks)
+	_, err := judge.Classify(t.Context(), "the task", blocks)
 	if err != nil {
 		t.Fatalf("Classify: %v", err)
 	}
-	if verdicts[0].Decision != Ledger {
-		t.Errorf("overflow verdict = %v, want the block that overran the budget folded", verdicts[0].Decision)
+	if got := requests.Load(); got != 2 {
+		t.Errorf("requests = %d, want the blocks chunked into two requests", got)
 	}
-	if len(asked) != 2 {
-		t.Errorf("questions = %d, want the two blocks the state budget fits", len(asked))
+	if len(asked) != 3 {
+		t.Errorf("questions = %d, want all blocks asked", len(asked))
 	}
 }
 

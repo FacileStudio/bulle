@@ -1,0 +1,40 @@
+--- internal/tui/parallel_detached.go
++++ internal/tui/parallel_detached.go
+@@ -37,6 +37,17 @@
+ 	}
+ }
+ 
++func detachedCallbacks(id string) nacelle.ParallelSubAgentCallbacks {
++	return nacelle.ParallelSubAgentCallbacks{
++		Tool: func(b string, i int, t string) {
++			subagentUpdates <- subagentUpdate{batch: id, idx: i, tool: t}
++		},
++		LiveUsage: func(b string, i int, u nacelle.Usage) {
++			subagentUpdates <- subagentUpdate{batch: id, idx: i, usage: u, spend: true}
++		},
++		ToolDone: ReportSubagentDone,
++	}
++}
++
+ // launchDetached starts one fan-out without touching the main run. It registers
+ // the batch's row state, says in the main thread that the agents were started,
+ // and hands the actual delegation to a background goroutine; busy stays false,
+@@ -53,19 +64,7 @@
+ 	go func() {
+ 		results, err := nacelle.DelegateParallel(context.Background(), cfg, tasks, nacelle.ParallelSubAgentOptions{
+ 			Approve: delegateApprove(cfg),
+-			Callbacks: nacelle.ParallelSubAgentCallbacks{
+-				Tool: func(batch string, idx int, tool string) {
+-					subagentUpdates <- subagentUpdate{batch: id, idx: idx, tool: tool}
+-				},
+-				LiveUsage: func(batch string, idx int, usage nacelle.Usage) {
+-					subagentUpdates <- subagentUpdate{batch: id, idx: idx, usage: usage, spend: true}
+-				},
+-				ToolDone: func(batch string, idx int, tool string, err error) {
+-					ReportSubagentDone(id, idx, tool, err)
+-				},
+-			},
++			Callbacks:      detachedCallbacks(id),
+ 			MaxConcurrency: concurrency,
+ 		})
+ 		if err != nil {

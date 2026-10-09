@@ -2,6 +2,7 @@ package tui
 
 import (
 	"time"
+	"context"
 
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/glamour/v2"
@@ -154,6 +155,7 @@ type parallelTaskInfo struct {
 // detached keys apart from them.
 type parallelState struct {
 	parallelTasks  map[string][]parallelTaskInfo
+	parallelCancels map[string]context.CancelFunc
 	detachedSeq    int
 	maxConcurrency int
 	pending        map[string][]string

@@ -53,7 +53,10 @@ func (m *Model) cancelParallelCommand(args string) tea.Cmd {
 		return nil
 	}
 	for _, batch := range live {
-		nacelle.CancelParallel(batch)
+		if cancel, ok := m.parallelCancels[batch]; ok {
+			cancel()
+			delete(m.parallelCancels, batch)
+		}
 		m.recordDetached(detachedResult{batch: batch, idx: -1, err: "cancelled"})
 	}
 	m.say(fromClient, "cancelled "+countedNoun(len(live), "fan-out")+" ("+strings.Join(live, ", ")+")")

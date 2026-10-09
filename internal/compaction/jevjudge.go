@@ -12,10 +12,10 @@ import (
 // carries a whole tool result, so a handful of large ones is a request no
 // decision model should be asked to read — and every byte of it is billed. Both
 // caps are spent from the recent end, where a prune is most useful.
-const defaultMaxState = 256 * 1024
+const defaultMaxState = 32 * 1024
 
 // jevJudge is the decision-model adapter: one state, one choice question per
-// block, one batched call, over whichever wire surface the config chose —
+// block, batched in chunks over whichever wire surface the config chose —
 // System One or the OpenRouter Decisions API. It is the only place in this
 // package that knows a network exists.
 type jevJudge struct {
@@ -30,9 +30,7 @@ type jevJudge struct {
 	last Answer
 }
 
-// NewJevJudge builds the opt-in classifier, or nil when the judge is off — a
-// small, tool-free surface the TUI can hold and test without a network. The
-// config's endpoint picks the wire surface; a zero value speaks System One.
+// NewJevJudge builds the opt-in classifier, or nil when the judge is off.
 func NewJevJudge(cfg JudgeConfig) Judge {
 	if !cfg.Enabled {
 		return nil
@@ -44,10 +42,6 @@ func NewJevJudge(cfg JudgeConfig) Judge {
 	}
 }
 
-// pruneThreshold fills in a threshold an adapter was handed none of. A config
-// that never mentions the key carries a zero, and a zero would be cleared by any
-// prune probability at all — so the value a half-filled config falls back to is
-// the shipped default, not "prune whenever the judge is not sure".
 func pruneThreshold(threshold float64) float64 {
 	if threshold <= 0 || threshold > 1 {
 		return DefaultPruneThreshold
@@ -55,57 +49,62 @@ func pruneThreshold(threshold float64) float64 {
 	return threshold
 }
 
-// Classify asks every block's question in one call and maps the answers back.
-// Blocks past either batch cap are not asked about and are folded instead: the
-// summarizer can compress them, where an unclassified prune could not be taken
-// back. A failed call returns all-keep verdicts and the error, so a caller that
+type blockChunk struct {
+	offset int
+	blocks []Block
+}
+
+// Classify asks every block's question in chunks and maps the answers back.
+// By splitting the state into chunks, we avoid exceeding the model's max tokens.
+// A failed call returns all-keep verdicts and the error, so a caller that
 // ignores the error still prunes nothing.
 func (j *jevJudge) Classify(ctx context.Context, goal string, blocks []Block) ([]Verdict, error) {
 	if len(blocks) == 0 {
 		return nil, nil
 	}
 	verdicts := make([]Verdict, len(blocks))
-	first := j.overflow(blocks, verdicts)
-	asked := blocks[first:]
+	chunks := j.chunkBlocks(blocks)
 
-	response, err := j.client.Evaluate(ctx, state(goal, asked), questions(asked))
-	if err != nil {
-		return keepAll(len(blocks)), err
-	}
-	j.record(response)
-	for i, block := range asked {
-		answer := response.Answers[block.Key]
-		verdicts[first+i] = decide(answer.Probabilities, answer.Choice, answer.Confidence, j.threshold)
+	for _, chunk := range chunks {
+		response, err := j.client.Evaluate(ctx, state(goal, chunk.blocks), questions(chunk.blocks))
+		if err != nil {
+			return keepAll(len(blocks)), err
+		}
+		j.record(response)
+		for i, block := range chunk.blocks {
+			answer := response.Answers[block.Key]
+			verdicts[chunk.offset+i] = decide(answer.Probabilities, answer.Choice, answer.Confidence, j.threshold)
+		}
 	}
 	return verdicts, nil
 }
 
-// overflow marks the oldest blocks that do not fit the batch as ledger material
-// and returns the index the call may start at. It is the answer to "too much
-// history for one call": classify the recent end where a prune is most useful,
-// and let the summarizer compress the rest.
-//
-// Two caps bound a batch — the count configured by max_blocks_per_call, and
-// defaultMaxState bytes of block text — and the newest block is admitted
-// whatever it weighs, so a batch is never empty and a single oversized block
-// cannot starve the call.
-func (j *jevJudge) overflow(blocks []Block, verdicts []Verdict) int {
-	first := len(blocks)
-	budget := defaultMaxState
-	for first > 0 {
-		next := first - 1
-		overCount := j.maxBlocks > 0 && len(blocks)-next > j.maxBlocks
-		overBudget := first < len(blocks) && len(blocks[next].Text) > budget
-		if overCount || overBudget {
-			break
+// chunkBlocks splits the blocks into safe-sized batches to avoid exceeding
+// the context limit of the decision model.
+func (j *jevJudge) chunkBlocks(blocks []Block) []blockChunk {
+	var chunks []blockChunk
+	start := 0
+	for start < len(blocks) {
+		end := start + 1
+		budget := defaultMaxState - len(blocks[start].Text)
+
+		for end < len(blocks) {
+			overCount := j.maxBlocks > 0 && (end-start+1) > j.maxBlocks
+			overBudget := len(blocks[end].Text) > budget
+			if overCount || overBudget {
+				break
+			}
+			budget -= len(blocks[end].Text)
+			end++
 		}
-		budget -= len(blocks[next].Text)
-		first = next
+
+		chunks = append(chunks, blockChunk{
+			offset: start,
+			blocks: blocks[start:end],
+		})
+		start = end
 	}
-	for i := range first {
-		verdicts[i] = Verdict{Decision: Ledger}
-	}
-	return first
+	return chunks
 }
 
 // record keeps what the last call answered and billed. It is called only on a
