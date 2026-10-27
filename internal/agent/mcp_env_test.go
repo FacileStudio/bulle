@@ -76,6 +76,10 @@ func TestParseExportLine(t *testing.T) {
 	if !ok || key != "RAW" || val != "value" {
 		t.Fatalf("parse raw export failed: key=%q val=%q ok=%v", key, val, ok)
 	}
+	key, val, ok = parseExportLine(`export JSON='{"key":"value"}'`)
+	if !ok || key != "JSON" || val != `{"key":"value"}` {
+		t.Fatalf("parse json export failed: key=%q val=%q ok=%v", key, val, ok)
+	}
 	_, _, ok = parseExportLine("invalid line")
 	if ok {
 		t.Fatal("expected ok=false for non-export line")

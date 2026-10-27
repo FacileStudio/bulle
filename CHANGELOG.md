@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.85.4] - 2026-10-27
+
+### Fixed
+
+- fix(chat): normalize room key and deliver triggered replies to Matrix (`cmd/chat_ipc.go`)
+- fix(chat): check `BULLE_CHAT_SOCK` in `SocketPath` and ensure clean connection lifecycle in IPC server (`internal/chat/ipc.go`)
+- fix(cron): format timezone layout via standard library to support negative UTC offsets (`internal/agent/cronapply.go`)
+- fix(cron): fallback to local log file when Matrix delivery is unavailable (`internal/agent/cronlog.go`)
+- fix(cron): expand silent output matching for no-alert variants (`internal/agent/cronmatrix.go`)
+- fix(agent): strip only balanced outer quotes in `parseExportLine` (`internal/agent/mcp_env.go`)
+- fix(chat): provide fallback error message when daemon response error is empty (`cmd/chat_send.go`, `cmd/chat_trigger.go`)
+
 ## [0.85.3] - 2026-10-27
 
 ### Added

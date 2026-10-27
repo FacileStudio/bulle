@@ -41,7 +41,11 @@ func appendCronLog(delivery, name string, status cronStatus, text string) error 
 		if rest, ok := strings.CutPrefix(delivery, "matrix:"); ok {
 			room = rest
 		}
-		return deliverMatrix(room, text)
+		if err := deliverMatrix(room, text); err != nil {
+			fmt.Fprintf(os.Stderr, "bulle cron: matrix delivery failed: %v; falling back to log file\n", err)
+			return appendCronLogToFile("~/.bulle/logs", "delivery-fallback", status, text)
+		}
+		return nil
 	}
 	dir := ""
 	if rest, ok := strings.CutPrefix(delivery, "file:"); ok {
@@ -50,6 +54,10 @@ func appendCronLog(delivery, name string, status cronStatus, text string) error 
 	if dir == "" {
 		return nil
 	}
+	return appendCronLogToFile(dir, name, status, text)
+}
+
+func appendCronLogToFile(dir, name string, status cronStatus, text string) error {
 	dir = expandHome(dir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating delivery dir %s: %w", dir, err)

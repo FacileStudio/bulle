@@ -39,7 +39,10 @@ func runChatSend(ctx context.Context, room string, args []string, in io.Reader) 
 		return err
 	}
 	if !resp.OK {
-		return errors.New(resp.Error)
+		if resp.Error != "" {
+			return errors.New(resp.Error)
+		}
+		return errors.New("chat daemon request failed")
 	}
 	return nil
 }

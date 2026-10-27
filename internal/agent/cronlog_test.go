@@ -141,20 +141,49 @@ func TestAppendCronLogDeliversMatrixWithoutRoom(t *testing.T) {
 	}
 }
 
-func TestAppendCronLogMatrixSocketError(t *testing.T) {
+func TestDeliverMatrixSocketError(t *testing.T) {
 	dir := t.TempDir()
 	sockPath := mockMatrixSocket(t, dir, func(req matrixDeliveryPayload) matrixDeliveryResponse {
 		return matrixDeliveryResponse{OK: false, Error: "room not joined"}
 	})
 	t.Setenv("BULLE_CHAT_SOCK", sockPath)
-	err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "text")
+	err := deliverMatrix("!bad:matrix.org", "text")
 	if err == nil || !strings.Contains(err.Error(), "room not joined") {
 		t.Fatalf("expected error mentioning 'room not joined', got %v", err)
 	}
 
 	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(dir, "nonexistent.sock"))
-	if err := appendCronLog("matrix", "daily", cronOK, "text"); err == nil {
+	if err := deliverMatrix("", "text"); err == nil {
 		t.Fatal("expected connection error for missing socket, got nil")
+	}
+}
+
+func TestAppendCronLogMatrixFallback(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(home, "nonexistent.sock"))
+
+	if err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "fallback text"); err != nil {
+		t.Fatalf("expected fallback to succeed, got %v", err)
+	}
+
+	logPath := filepath.Join(home, ".bulle", "logs", "delivery-fallback.log")
+	data, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatalf("reading fallback log: %v", err)
+	}
+	if !strings.Contains(string(data), string(cronOK)) {
+		t.Errorf("expected %q in fallback log, got %s", cronOK, string(data))
+	}
+
+	today := time.Now().Format("2006-01-02")
+	mdPath := filepath.Join(home, ".bulle", "logs", "delivery-fallback-"+today+".md")
+	mdData, err := os.ReadFile(mdPath)
+	if err != nil {
+		t.Fatalf("reading fallback md: %v", err)
+	}
+	if !strings.Contains(string(mdData), "fallback text") {
+		t.Errorf("expected 'fallback text' in fallback md, got %s", string(mdData))
 	}
 }
 
@@ -173,6 +202,18 @@ func TestIsSilentOutput(t *testing.T) {
 	}
 	if !isSilentOutput("NO_ALERT") {
 		t.Fatal("NO_ALERT must be silent")
+	}
+	if !isSilentOutput("NO ALERT") {
+		t.Fatal("NO ALERT must be silent")
+	}
+	if !isSilentOutput("NO ALERTS") {
+		t.Fatal("NO ALERTS must be silent")
+	}
+	if !isSilentOutput("NOTHING TO REPORT") {
+		t.Fatal("NOTHING TO REPORT must be silent")
+	}
+	if !isSilentOutput("NO URGENT ITEMS") {
+		t.Fatal("NO URGENT ITEMS must be silent")
 	}
 	if isSilentOutput("real content") {
 		t.Fatal("real content must not be silent")

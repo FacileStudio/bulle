@@ -229,15 +229,18 @@ func TestJobConfigAppliesProfile(t *testing.T) {
 }
 
 func TestFormatJobPrompt(t *testing.T) {
-	loc := time.FixedZone("CET", 3600)
-	now := time.Date(2026, 10, 27, 16, 30, 0, 0, loc)
-	res := formatJobPrompt("check tasks", now)
-	wantPrefix := "Current local time: 2026-10-27 16:30:00 CET (UTC+01:00)\n\n"
-	if !strings.HasPrefix(res, wantPrefix) {
-		t.Fatalf("got %q, want prefix %q", res, wantPrefix)
+	cases := []struct {
+		now        time.Time
+		wantPrefix string
+	}{
+		{time.Date(2026, 10, 27, 16, 30, 0, 0, time.FixedZone("CET", 3600)), "Current local time: 2026-10-27 16:30:00 CET (UTC+01:00)\n\n"},
+		{time.Date(2026, 10, 27, 12, 0, 0, 0, time.FixedZone("NST", -12600)), "Current local time: 2026-10-27 12:00:00 NST (UTC-03:30)\n\n"},
 	}
-	if !strings.HasSuffix(res, "check tasks") {
-		t.Fatalf("got %q, want suffix %q", res, "check tasks")
+	for _, tc := range cases {
+		res := formatJobPrompt("check tasks", tc.now)
+		if !strings.HasPrefix(res, tc.wantPrefix) || !strings.HasSuffix(res, "check tasks") {
+			t.Fatalf("formatJobPrompt = %q, want prefix %q and suffix %q", res, tc.wantPrefix, "check tasks")
+		}
 	}
 }
 

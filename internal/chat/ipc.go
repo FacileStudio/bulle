@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/settings"
@@ -29,6 +30,9 @@ type IPCResponse struct {
 
 // SocketPath returns the default Unix domain socket path for bulle chat IPC.
 func SocketPath() (string, error) {
+	if sock := os.Getenv("BULLE_CHAT_SOCK"); sock != "" {
+		return sock, nil
+	}
 	dir, err := settings.HomeDir()
 	if err != nil {
 		return "", err
@@ -52,10 +56,6 @@ func ServeIPC(ctx context.Context, path string, send func(context.Context, strin
 		ln.Close()
 		os.Remove(path)
 	}()
-	stop := context.AfterFunc(ctx, func() {
-		ln.Close()
-	})
-	defer stop()
 	return acceptIPC(ctx, ln, send, trigger)
 }
 
@@ -86,6 +86,12 @@ func listenIPC(path string) (*net.UnixListener, error) {
 }
 
 func acceptIPC(ctx context.Context, ln *net.UnixListener, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) error {
+	var wg sync.WaitGroup
+	defer wg.Wait()
+	stop := context.AfterFunc(ctx, func() {
+		ln.Close()
+	})
+	defer stop()
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -94,12 +100,20 @@ func acceptIPC(ctx context.Context, ln *net.UnixListener, send func(context.Cont
 			}
 			return err
 		}
-		go handleIPCConn(ctx, conn, send, trigger)
+		wg.Add(1)
+		go func(c net.Conn) {
+			defer wg.Done()
+			handleIPCConn(ctx, c, send, trigger)
+		}(conn)
 	}
 }
 
 func handleIPCConn(ctx context.Context, conn net.Conn, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) {
 	defer conn.Close()
+	stop := context.AfterFunc(ctx, func() {
+		conn.Close()
+	})
+	defer stop()
 	dec := json.NewDecoder(conn)
 	enc := json.NewEncoder(conn)
 	for {

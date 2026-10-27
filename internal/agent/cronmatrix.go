@@ -26,7 +26,12 @@ type matrixDeliveryResponse struct {
 
 func isSilentOutput(text string) bool {
 	normalized := strings.ToUpper(strings.Trim(text, " .\t\r\n`*\"'"))
-	return normalized == "" || normalized == "OUTPUT NOTHING" || normalized == "NO_ALERT" || normalized == "NOTHING"
+	switch normalized {
+	case "", "OUTPUT NOTHING", "NO_ALERT", "NO ALERT", "NO ALERTS", "NOTHING", "NOTHING TO REPORT", "NO URGENT ITEMS":
+		return true
+	default:
+		return false
+	}
 }
 
 func chatSocketPath() (string, error) {

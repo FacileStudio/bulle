@@ -40,7 +40,10 @@ func runChatTrigger(ctx context.Context, room string, args []string, in io.Reade
 		return err
 	}
 	if !resp.OK {
-		return errors.New(resp.Error)
+		if resp.Error != "" {
+			return errors.New(resp.Error)
+		}
+		return errors.New("chat daemon request failed")
 	}
 	if resp.Reply != "" {
 		fmt.Fprintln(out, resp.Reply)

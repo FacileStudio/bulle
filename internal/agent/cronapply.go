@@ -107,9 +107,7 @@ func jobConfig(config settings.Config, job settings.CronJob) (settings.Config, e
 }
 
 func formatJobPrompt(prompt string, now time.Time) string {
-	zone, offset := now.Zone()
-	header := fmt.Sprintf("Current local time: %s %s (UTC%+03d:%02d)\n\n",
-		now.Format("2006-01-02 15:04:05"), zone, offset/3600, (offset%3600)/60)
+	header := fmt.Sprintf("Current local time: %s\n\n", now.Format("2006-01-02 15:04:05 MST (UTC-07:00)"))
 	return header + prompt
 }
 

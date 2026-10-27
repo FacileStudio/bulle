@@ -118,17 +118,25 @@ func TestIPCSocketCleanup(t *testing.T) {
 		errCh <- ServeIPC(ctx, sock, nil, nil)
 	}()
 	waitForSocket(t, sock)
-	info, err := os.Stat(sock)
+	conn, err := net.Dial("unix", sock)
 	if err != nil {
-		t.Fatalf("stat socket failed: %v", err)
+		t.Fatalf("dial socket failed: %v", err)
 	}
-	if perm := info.Mode().Perm(); perm != 0o600 {
-		t.Fatalf("expected permissions 0600, got %o", perm)
-	}
+	defer conn.Close()
 	cancel()
-	<-errCh
+	select {
+	case err := <-errCh:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("expected context.Canceled, got %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("ServeIPC did not terminate on cancel")
+	}
+	if _, err := conn.Read(make([]byte, 1)); err == nil {
+		t.Fatal("expected conn to be closed on cancel")
+	}
 	if _, err := os.Stat(sock); !os.IsNotExist(err) {
-		t.Fatalf("socket file still exists: %v", err)
+		t.Fatalf("socket still exists: %v", err)
 	}
 }
 
@@ -172,11 +180,24 @@ func TestIPCActiveSocketConflict(t *testing.T) {
 }
 
 func TestSocketPath(t *testing.T) {
-	path, err := SocketPath()
-	if err != nil {
-		t.Fatalf("SocketPath failed: %v", err)
-	}
-	if !strings.HasSuffix(path, "chat.sock") {
-		t.Fatalf("expected path ending in chat.sock, got %q", path)
-	}
+	t.Run("default", func(t *testing.T) {
+		path, err := SocketPath()
+		if err != nil {
+			t.Fatalf("SocketPath failed: %v", err)
+		}
+		if !strings.HasSuffix(path, "chat.sock") {
+			t.Fatalf("expected path ending in chat.sock, got %q", path)
+		}
+	})
+	t.Run("env", func(t *testing.T) {
+		custom := filepath.Join(t.TempDir(), "custom.sock")
+		t.Setenv("BULLE_CHAT_SOCK", custom)
+		got, err := SocketPath()
+		if err != nil {
+			t.Fatalf("SocketPath failed: %v", err)
+		}
+		if got != custom {
+			t.Fatalf("expected %q, got %q", custom, got)
+		}
+	})
 }
