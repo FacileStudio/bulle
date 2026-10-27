@@ -62,3 +62,22 @@ func TestEnsureUserPath(t *testing.T) {
 		}
 	}
 }
+
+func TestParseExportLine(t *testing.T) {
+	key, val, ok := parseExportLine("export FOO='bar'")
+	if !ok || key != "FOO" || val != "bar" {
+		t.Fatalf("parse single quote export failed: key=%q val=%q ok=%v", key, val, ok)
+	}
+	key, val, ok = parseExportLine("export BAZ=\"qux\"")
+	if !ok || key != "BAZ" || val != "qux" {
+		t.Fatalf("parse double quote export failed: key=%q val=%q ok=%v", key, val, ok)
+	}
+	key, val, ok = parseExportLine("export RAW=value")
+	if !ok || key != "RAW" || val != "value" {
+		t.Fatalf("parse raw export failed: key=%q val=%q ok=%v", key, val, ok)
+	}
+	_, _, ok = parseExportLine("invalid line")
+	if ok {
+		t.Fatal("expected ok=false for non-export line")
+	}
+}

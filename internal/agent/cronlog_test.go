@@ -157,3 +157,34 @@ func TestAppendCronLogMatrixSocketError(t *testing.T) {
 		t.Fatal("expected connection error for missing socket, got nil")
 	}
 }
+
+func TestIsSilentOutput(t *testing.T) {
+	if !isSilentOutput("") {
+		t.Fatal("empty string must be silent")
+	}
+	if !isSilentOutput("\n\n\r\t") {
+		t.Fatal("whitespace string must be silent")
+	}
+	if !isSilentOutput("OUTPUT NOTHING.") {
+		t.Fatal("OUTPUT NOTHING. must be silent")
+	}
+	if !isSilentOutput("\n\nOUTPUT NOTHING\n") {
+		t.Fatal("newlines with OUTPUT NOTHING must be silent")
+	}
+	if !isSilentOutput("NO_ALERT") {
+		t.Fatal("NO_ALERT must be silent")
+	}
+	if isSilentOutput("real content") {
+		t.Fatal("real content must not be silent")
+	}
+}
+
+func TestAppendCronLogMatrixSilentSkipsDelivery(t *testing.T) {
+	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(t.TempDir(), "nonexistent.sock"))
+	if err := appendCronLog("matrix", "daily", cronOK, "OUTPUT NOTHING."); err != nil {
+		t.Fatalf("expected silent skip without contacting socket, got %v", err)
+	}
+	if err := appendCronLog("matrix", "daily", cronOK, "\n\n\n"); err != nil {
+		t.Fatalf("expected whitespace skip without contacting socket, got %v", err)
+	}
+}

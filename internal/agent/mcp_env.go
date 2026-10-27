@@ -25,32 +25,37 @@ func ensureUserPath() {
 	ensureUserEnv()
 }
 
-func ensureUserEnv() {
-	keys := []string{"OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"}
-	for _, k := range keys {
-		if os.Getenv(k) != "" {
-			continue
-		}
-		val := getTiroirKey(k)
-		if val == "" {
-			continue
-		}
-		if err := os.Setenv(k, val); err != nil {
-			return
-		}
+func parseExportLine(line string) (string, string, bool) {
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "export ") {
+		return "", "", false
 	}
+	rest := strings.TrimPrefix(line, "export ")
+	key, val, ok := strings.Cut(rest, "=")
+	if !ok || key == "" {
+		return "", "", false
+	}
+	return key, strings.Trim(val, "'\""), true
 }
 
-func getTiroirKey(key string) string {
+func ensureUserEnv() {
 	bin, err := exec.LookPath("tiroir")
 	if err != nil {
-		return ""
+		return
 	}
-	out, err := exec.Command(bin, "get", key).Output()
+	out, err := exec.Command(bin, "export").Output()
 	if err != nil {
-		return ""
+		return
 	}
-	return strings.TrimSpace(string(out))
+	for _, line := range strings.Split(string(out), "\n") {
+		key, val, ok := parseExportLine(line)
+		if !ok || os.Getenv(key) != "" {
+			continue
+		}
+		if err := os.Setenv(key, val); err != nil {
+			continue
+		}
+	}
 }
 
 func missingUserDirs(home, current string) []string {

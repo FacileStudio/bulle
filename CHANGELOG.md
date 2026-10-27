@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.85.2] - 2026-10-27
+
+### Fixed
+
+- fix(agent): load all store secrets into environment via `tiroir export` in `ensureUserEnv` (`internal/agent/mcp_env.go`)
+- fix(cron): strip leading empty lines and stay silent on `OUTPUT NOTHING` in Matrix delivery (`internal/agent/cronmatrix.go`)
+- fix(cron): extend Matrix delivery IPC socket timeout to 60s (`internal/agent/cronmatrix.go`)
+
 ## [0.85.1] - 2026-10-27
 
 ### Added
