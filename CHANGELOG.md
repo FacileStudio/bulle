@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.85.1] - 2026-10-27
+
+### Added
+
+- feat(chat): support profile inheritance with `chat.profile` in configuration (`internal/settings/chat.go`, `internal/agent/chatturn.go`)
+
+### Fixed
+
+- fix(build): drop local `nacelle` replace directive from `go.mod` to allow standalone CI builds (`go.mod`)
+
 ## [0.85.0] - 2026-10-27
 
 ### Added

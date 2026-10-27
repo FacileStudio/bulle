@@ -8,7 +8,8 @@ import (
 // other part of bulle pushes text out; this is the one part that reads text in,
 // which is why its allowlist is the security boundary of the whole feature.
 type Chat struct {
-	Matrix Matrix `json:"matrix" yaml:"matrix"`
+	Profile string `json:"profile,omitempty" yaml:"profile"`
+	Matrix  Matrix `json:"matrix" yaml:"matrix"`
 }
 
 // Matrix configures the Matrix adapter. Each credential can name a command

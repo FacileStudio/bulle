@@ -12,11 +12,22 @@ import (
 	"github.com/FacileStudio/bulle/internal/settings"
 )
 
-var chatConfigOnce = sync.OnceValues(func() (settings.Config, error) {
+func resolveChatConfig() (settings.Config, error) {
 	ensureUserPath()
 	flags := settings.FromFlags(settings.Defaults(""))
-	return settings.Settings(DefaultSystemPrompt(), flags)
-})
+	cfg, err := settings.Settings(DefaultSystemPrompt(), flags)
+	if err != nil {
+		return settings.Config{}, err
+	}
+	if cfg.Chat.Profile != "" {
+		if err := settings.ResolveProfile(&cfg, cfg.Chat.Profile); err != nil {
+			return settings.Config{}, err
+		}
+	}
+	return cfg, nil
+}
+
+var chatConfigOnce = sync.OnceValues(resolveChatConfig)
 
 // ChatConfig resolves the settings the chat surface runs with, through the same
 // ladder a cron job does: the user path first, then the file, the environment

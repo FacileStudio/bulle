@@ -113,3 +113,18 @@ func TestMaxAgeIsAParseableDuration(t *testing.T) {
 		t.Fatalf("max_age = %q parsed to %s (err %v), want 2h", loaded.Chat.Matrix.MaxAge, age, err)
 	}
 }
+
+func TestChatBlockDecodesProfile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), ".bulle.yml")
+	content := "chat:\n  profile: free\n  matrix:\n    enabled: true\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("writing tmp config: %v", err)
+	}
+	loaded, err := Load(path)
+	if err != nil {
+		t.Fatalf("unexpected load error: %v", err)
+	}
+	if loaded.Chat.Profile != "free" {
+		t.Errorf("profile = %q, want free", loaded.Chat.Profile)
+	}
+}
