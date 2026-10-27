@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.85.3] - 2026-10-27
+
+### Added
+
+- feat(cron): inject exact local time and timezone header into cron job prompts (`internal/agent/cronapply.go`)
+
 ## [0.85.2] - 2026-10-27
 
 ### Fixed

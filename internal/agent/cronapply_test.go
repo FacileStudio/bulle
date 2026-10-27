@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -224,6 +225,19 @@ func TestJobConfigAppliesProfile(t *testing.T) {
 	badJob := settings.CronJob{Profile: "nonexistent"}
 	if _, err := jobConfig(base, badJob); err == nil {
 		t.Error("expected error for nonexistent profile, got nil")
+	}
+}
+
+func TestFormatJobPrompt(t *testing.T) {
+	loc := time.FixedZone("CET", 3600)
+	now := time.Date(2026, 10, 27, 16, 30, 0, 0, loc)
+	res := formatJobPrompt("check tasks", now)
+	wantPrefix := "Current local time: 2026-10-27 16:30:00 CET (UTC+01:00)\n\n"
+	if !strings.HasPrefix(res, wantPrefix) {
+		t.Fatalf("got %q, want prefix %q", res, wantPrefix)
+	}
+	if !strings.HasSuffix(res, "check tasks") {
+		t.Fatalf("got %q, want suffix %q", res, "check tasks")
 	}
 }
 
