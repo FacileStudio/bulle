@@ -129,3 +129,15 @@ func TestTopLevelCronKeyIsRefused(t *testing.T) {
 		t.Errorf("err = %v; want it to point at ~/.bulle/jobs/", err)
 	}
 }
+
+func TestJobFileDecodesProfile(t *testing.T) {
+	dir := t.TempDir()
+	writeJob(t, dir, "job.yml", "name: bot\nprofile: free\nprompt: ping\n")
+	jobs, err := LoadJobs(dir)
+	if err != nil {
+		t.Fatalf("LoadJobs: %v", err)
+	}
+	if len(jobs) != 1 || jobs[0].Profile != "free" {
+		t.Fatalf("job.Profile = %q, want free", jobs[0].Profile)
+	}
+}

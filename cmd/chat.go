@@ -49,6 +49,8 @@ untrusted text, so the allowlist and the tool policy stay in bulle.`,
 	}
 	cmd.AddCommand(newChatChannelsCmd())
 	cmd.AddCommand(newChatInstallCmd())
+	cmd.AddCommand(newChatSendCmd())
+	cmd.AddCommand(newChatTriggerCmd())
 	cmd.AddCommand(newChatUninstallCmd())
 	cmd.AddCommand(newChatVerifyCmd())
 	return cmd
@@ -80,6 +82,7 @@ func runChatDaemon() error {
 	fmt.Fprintf(os.Stderr, "bulle chat: %s listening as %s on %s\n", adapter.Name(), m.userID, m.homeserver)
 	rooms := newRoomRegistry(config)
 	defer func() { _ = rooms.Close() }()
+	startChatIPC(ctx, m, adapter, rooms)
 	return errors.Join(chat.Run(ctx, adapter, chatResponder(rooms), router), adapter.Close())
 }
 

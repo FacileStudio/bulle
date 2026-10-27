@@ -2,6 +2,7 @@ package agent
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -199,6 +200,32 @@ func assertTrusted(t *testing.T, name string) {
 func mkJobDir(dir string) error { return os.MkdirAll(dir, 0o755) }
 
 func writeFile(path, content string) error { return os.WriteFile(path, []byte(content), 0o644) }
+
+func TestJobConfigAppliesProfile(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	pdir := filepath.Join(home, ".bulle", "profiles")
+	if err := os.MkdirAll(pdir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	free := "name: free\nprovider:\n  backend: freellmapi\n  model: deepseek-chat\n"
+	if err := os.WriteFile(filepath.Join(pdir, "free.yml"), []byte(free), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	base := settings.Defaults("")
+	job := settings.CronJob{Profile: "free"}
+	cfg, err := jobConfig(base, job)
+	if err != nil {
+		t.Fatalf("jobConfig: %v", err)
+	}
+	if cfg.Backend != "freellmapi" || cfg.Model != "deepseek-chat" {
+		t.Errorf("profile not applied: got backend=%q model=%q", cfg.Backend, cfg.Model)
+	}
+	badJob := settings.CronJob{Profile: "nonexistent"}
+	if _, err := jobConfig(base, badJob); err == nil {
+		t.Error("expected error for nonexistent profile, got nil")
+	}
+}
 
 var iterationsOverride = 5
 var compactOverride int64 = 1000

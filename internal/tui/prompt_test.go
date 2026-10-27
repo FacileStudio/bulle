@@ -40,6 +40,7 @@ func TestPromptBackdropCoversEveryRow(t *testing.T) {
 // precedence: empty sources → vi, EDITOR env wins, VISUAL env wins when
 // EDITOR is empty, and config.Editor wins over both env vars.
 func TestResolveEditorWithVariousEnvironmentVariables(t *testing.T) {
+	t.Setenv("GIT_EDITOR", "")
 	t.Setenv("EDITOR", "")
 	t.Setenv("VISUAL", "")
 	if r := resolveEditor(settings.Config{}); r != "vi" {

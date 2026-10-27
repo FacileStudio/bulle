@@ -93,7 +93,13 @@ func loadExecutableJob(name string) (settings.CronJob, settings.Config, error) {
 // turn a usable job into a ladder that cannot tier — and nothing downstream
 // re-reads it.
 func jobConfig(config settings.Config, job settings.CronJob) (settings.Config, error) {
-	cfg := applyJob(config, job)
+	cfg := config
+	if job.Profile != "" {
+		if err := settings.ResolveProfile(&cfg, job.Profile); err != nil {
+			return settings.Config{}, err
+		}
+	}
+	cfg = applyJob(cfg, job)
 	if err := settings.ValidateCompaction(cfg.Compaction, cfg.CompactAt); err != nil {
 		return settings.Config{}, err
 	}

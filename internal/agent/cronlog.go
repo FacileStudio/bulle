@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,12 +27,74 @@ func validateDelivery(delivery string) error {
 	if delivery == "" || strings.HasPrefix(delivery, "file:") {
 		return nil
 	}
-	return fmt.Errorf("unknown delivery %q: want file:<dir>", delivery)
+	if delivery == "matrix" || strings.HasPrefix(delivery, "matrix:") {
+		return nil
+	}
+	return fmt.Errorf("unknown delivery %q: want file:<dir> or matrix[:<room>]", delivery)
+}
+
+type matrixDeliveryPayload struct {
+	Action string `json:"action"`
+	Room   string `json:"room"`
+	Text   string `json:"text"`
+}
+
+type matrixDeliveryResponse struct {
+	OK    bool   `json:"ok"`
+	Error string `json:"error,omitempty"`
+}
+
+func chatSocketPath() (string, error) {
+	if sock := os.Getenv("BULLE_CHAT_SOCK"); sock != "" {
+		return sock, nil
+	}
+	home, err := settings.HomeDir()
+	if err != nil {
+		return "", fmt.Errorf("resolving chat socket dir: %w", err)
+	}
+	return filepath.Join(home, "chat.sock"), nil
+}
+
+func deliverMatrix(room, text string) error {
+	sockPath, err := chatSocketPath()
+	if err != nil {
+		return err
+	}
+	conn, err := net.DialTimeout("unix", sockPath, 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("connecting to chat socket %s: %w", sockPath, err)
+	}
+	defer func() { _ = conn.Close() }()
+	if err := conn.SetDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		return fmt.Errorf("setting chat socket deadline: %w", err)
+	}
+	payload := matrixDeliveryPayload{Action: "send", Room: room, Text: text}
+	if err := json.NewEncoder(conn).Encode(payload); err != nil {
+		return fmt.Errorf("sending matrix delivery payload: %w", err)
+	}
+	var resp matrixDeliveryResponse
+	if err := json.NewDecoder(conn).Decode(&resp); err != nil {
+		return fmt.Errorf("reading matrix delivery response: %w", err)
+	}
+	if !resp.OK {
+		if resp.Error != "" {
+			return fmt.Errorf("matrix delivery failed: %s", resp.Error)
+		}
+		return errors.New("matrix delivery failed: response not ok")
+	}
+	return nil
 }
 
 func appendCronLog(delivery, name string, status cronStatus, text string) error {
 	if err := validateDelivery(delivery); err != nil {
 		return err
+	}
+	if delivery == "matrix" || strings.HasPrefix(delivery, "matrix:") {
+		room := ""
+		if rest, ok := strings.CutPrefix(delivery, "matrix:"); ok {
+			room = rest
+		}
+		return deliverMatrix(room, text)
 	}
 	dir := ""
 	if rest, ok := strings.CutPrefix(delivery, "file:"); ok {

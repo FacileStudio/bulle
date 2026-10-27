@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.85.0] - 2026-10-27
+
+### Added
+
+- feat(chat): local IPC socket server for the chat daemon (`~/.bulle/chat.sock`), allowing external tools and cron jobs to dispatch messages and trigger conversational turns (`internal/chat/ipc.go`, `cmd/chat_ipc.go`)
+- feat(chat): CLI commands `bulle chat send` and `bulle chat trigger` to interact directly with the running chat daemon (`cmd/chat_send.go`, `cmd/chat_trigger.go`)
+- feat(cron): native Matrix delivery (`delivery: matrix` and `delivery: matrix:<room>`) via chat daemon IPC socket (`internal/agent/cronlog.go`)
+- feat(cron): support `profile: <name>` inheritance in job specs to cleanly inherit provider configuration without duplicating YAML blocks (`internal/settings/cron.go`, `internal/agent/cronapply.go`)
+
+### Fixed
+
+- test(tui): isolate `TestResolveEditorWithVariousEnvironmentVariables` from ambient `GIT_EDITOR` environment variable (`internal/tui/prompt_test.go`)
+
 ## [0.82.0] - 2026-10-07
 
 ### Added

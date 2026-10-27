@@ -3,7 +3,9 @@ package agent
 import (
 	"encoding/json"
 	"errors"
+	"net"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -54,5 +56,104 @@ func TestAppendCronRunWritesOneJSONLine(t *testing.T) {
 	}
 	if got.Name != "job" || got.Usage.OutputTokens != 7 {
 		t.Fatalf("round-trip lost data: %+v", got)
+	}
+}
+
+func TestValidateDeliveryFormats(t *testing.T) {
+	valid := []string{"", "file:/tmp/log", "file:./cron", "matrix", "matrix:!abc:matrix.org", "matrix:"}
+	for _, v := range valid {
+		if err := validateDelivery(v); err != nil {
+			t.Errorf("validateDelivery(%q) = %v; want nil", v, err)
+		}
+	}
+	invalid := []string{"webhook:http://example.com", "slack:#general", "stdout"}
+	for _, inv := range invalid {
+		err := validateDelivery(inv)
+		if err == nil {
+			t.Errorf("validateDelivery(%q) = nil; want error", inv)
+		} else if !strings.Contains(err.Error(), "want file:<dir> or matrix[:<room>]") {
+			t.Errorf("validateDelivery(%q) error = %q; want expected message", inv, err.Error())
+		}
+	}
+}
+
+func mockMatrixSocket(t *testing.T, dir string, handler func(matrixDeliveryPayload) matrixDeliveryResponse) string {
+	t.Helper()
+	sockPath := filepath.Join(dir, "chat.sock")
+	l, err := net.Listen("unix", sockPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := l.Close(); err != nil {
+			return
+		}
+	})
+	go func() {
+		conn, err := l.Accept()
+		if err != nil {
+			return
+		}
+		defer func() { _ = conn.Close() }()
+		var req matrixDeliveryPayload
+		if err := json.NewDecoder(conn).Decode(&req); err != nil {
+			return
+		}
+		resp := handler(req)
+		if err := json.NewEncoder(conn).Encode(resp); err != nil {
+			return
+		}
+	}()
+	return sockPath
+}
+
+func TestAppendCronLogDeliversViaMatrixSocket(t *testing.T) {
+	dir := t.TempDir()
+	received := make(chan matrixDeliveryPayload, 1)
+	sockPath := mockMatrixSocket(t, dir, func(req matrixDeliveryPayload) matrixDeliveryResponse {
+		received <- req
+		return matrixDeliveryResponse{OK: true}
+	})
+	t.Setenv("BULLE_CHAT_SOCK", sockPath)
+	if err := appendCronLog("matrix:!abc:matrix.org", "daily", cronOK, "daily done"); err != nil {
+		t.Fatalf("appendCronLog failed: %v", err)
+	}
+	req := <-received
+	if req.Action != "send" || req.Room != "!abc:matrix.org" || req.Text != "daily done" {
+		t.Errorf("unexpected payload: %+v", req)
+	}
+}
+
+func TestAppendCronLogDeliversMatrixWithoutRoom(t *testing.T) {
+	dir := t.TempDir()
+	received := make(chan matrixDeliveryPayload, 1)
+	sockPath := mockMatrixSocket(t, dir, func(req matrixDeliveryPayload) matrixDeliveryResponse {
+		received <- req
+		return matrixDeliveryResponse{OK: true}
+	})
+	t.Setenv("BULLE_CHAT_SOCK", sockPath)
+	if err := appendCronLog("matrix", "daily", cronOK, "job output"); err != nil {
+		t.Fatalf("appendCronLog failed: %v", err)
+	}
+	req := <-received
+	if req.Action != "send" || req.Room != "" || req.Text != "job output" {
+		t.Errorf("unexpected payload: %+v", req)
+	}
+}
+
+func TestAppendCronLogMatrixSocketError(t *testing.T) {
+	dir := t.TempDir()
+	sockPath := mockMatrixSocket(t, dir, func(req matrixDeliveryPayload) matrixDeliveryResponse {
+		return matrixDeliveryResponse{OK: false, Error: "room not joined"}
+	})
+	t.Setenv("BULLE_CHAT_SOCK", sockPath)
+	err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "text")
+	if err == nil || !strings.Contains(err.Error(), "room not joined") {
+		t.Fatalf("expected error mentioning 'room not joined', got %v", err)
+	}
+
+	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(dir, "nonexistent.sock"))
+	if err := appendCronLog("matrix", "daily", cronOK, "text"); err == nil {
+		t.Fatal("expected connection error for missing socket, got nil")
 	}
 }

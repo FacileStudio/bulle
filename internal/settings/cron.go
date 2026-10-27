@@ -30,6 +30,7 @@ type CronJob struct {
 	Prompt   string `yaml:"prompt"`
 	Workdir  string `yaml:"workdir"`
 	Model    string `yaml:"model"`
+	Profile  string `yaml:"profile"`
 	Delivery string `yaml:"delivery"`
 	Timeout  string `yaml:"timeout"`
 	Commands *bool  `yaml:"commands"`
