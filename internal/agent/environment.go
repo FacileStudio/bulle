@@ -63,13 +63,13 @@ These are additive and concatenated most general first, most specific last: when
 `
 
 // DefaultSystemPrompt returns the built-in harness prompt used when the user
-// has not supplied their own via -system-prompt, SYSTEM_PROMPT, or ~/.bulle.yml.
+// has not supplied their own via -system-prompt, SYSTEM_PROMPT, or ~/.config/bulle/config.yml.
 //
 // It is deliberately separate from project context files such as
 // ~/.agents/AGENTS.md and CLAUDE.md, which are loaded afterward and layered
 // on top. A harness prompt tells the model what harness it is in and how that
 // harness behaves; a project context file tells it what the project wants.
-// Keeping them separate means a user persona in ~/.bulle.yml replaces the
+// Keeping them separate means a user persona in ~/.config/bulle/config.yml replaces the
 // harness prompt entirely, while project context files still apply.
 func DefaultSystemPrompt() string {
 	return defaultSystemPrompt

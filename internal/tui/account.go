@@ -66,7 +66,7 @@ type account struct {
 	sink *usage.Sink
 
 	// session is this run of the client written down: the questions asked
-	// and the answers given, appended to a file under ~/.bulle/sessions
+	// and the answers given, appended to a file under ~/.local/share/bulle/sessions
 	// as they are said. It is nil when the file could not be opened, which
 	// is not a reason to refuse to run.
 	session *sessions.SessionLog

@@ -45,14 +45,7 @@ type IPCResponse struct {
 
 // SocketPath returns the default Unix domain socket path for bulle chat IPC.
 func SocketPath() (string, error) {
-	if sock := os.Getenv("BULLE_CHAT_SOCK"); sock != "" {
-		return sock, nil
-	}
-	dir, err := settings.HomeDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(dir, "chat.sock"), nil
+	return settings.ChatSocket()
 }
 
 // ServeIPC runs the IPC Unix domain socket server until the context is canceled.

@@ -22,13 +22,13 @@ type roomEntry struct {
 }
 
 func roomStorePath(key string) (string, error) {
-	home, err := settings.HomeDir()
+	dir, err := settings.DataDir()
 	if err != nil {
 		return "", err
 	}
 	sum := sha256.Sum256([]byte(key))
 	name := hex.EncodeToString(sum[:])[:16] + ".jsonl"
-	return filepath.Join(home, "chat", "rooms", name), nil
+	return filepath.Join(dir, "chat", "rooms", name), nil
 }
 
 func loadRoom(path string) (string, []nacelle.Message) {

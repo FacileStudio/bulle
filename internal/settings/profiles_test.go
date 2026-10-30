@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestLoadProfilesFromDirectory(t *testing.T) {
@@ -122,14 +124,14 @@ func setupProfileEnvWith(t *testing.T, profileFile, profileYml, fileYml string) 
 	clearEnv(t, "BULLE_BACKEND", "NACELLE_BACKEND", "BULLE_PROFILE", "NACELLE_PROFILE",
 		"BULLE_MAX_ITERATIONS", "NACELLE_MAX_ITERATIONS")
 
-	pDir := filepath.Join(home, ".bulle", "profiles")
+	pDir := filepath.Join(home, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(pDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(pDir, profileFile), []byte(profileYml), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ConfigFile), []byte(fileYml), 0o644); err != nil {
+	if err := os.WriteFile(xdgtest.ConfigPath(t, home), []byte(fileYml), 0o644); err != nil {
 		t.Fatal(err)
 	}
 }

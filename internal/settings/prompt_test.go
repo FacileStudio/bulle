@@ -36,7 +36,7 @@ func TestAProfilePersonaBeatsTheFilesAndTheEnvironmentBeatsTheProfile(t *testing
 	written(t, "profile: terse\nsession:\n  additional_prompt: from-the-file\n")
 	clearEnv(t, "BULLE_PROFILE", "NACELLE_PROFILE")
 
-	dir := filepath.Join(os.Getenv("HOME"), ".bulle", "profiles")
+	dir := filepath.Join(os.Getenv("HOME"), ".config", "bulle", "profiles")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

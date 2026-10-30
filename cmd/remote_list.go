@@ -39,7 +39,7 @@ func collectRemoteEntries(cfg settings.Config) []remoteListEntry {
 
 func printRemoteTextList(entries []remoteListEntry) {
 	if len(entries) == 0 {
-		fmt.Println("no remote hosts configured; pass user@host:port directly or add remote.targets in ~/.bulle.yml")
+		fmt.Println("no remote hosts configured; pass user@host:port directly or add remote.targets in ~/.config/bulle/config.yml")
 		return
 	}
 	nameStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Green)
@@ -55,7 +55,7 @@ func newRemoteListCmd() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List configured remote SSH hosts",
-		Long:    "List every host configured under remote.targets in ~/.bulle.yml.",
+		Long:    "List every host configured under remote.targets in ~/.config/bulle/config.yml.",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return runRemoteList(jsonOutput)
 		},

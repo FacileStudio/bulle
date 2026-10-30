@@ -31,13 +31,13 @@ type Ledger struct {
 	entries map[string]*Entry
 }
 
-// DefaultLedgerPath is ~/.bulle/state/ledger.json.
+// DefaultLedgerPath is ledger.json inside settings.StateDir.
 func DefaultLedgerPath() (string, error) {
-	home, err := settings.HomeDir()
+	dir, err := settings.StateDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, "state", "ledger.json"), nil
+	return filepath.Join(dir, "ledger.json"), nil
 }
 
 // NewLedger opens the ledger at path, or at DefaultLedgerPath when path is

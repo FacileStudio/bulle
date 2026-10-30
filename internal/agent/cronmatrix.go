@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -60,14 +58,11 @@ func jobPrompt(job settings.CronJob, now time.Time) string {
 }
 
 func chatSocketPath() (string, error) {
-	if sock := os.Getenv("BULLE_CHAT_SOCK"); sock != "" {
-		return sock, nil
-	}
-	home, err := settings.HomeDir()
+	sock, err := settings.ChatSocket()
 	if err != nil {
 		return "", fmt.Errorf("resolving chat socket dir: %w", err)
 	}
-	return filepath.Join(home, "chat.sock"), nil
+	return sock, nil
 }
 
 func deliverMatrix(room, text string) error {

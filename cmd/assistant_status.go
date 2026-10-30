@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/assistant"
@@ -14,7 +13,7 @@ func printAssistantStatus() error {
 	if err != nil {
 		return err
 	}
-	home, err := settings.HomeDir()
+	state, err := settings.StateDir()
 	if err != nil {
 		return err
 	}
@@ -23,7 +22,7 @@ func printAssistantStatus() error {
 		return err
 	}
 	last := "never"
-	if t := assistant.LastWatch(filepath.Join(home, "state")); !t.IsZero() {
+	if t := assistant.LastWatch(state); !t.IsZero() {
 		last = t.Local().Format(time.RFC3339)
 	}
 	fmt.Printf("last watch: %s\nledger entries: %d\n", last, ledger.Len())

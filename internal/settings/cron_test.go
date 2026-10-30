@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // writeJob drops one job file into a jobs folder.
@@ -116,16 +118,16 @@ func TestJobFilesDecodeStrictly(t *testing.T) {
 // quietly stopping.
 func TestTopLevelCronKeyIsRefused(t *testing.T) {
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, ConfigFile), []byte("cron:\n  - name: brief\n"), 0o644); err != nil {
+	if err := os.WriteFile(xdgtest.ConfigPath(t, dir), []byte("cron:\n  - name: brief\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("HOME", dir)
+	xdgtest.Isolate(t, dir)
 
 	_, err := Settings("", Config{})
 	if err == nil {
 		t.Fatal("a config with a top-level cron: key was accepted")
 	}
-	if !strings.Contains(err.Error(), ".bulle/jobs") {
+	if !strings.Contains(err.Error(), ".config/bulle/jobs") {
 		t.Errorf("err = %v; want it to point at ~/.bulle/jobs/", err)
 	}
 }

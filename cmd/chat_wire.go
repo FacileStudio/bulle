@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"path/filepath"
 
 	"github.com/FacileStudio/bulle/internal/assistant"
 	"github.com/FacileStudio/bulle/internal/chat"
@@ -23,7 +22,7 @@ func newChatServices(adapter *chat.Matrix, rooms *roomRegistry, reactions *chat.
 	if err != nil {
 		return nil, err
 	}
-	home, err := settings.HomeDir()
+	state, err := settings.StateDir()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func newChatServices(adapter *chat.Matrix, rooms *roomRegistry, reactions *chat.
 	rooms.memory = mem
 	return &chatServices{
 		rooms: rooms, adapter: adapter, approvals: ap, ledger: ledger,
-		memory: mem, assistant: cfg, stateDir: filepath.Join(home, "state"),
+		memory: mem, assistant: cfg, stateDir: state,
 	}, nil
 }
 

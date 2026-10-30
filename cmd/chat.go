@@ -114,7 +114,7 @@ func chatResponder(rooms *roomRegistry) chat.Responder {
 // without one has already accepted the messages it would need to refuse.
 func validateChatMatrix(m settings.Matrix) error {
 	if !settings.DerefBool(m.Enabled) {
-		return errors.New("chat.matrix is not enabled: set `enabled: true` under chat in ~/.bulle.yml")
+		return errors.New("chat.matrix is not enabled: set `enabled: true` under chat in ~/.config/bulle/config.yml")
 	}
 	if m.Homeserver == "" {
 		return errors.New("chat.matrix.homeserver is empty: set the homeserver base URL")

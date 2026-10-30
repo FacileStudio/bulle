@@ -21,7 +21,7 @@ func usagef(format string, args ...any) error {
 func printCronUsage() error {
 	fmt.Println(`usage: bulle cron <command> [args]
 
-  list                 show the jobs in ~/.bulle/jobs/
+  list                 show the jobs in ~/.config/bulle/jobs/
   run <name>           run one job now through the headless path
   trust <name>         review one job file and approve its contents
   install <name>       install one job directly to crontab

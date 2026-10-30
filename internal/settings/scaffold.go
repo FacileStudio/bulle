@@ -3,9 +3,10 @@ package settings
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
-// Template is the scaffold written to ~/.bulle.yml on first boot: only the
+// Template is the scaffold written to ~/.config/bulle/config.yml on first boot: only the
 // settings a first run has to choose, every value either empty or the shipped
 // default. The point is not discoverability — that is docs/configuration.md, the
 // full reference — but to hand a newcomer the four real decisions (backend,
@@ -15,7 +16,7 @@ import (
 //
 // The rest of the surface is documented in docs/configuration.md and stays
 // honoured from old files: struct fields, merge rules and env reads are all
-// untouched, so a two-hundred-line ~/.bulle.yml from an earlier release still
+// untouched, so a two-hundred-line ~/.config/bulle/config.yml from an earlier release still
 // parses and still takes effect. Keys that have left the scaffold are sunstopped
 // in docs, not removed from code.
 //
@@ -94,6 +95,9 @@ func Scaffold(path string) (bool, error) {
 		return false, nil
 	} else if !os.IsNotExist(err) {
 		return false, fmt.Errorf("stating %s: %w", path, err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return false, fmt.Errorf("creating %s: %w", filepath.Dir(path), err)
 	}
 	if err := os.WriteFile(path, []byte(Template), 0o644); err != nil {
 		return false, fmt.Errorf("writing %s: %w", path, err)

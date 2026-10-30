@@ -42,11 +42,11 @@ type Matrix struct {
 // ChatDir is where the chat surface keeps its own state: the crypto database
 // holding the bot device's keys, and one conversation file per chat.
 func ChatDir() string {
-	home, err := HomeDir()
+	dir, err := DataDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, "chat")
+	return filepath.Join(dir, "chat")
 }
 
 // StorePath is the crypto database. It sits beside the conversation files

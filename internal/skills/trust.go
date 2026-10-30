@@ -13,15 +13,14 @@ import (
 // so it only has to be made once per project rather than once per run.
 const TrustFile = "trust.json"
 
-// trustDir is where TrustFile lives — the first thing this package puts
-// under ~/.bulle/, which stays otherwise empty until something needs it.
+// trustDir is where TrustFile lives, in settings.StateDir.
 // A trust decision does not belong in ~/.agents/, the shared cross-vendor
 // path skills.go also reads from: that path is common ground between every
 // AGENTS.md-aware tool, and what bulle has chosen to trust on this
 // machine is bulle's own state, not something another tool should read
 // or overwrite.
 func trustDir() (string, error) {
-	return settings.HomeDir()
+	return settings.StateDir()
 }
 
 // trustRecord is one directory's trust decision. TrustedAt is kept for a
@@ -37,8 +36,10 @@ type trustRecord struct {
 // see configPath's own doc comment for why this package treats it that way
 // everywhere else too.
 func loadTrust() (map[string]trustRecord, error) {
-	dir, _ := trustDir()
-	_ = dir
+	dir, err := trustDir()
+	if err != nil {
+		return nil, err
+	}
 	raw, err := os.ReadFile(filepath.Join(dir, TrustFile))
 	if os.IsNotExist(err) {
 		return map[string]trustRecord{}, nil
@@ -53,7 +54,7 @@ func loadTrust() (map[string]trustRecord, error) {
 	return store, nil
 }
 
-// saveTrust writes every decision back, creating ~/.bulle/ the first time
+// saveTrust writes every decision back, creating the state directory the first time
 // anything is trusted.
 func saveTrust(store map[string]trustRecord) error {
 	dir, err := trustDir()

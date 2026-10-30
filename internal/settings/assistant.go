@@ -2,7 +2,7 @@ package settings
 
 // Automation groups the config's chained machinery. It is inline in the
 // YAML, so the keys stay top-level: hooks, gates, assistant. Scheduled jobs are
-// not here anymore: LoadJobs reads them from ~/.bulle/jobs/ instead.
+// not here anymore: LoadJobs reads them from ~/.config/bulle/jobs/ instead.
 type Automation struct {
 	Hooks     []HookSpec `yaml:"hooks"`
 	Gates     []GateSpec `yaml:"gates"`

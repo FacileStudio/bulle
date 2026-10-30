@@ -7,6 +7,7 @@ import (
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 type dummyInput struct{}
@@ -42,6 +43,7 @@ func TestSetupAgentCustomTools(t *testing.T) {
 }
 
 func TestRunHeadlessWithTools_CleanupRuns(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	flags := settings.Defaults("test")
 	flags.Provider = settings.Provider{Backend: "unknown"}
 	cleaned := false
@@ -59,6 +61,7 @@ func TestRunHeadlessWithTools_CleanupRuns(t *testing.T) {
 }
 
 func TestRunSessionWithTools_CleanupRuns(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	flags := settings.Defaults("test")
 	flags.Provider = settings.Provider{Backend: "unknown"}
 	cleaned := false

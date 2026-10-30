@@ -11,7 +11,7 @@ This file is the frozen interface. Both sides implement it as written.
 While `bulle` runs with the IDE surface on, it writes one file per process:
 
 ```
-~/.bulle/ide/<pid>.json
+$XDG_RUNTIME_DIR/bulle/ide/<pid>.json
 ```
 
 ```json
@@ -20,7 +20,7 @@ While `bulle` runs with the IDE surface on, it writes one file per process:
   "pid": 12345,
   "root": "/home/yann/Code/Facile/bulle",
   "socket": "/run/user/1000/bulle/12345.sock",
-  "session": "/home/yann/.bulle/sessions/20260924T160000Z-12345.jsonl",
+  "session": "/home/yann/.local/share/bulle/sessions/20260924T160000Z-12345.jsonl",
   "started": "2026-09-24T16:00:00Z",
   "version": "0.76.0"
 }

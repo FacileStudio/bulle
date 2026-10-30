@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 var (
@@ -12,8 +14,15 @@ var (
 	plainText   = regexp.MustCompile(`^[A-Za-z0-9 .,:_/@%+=-]+$`)
 	doubleBad   = "\"$`\\\n\r"
 	journalRoot = filepath.Join("Documents", "NuagePersonal", "Wiki", "Journal")
-	memoryRoot  = filepath.Join(".bulle", "memory")
 )
+
+func memoryRoot() string {
+	dir, err := settings.DataDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(dir, "memory")
+}
 
 func readPaths(home string, args []string) bool {
 	paths := 0
@@ -21,7 +30,7 @@ func readPaths(home string, args []string) bool {
 		if flagArg.MatchString(a) {
 			continue
 		}
-		if !under(home, a, memoryRoot, journalRoot) {
+		if !under(home, a, memoryRoot(), journalRoot) {
 			return false
 		}
 		paths++
@@ -45,7 +54,13 @@ func under(home, p string, roots ...string) bool {
 	}
 	full := filepath.Clean(expand(home, p))
 	for _, root := range roots {
-		dir := filepath.Join(home, root)
+		if root == "" {
+			continue
+		}
+		dir := root
+		if !filepath.IsAbs(root) {
+			dir = filepath.Join(home, root)
+		}
 		if full == dir || strings.HasPrefix(full, dir+string(filepath.Separator)) {
 			return true
 		}

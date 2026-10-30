@@ -44,11 +44,7 @@ func runAssistantInstall(replaceLegacy bool) error {
 	if err != nil {
 		return fmt.Errorf("locating bulle: %w", err)
 	}
-	home, err := settings.HomeDir()
-	if err != nil {
-		return err
-	}
-	logs := filepath.Join(home, "logs")
+	logs := settings.LogDir()
 	if err := os.MkdirAll(logs, 0o755); err != nil {
 		return fmt.Errorf("creating logs directory %s: %w", logs, err)
 	}

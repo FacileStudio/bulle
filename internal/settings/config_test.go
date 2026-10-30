@@ -2,9 +2,10 @@ package settings
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // written puts a config file in a home directory of the test's own, so a test
@@ -17,7 +18,7 @@ func written(t *testing.T, body string) {
 	if body == "" {
 		return
 	}
-	if err := os.WriteFile(filepath.Join(home, ConfigFile), []byte(body), 0o600); err != nil {
+	if err := os.WriteFile(xdgtest.ConfigPath(t, home), []byte(body), 0o600); err != nil {
 		t.Fatalf("writing the config: %v", err)
 	}
 }

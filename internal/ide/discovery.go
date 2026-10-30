@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
 // Protocol is the version every discovery file and every object on the wire
@@ -25,13 +27,14 @@ type Discovery struct {
 	Version string `json:"version"`
 }
 
-// Dir is where discovery files live, one per running process.
+// Dir is where discovery files live, one per running process: ide/ inside
+// settings.RuntimeDir, so a file never outlives the login that wrote it.
 func Dir() string {
-	home, err := os.UserHomeDir()
+	dir, err := settings.RuntimeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".bulle", "ide")
+	return filepath.Join(dir, "ide")
 }
 
 // File is the path this process's discovery file takes.

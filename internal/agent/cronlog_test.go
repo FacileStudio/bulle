@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 	"github.com/FacileStudio/nacelle"
 )
 
@@ -33,6 +34,7 @@ func TestCronRunRecordCarriesStatusAndError(t *testing.T) {
 }
 
 func TestAppendCronRunWritesOneJSONLine(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	rec, _ := (runStats{Usage: nacelle.Usage{OutputTokens: 7}}).record(settings.CronJob{Name: "job"}, "m", time.Unix(0, 0), nil)
 	if err := appendCronRun(rec); err != nil {
@@ -167,7 +169,7 @@ func TestAppendCronLogMatrixFallback(t *testing.T) {
 		t.Fatalf("expected fallback to succeed, got %v", err)
 	}
 
-	logPath := filepath.Join(home, ".bulle", "logs", "delivery-fallback.log")
+	logPath := filepath.Join(home, ".local", "state", "bulle", "logs", "delivery-fallback.log")
 	data, err := os.ReadFile(logPath)
 	if err != nil {
 		t.Fatalf("reading fallback log: %v", err)
@@ -177,7 +179,7 @@ func TestAppendCronLogMatrixFallback(t *testing.T) {
 	}
 
 	today := time.Now().Format("2006-01-02")
-	mdPath := filepath.Join(home, ".bulle", "logs", "delivery-fallback-"+today+".md")
+	mdPath := filepath.Join(home, ".local", "state", "bulle", "logs", "delivery-fallback-"+today+".md")
 	mdData, err := os.ReadFile(mdPath)
 	if err != nil {
 		t.Fatalf("reading fallback md: %v", err)

@@ -60,7 +60,7 @@ func deliverCronMatrix(delivery string, status cronStatus, text string) error {
 	}
 	if err := deliverMatrix(room, message); err != nil {
 		fmt.Fprintf(os.Stderr, "bulle cron: matrix delivery failed: %v; falling back to log file\n", err)
-		return appendCronLogToFile("~/.bulle/logs", "delivery-fallback", status, text)
+		return appendCronLogToFile(settings.LogDir(), "delivery-fallback", status, text)
 	}
 	return nil
 }
@@ -118,16 +118,13 @@ type cronRun struct {
 }
 
 // cronStatePath is the central cron run log: one JSON line per run, every
-// job, regardless of delivery. Under XDG_STATE_HOME when set.
+// job, regardless of delivery. Lives in settings.StateDir.
 func cronStatePath() (string, error) {
-	if dir := os.Getenv("XDG_STATE_HOME"); dir != "" {
-		return filepath.Join(dir, "bulle", "cron.jsonl"), nil
-	}
-	home, err := os.UserHomeDir()
+	dir, err := settings.StateDir()
 	if err != nil {
 		return "", fmt.Errorf("resolving state dir: %w", err)
 	}
-	return filepath.Join(home, ".local", "state", "bulle", "cron.jsonl"), nil
+	return filepath.Join(dir, "cron.jsonl"), nil
 }
 
 func appendCronRun(rec cronRun) error {

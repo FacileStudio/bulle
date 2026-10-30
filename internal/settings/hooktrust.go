@@ -26,10 +26,10 @@ type trustRecord struct {
 	TrustedAt string `json:"trustedAt"`
 }
 
-// trustDir is where the trust store lives — the first thing this package
-// puts under ~/.bulle/, which stays otherwise empty until something needs it.
+// trustDir is where the trust store lives: StateDir, since a trust decision
+// is bulle's own record of the machine, not something a person edits.
 func trustDir() (string, error) {
-	return HomeDir()
+	return StateDir()
 }
 
 // loadTrust reads every saved approval: TrustFile, with HookTrustFile read

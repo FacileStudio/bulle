@@ -69,7 +69,7 @@ func ExpandHome(dir string) string {
 
 // expandHome resolves a leading "~" the way a shell would. A flag's own
 // argument never needs this — the shell already expanded it before bulle
-// saw it — but ~/.bulle.yml and an environment variable set by anything
+// saw it — but ~/.config/bulle/config.yml and an environment variable set by anything
 // that isn't a shell (a service manager's Environment=, for one) go through
 // no shell at all, so the same "~/.claude/skills" would silently work from
 // one source and not another without this.

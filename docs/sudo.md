@@ -2,7 +2,7 @@
 
 This document answers three questions in order:
 
-1. Can bulle block elevation commands in `run_command` through `~/.bulle.yml`?
+1. Can bulle block elevation commands in `run_command` through `~/.config/bulle/config.yml`?
 2. Is blocking elevation a good idea?
 3. If elevation is allowed, how do we let the human type a password without the
    agent ever seeing it?
@@ -33,7 +33,7 @@ splits on `;`, `&&`, `||`, `|`, `&`, and refuses a list of shell builtins
 when strict confinement (`security.path_isolation`) is on. A bulle rule has
 a natural home right next to it.
 
-## Question 1: can we configure this in ~/.bulle.yml?
+## Question 1: can we configure this in ~/.config/bulle/config.yml?
 
 Not today: there is no setting for it. Two ways to get there:
 
@@ -143,7 +143,7 @@ Concretely, ranked:
 The harness must never hold the password and feed it to `sudo -S`'s stdin.
 That puts the credential one `echo`, one `printenv`, or one prompt injection
 away from the transcript, and it teaches the model that sudo is just available.
-Never store a sudo password in `~/.bulle.yml`, tiroir, or the environment
+Never store a sudo password in `~/.config/bulle/config.yml`, tiroir, or the environment
 for the agent's use.
 
 ### Best: NOPASSWD per command in sudoers
@@ -209,6 +209,6 @@ The agent never sees a password. It sees, at most:
 
 | Question | Answer |
 |---|---|
-| Configure a sudo block in `~/.bulle.yml` | Yes: shipped as `security.deny_elevation`, default on, all elevation primitives plus setuid-root binaries |
+| Configure a sudo block in `~/.config/bulle/config.yml` | Yes: shipped as `security.deny_elevation`, default on, all elevation primitives plus setuid-root binaries |
 | Good idea? | Yes, as a policy guard. Not a security boundary; OS-level enforcement is the wall |
 | Safe password entry | Never through the agent. Sudoers NOPASSWD per command, the human runs the command themselves, or (phase 2) a fresh pty per elevated command whose prompt the harness never reads |

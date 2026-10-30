@@ -13,7 +13,7 @@ func newCronCmd() *cobra.Command {
 		Short: "Manage scheduled headless agent jobs",
 		Long: `Manage scheduled headless agent jobs that run from crontab.
 
-Jobs are defined as YAML files in ~/.bulle/jobs/. Use one of the
+Jobs are defined as YAML files in ~/.config/bulle/jobs/. Use one of the
 subcommands to list, run, trust, install, or uninstall them. Each job can be
 trusted with bulle cron trust <name> before it can be run or
 installed. Use bulle cron install <name> to install a job into
@@ -35,7 +35,7 @@ func newCronListCmd() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"status"},
 		Short:   "List all registered cron jobs",
-		Long:    "List all registered cron jobs from YAML files in ~/.bulle/jobs/, showing their armed state and trust status.",
+		Long:    "List all registered cron jobs from YAML files in ~/.config/bulle/jobs/, showing their armed state and trust status.",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return agent.ListCronJobs()
 		},

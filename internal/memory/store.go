@@ -48,13 +48,13 @@ func New(dir string) *Store {
 	return &Store{dir: dir, clock: time.Now}
 }
 
-// Default returns a Store rooted at ~/.bulle/memory.
+// Default returns a Store rooted at memory/ inside settings.DataDir.
 func Default() (*Store, error) {
-	home, err := settings.HomeDir()
+	dir, err := settings.DataDir()
 	if err != nil {
 		return nil, err
 	}
-	return New(filepath.Join(home, "memory")), nil
+	return New(filepath.Join(dir, "memory")), nil
 }
 
 func (s *Store) path(parts ...string) string {

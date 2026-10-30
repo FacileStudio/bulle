@@ -69,7 +69,7 @@ type connected struct {
 // so honouring one found on the way past would start a stranger's process on
 // the strength of having cd'd into their repository. That is strictly worse
 // than the project-local skills this client already gates behind
-// ~/.bulle/trust.json and -trust-skills: a skill is text the model may
+// ~/.local/state/bulle/trust.json and -trust-skills: a skill is text the model may
 // decline to act on, and this is a subprocess started before the model is
 // asked anything at all. Doing it safely means that same trust gate, which is
 // a feature of its own rather than a line in this function.

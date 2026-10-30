@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // opened points HOME at a temporary tree and returns this run's log together
@@ -208,11 +210,12 @@ func TestSessionRotation(t *testing.T) {
 		log.Line(fromReader, strings.Repeat("x", 200))
 	}
 
-	checkRotatedFiles(t, filepath.Join(home, ".bulle", "sessions"))
+	checkRotatedFiles(t, filepath.Join(home, ".local", "share", "bulle", "sessions"))
 }
 
 // TestHasWriteError verifies that write errors are tracked.
 func TestHasWriteError(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {
 		t.Fatal("a writable home must produce a log")

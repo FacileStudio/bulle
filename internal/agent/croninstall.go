@@ -49,7 +49,7 @@ func listCronJobs() error {
 		fmt.Printf("when=%s\nenabled=%t\ninstalled=%t\ncommands=%t\ntrusted=%t\nworkdir=%s\ndelivery=%s\n\n",
 			job.When, job.IsEnabled(), installed, job.Commands != nil && *job.Commands, trusted, job.Workdir, job.Delivery)
 	}
-	fmt.Println("(You can update your job files in the ~/.bulle/jobs/ folder)")
+	fmt.Println("(You can update your job files in the ~/.config/bulle/jobs/ folder)")
 	return nil
 }
 
@@ -89,8 +89,7 @@ func installCronJobOptions(name string, printOnly bool) error {
 	if err != nil {
 		return fmt.Errorf("locating bulle: %w", err)
 	}
-	logsDir := filepath.Join(settings.JobsDir(), "..", "logs")
-	logsDir = filepath.Clean(expandHome(logsDir))
+	logsDir := settings.LogDir()
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
 		return fmt.Errorf("creating logs directory %s: %w", logsDir, err)
 	}

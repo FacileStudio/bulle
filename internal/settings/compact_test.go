@@ -2,10 +2,10 @@ package settings_test
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
 	s "github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 type testConfigEnv struct {
@@ -15,8 +15,8 @@ type testConfigEnv struct {
 func setupConfigEnv(t *testing.T) testConfigEnv {
 	t.Helper()
 	home := t.TempDir()
-	t.Setenv("HOME", home)
-	return testConfigEnv{file: filepath.Join(home, s.ConfigFile)}
+	xdgtest.Isolate(t, home)
+	return testConfigEnv{file: xdgtest.ConfigPath(t, home)}
 }
 
 func (e testConfigEnv) write(t *testing.T, body string) {

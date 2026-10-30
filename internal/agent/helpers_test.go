@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/settings"
@@ -43,11 +44,11 @@ func written(t *testing.T, body string) {
 	t.Helper()
 
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	if body == "" {
 		return
 	}
-	if err := os.WriteFile(filepath.Join(home, settings.ConfigFile), []byte(body), 0o600); err != nil {
+	if err := os.WriteFile(xdgtest.ConfigPath(t, home), []byte(body), 0o600); err != nil {
 		t.Fatalf("writing the config: %v", err)
 	}
 }

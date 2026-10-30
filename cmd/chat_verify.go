@@ -22,7 +22,7 @@ func newChatVerifyCmd() *cobra.Command {
 		Short: "Verify the Matrix bot device with cross-signing",
 		Long: `Verify this bot device using your Matrix account's recovery key.
 
-With --recovery-key (or recovery_key set in ~/.bulle.yml), bulle
+With --recovery-key (or recovery_key set in ~/.config/bulle/config.yml), bulle
 fetches the cross-signing keys from SSSS and signs the device directly.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runChatVerify(cmd.Context(), recoveryKey)

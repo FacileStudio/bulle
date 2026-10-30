@@ -12,7 +12,7 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-// CronJob is one scheduled background run, one file in ~/.bulle/jobs/.
+// CronJob is one scheduled background run, one file in ~/.config/bulle/jobs/.
 // The external scheduler (systemd/crontab) owns the clock and fires
 // `bulle cron run <name>`; bulle only generates the units and interprets
 // the schedule for display. Commands and Enabled default to off, the reverse
@@ -47,7 +47,7 @@ type CronJob struct {
 
 // JobsDir is the folder one CronJob is read from per .yml file.
 func JobsDir() string {
-	dir, err := trustDir()
+	dir, err := ConfigDir()
 	if err != nil {
 		return ""
 	}
@@ -164,7 +164,7 @@ func repointCronKey(err error) error {
 	for _, item := range typeErr.Errors {
 		if strings.Contains(item.Err.Error(), "field cron not found") {
 			item = &yaml.UnmarshalError{
-				Err:    fmt.Errorf("field cron not found: jobs are one .yml file each under ~/.bulle/jobs/ now"),
+				Err:    fmt.Errorf("field cron not found: jobs are one .yml file each under ~/.config/bulle/jobs/ now"),
 				Line:   item.Line,
 				Column: item.Column,
 			}

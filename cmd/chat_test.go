@@ -76,7 +76,8 @@ func TestChatVerifyHelpCommand(t *testing.T) {
 func TestChatSendCommand(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	sock := filepath.Join(home, ".bulle", "chat.sock")
+	sock := filepath.Join(home, "chat.sock")
+	t.Setenv("BULLE_CHAT_SOCK", sock)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var gotRoom, gotText string
@@ -102,7 +103,8 @@ func TestChatSendCommand(t *testing.T) {
 func TestChatTriggerCommand(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	sock := filepath.Join(home, ".bulle", "chat.sock")
+	sock := filepath.Join(home, "chat.sock")
+	t.Setenv("BULLE_CHAT_SOCK", sock)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	trigger := func(_ context.Context, _, prompt string) (string, error) {

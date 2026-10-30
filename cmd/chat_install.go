@@ -106,11 +106,11 @@ func chatWorkingDirectory() (string, error) {
 }
 
 func chatUnitPath() string {
-	home, err := os.UserHomeDir()
+	config, err := os.UserConfigDir()
 	if err != nil {
-		home = "."
+		config = "."
 	}
-	return filepath.Join(home, ".config", "systemd", "user", chatServiceName)
+	return filepath.Join(config, "systemd", "user", chatServiceName)
 }
 
 // chatUnitBody renders the user unit. Restart=on-failure rather than always,

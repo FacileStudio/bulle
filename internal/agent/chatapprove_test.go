@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 const testHome = "/home/u"
@@ -13,6 +15,7 @@ const j = "~/Documents/NuagePersonal/Wiki/Journal/2026-10-30.md"
 
 func checkReadOnly(t *testing.T, cases map[string]bool) {
 	t.Helper()
+	xdgtest.Isolate(t, testHome)
 	for cmd, want := range cases {
 		if got := readOnlyIn(testHome, cmd); got != want {
 			t.Errorf("readOnly(%q) = %v, want %v", cmd, got, want)
@@ -43,31 +46,31 @@ func TestReadOnlyCourrier(t *testing.T) {
 
 func TestReadOnlyTools(t *testing.T) {
 	cases := map[string]bool{
-		"agenda calendars list":       true,
-		"agenda events list --json":   true,
-		"agenda events create x":      false,
-		"opus workspace list":         true,
-		"opus -w 3 task list":         true,
-		"opus -w 3 task show 9":       true,
-		"opus -w 3 task delete 9":     false,
-		"mycelium memory search foo":  true,
-		"mycelium memory add x":       false,
-		"date":                        true,
-		"date +%H:%M":                 true,
-		"date -s 2020-01-01":          false,
-		"cat ~/.bulle/memory/USER.md": true,
-		"ls -la ~/.bulle/memory":      true,
-		"cat /etc/passwd":             false,
+		"agenda calendars list":                   true,
+		"agenda events list --json":               true,
+		"agenda events create x":                  false,
+		"opus workspace list":                     true,
+		"opus -w 3 task list":                     true,
+		"opus -w 3 task show 9":                   true,
+		"opus -w 3 task delete 9":                 false,
+		"mycelium memory search foo":              true,
+		"mycelium memory add x":                   false,
+		"date":                                    true,
+		"date +%H:%M":                             true,
+		"date -s 2020-01-01":                      false,
+		"cat ~/.local/share/bulle/memory/USER.md": true,
+		"ls -la ~/.local/share/bulle/memory":      true,
+		"cat /etc/passwd":                         false,
 	}
 	checkReadOnly(t, cases)
 }
 
 func TestReadOnlyPaths(t *testing.T) {
 	cases := map[string]bool{
-		"cat ~/.bulle/memory/../../.ssh/id_ed25519": false,
+		"cat ~/.local/share/bulle/memory/../../.ssh/id_ed25519": false,
 		"cat USER.md": false,
 		"ls":          false,
-		"cat ~/.bulle/memory/USER.md ~/.ssh/id_rsa":                     false,
+		"cat ~/.local/share/bulle/memory/USER.md ~/.ssh/id_rsa":         false,
 		"echo 'note du jour' >> " + j:                                   true,
 		"echo \"note\" >> " + j:                                         true,
 		"echo note >> " + j:                                             true,

@@ -34,7 +34,7 @@ profiles and panes are what a product grows, not what a contract test needs.
 |---|---|
 | TUI | Go 1.26.4, `charm.land/bubbletea/v2`, lipgloss v2, glamour v2 |
 | Agent | [FacileStudio/nacelle](https://github.com/FacileStudio/nacelle), pinned by tag |
-| State | `~/.bulle.yml`, `~/.bulle/hooks.json` for hook trust |
+| Files | XDG: `~/.config/bulle/config.yml`, data in `~/.local/share/bulle`, trust and logs in `~/.local/state/bulle` |
 | Release | GoReleaser, GitHub Actions on tag push, Homebrew tap `FacileStudio/tap` |
 
 ## Install
@@ -70,7 +70,7 @@ It reads API keys from the environment: `ANTHROPIC_API_KEY` for the default
 backend, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) for `-backend google`,
 `OPENAI_API_KEY` for `-backend openai`, and `OPENROUTER_API_KEY` for `-backend openrouter`.
 
-Settings layer bottom-up: defaults, then `~/.bulle.yml`, then `BULLE_*`
+Settings layer bottom-up: defaults, then `~/.config/bulle/config.yml`, then `BULLE_*`
 environment variables, then flags. The useful ones:
 
 | Flag | Env | What |
@@ -81,7 +81,7 @@ environment variables, then flags. The useful ones:
 | `-bash` | `bulle_BASH` | let the model run commands (off by default) |
 | `-continue` | — | auto-resume the newest session for the current project |
 | `-resume` | — | resume a specific session by id or file path |
-| `-no-config` | — | start with default settings, ignoring ~/.bulle.yml |
+| `-no-config` | — | start with default settings, ignoring ~/.config/bulle/config.yml |
 | `-tasks` | `bulle_TASKS` | task planning tool (on by default) |
 | `-approve-tools` | `bulle_APPROVE_TOOLS` | ask before every tool call runs |
 | `-subagents` | `bulle_SUBAGENTS` | give the model the parallel delegate tool (on by default) |
@@ -98,7 +98,7 @@ Full settings reference: [docs/configuration.md](docs/configuration.md).
 
 ## Configuration
 
-Settings live in `~/.bulle.yml`, **written on first boot with every default
+Settings live in `~/.config/bulle/config.yml`, **written on first boot with every default
 explicitly set** — delete it to regenerate. An existing file is never touched.
 The example file with all defaults, and the full reference with the
 precedence order and the traps in each setting:
@@ -191,10 +191,10 @@ bulle remote deploy@build:2222 "run the tests"
 microVMs: an entry in `sandbox.targets`, then a registered instance of that
 name. `remote` targets resolve to a `remote.targets` entry, a direct
 `user@host:port` address, or an `~/.ssh/config` host alias. Each reads its
-defaults — user, port, identity, workspace — from its own group in `~/.bulle.yml`.
+defaults — user, port, identity, workspace — from its own group in `~/.config/bulle/config.yml`.
 
 Scheduled jobs are not configured here anymore: one YAML file per job under
-`~/.bulle/jobs/`, trusted with `bulle cron trust <name>` before it runs.
+`~/.config/bulle/jobs/`, trusted with `bulle cron trust <name>` before it runs.
 Use `bulle cron list` to view all jobs along with their enabled and crontab installation status.
 
 ## herdr
@@ -238,7 +238,7 @@ internal/layout/    Terminal dimensions and line truncation
 internal/menu/      Autocompletion menu for commands and skills
 internal/queue/     Input queueing during active turns
 internal/sessions/  Session persistence, listing, rotation, resume
-internal/settings/  CLI flags, ~/.bulle.yml, and environment configuration
+internal/settings/  CLI flags, ~/.config/bulle/config.yml, and environment configuration
 internal/skills/    Agent skills discovery and execution
 internal/status/    Spinner and progress status indicator
 internal/tasks/     Task planning tool, validation, step updates

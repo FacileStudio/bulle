@@ -70,7 +70,7 @@ func saveRecoveryKey(key string) error {
 }
 
 // loadRecoveryKey reads the stored cross-signing recovery key if one was
-// previously written to ~/.bulle/chat/recovery.key.
+// previously written to ~/.local/share/bulle/chat/recovery.key.
 func loadRecoveryKey() string {
 	path := filepath.Join(settings.ChatDir(), "recovery.key")
 	data, err := os.ReadFile(path)

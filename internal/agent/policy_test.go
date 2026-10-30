@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/compaction"
 	"github.com/FacileStudio/bulle/internal/jev"
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // resolve is Settings as the real callers reach it: the defaults are the base the
@@ -32,10 +32,10 @@ func resolve(t *testing.T) settings.Config {
 func writeHome(t *testing.T, body string) {
 	t.Helper()
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	t.Setenv("TYPESAFE_API_KEY", "")
 	t.Setenv(settings.EnvPrefix+"COMPACTION_JUDGE", "")
-	if err := os.WriteFile(filepath.Join(home, settings.ConfigFile), []byte(body), 0o600); err != nil {
+	if err := os.WriteFile(xdgtest.ConfigPath(t, home), []byte(body), 0o600); err != nil {
 		t.Fatalf("writing the config: %v", err)
 	}
 }

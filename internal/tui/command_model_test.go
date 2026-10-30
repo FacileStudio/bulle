@@ -8,6 +8,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/FacileStudio/nacelle"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestParseTargetModel(t *testing.T) {
@@ -36,6 +38,7 @@ func TestModelCommandRefusesWhenBusy(t *testing.T) {
 }
 
 func TestModelCommandOpensMenuWhenEmpty(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	m := sized()
 	m.activeBackend = "anthropic"
 	m.activeModel = "claude-opus-5"
@@ -55,6 +58,7 @@ func TestModelCommandOpensMenuWhenEmpty(t *testing.T) {
 }
 
 func TestModelCommandSwitchDirectModel(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("OPENAI_API_KEY", "test-key")
 	m := &Model{}
 	m.activeBackend = "anthropic"
@@ -73,7 +77,7 @@ func TestModelCommandSwitchProfile(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	profilesDir := filepath.Join(dir, ".bulle", "profiles")
+	profilesDir := filepath.Join(dir, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +123,7 @@ func TestApplyProfileSwitchResetsReasoningBudget(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	profilesDir := filepath.Join(dir, ".bulle", "profiles")
+	profilesDir := filepath.Join(dir, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -154,6 +158,7 @@ reasoning:
 }
 
 func TestDirectModelSwitchPreservesEndpoint(t *testing.T) {
+	xdgtest.Isolate(t, t.TempDir())
 	m := &Model{}
 	m.activeBackend = "openai"
 	m.activeModel = "gpt-4o"

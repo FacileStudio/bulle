@@ -78,7 +78,7 @@ with an `*Unsupported` error rather than silently running with less.
 
 The client's settings layer is a separate settings problem from the core, and deliberately does not share a
 mechanism with it: **the library must never read configuration from disk or environment.** A
-`nacelle` package that read `~/.bulle.yml` would let a file on a *different* machine's disk
+`nacelle` package that read `~/.config/bulle/config.yml` would let a file on a *different* machine's disk
 change a headless consumer's behaviour, the way Bubble Tea's own config never reaches past the
 program that imports it.
 
@@ -92,9 +92,9 @@ could tell apart.
 
 | Layer | Source | Notes |
 |---|---|---|
-| Flags | `-backend`, `-model`, `-effort`, `-root`, `-system-prompt`, `-additional-prompt`, `-bash`, `-thinking`, `-project-context`, `-skills`, `-trust-skills`, `-skill-dir`, `-mcp`, `-fetch`, `-approve-tools`, `-diffs`, `-show-hooks`, `-show-hook-output`, `-max-iterations`, `-compact-at`, `-max-concurrency`, `-max-parallel-agents`, `-tasks`, `-continue`, `-resume`, `-gates-file`, `-no-config` | Only flags actually **typed** are collected, via `flag.Visit` — Go's `flag` package cannot otherwise tell a flag left alone from one passed its own default value. `-skill-dir` and `-mcp` are repeatable (`-mcp a.json -mcp b.json`); every other flag keeps only its last occurrence. `-resume` names one session by id or file path and, when given, beats `-continue`. `-no-config` skips `~/.bulle.yml` entirely: defaults plus environment plus flags. An invalid file gets a coloured report and one prompt — yes boots with defaults, no exits with the documentation link |
+| Flags | `-backend`, `-model`, `-effort`, `-root`, `-system-prompt`, `-additional-prompt`, `-bash`, `-thinking`, `-project-context`, `-skills`, `-trust-skills`, `-skill-dir`, `-mcp`, `-fetch`, `-approve-tools`, `-diffs`, `-show-hooks`, `-show-hook-output`, `-max-iterations`, `-compact-at`, `-max-concurrency`, `-max-parallel-agents`, `-tasks`, `-continue`, `-resume`, `-gates-file`, `-no-config` | Only flags actually **typed** are collected, via `flag.Visit` — Go's `flag` package cannot otherwise tell a flag left alone from one passed its own default value. `-skill-dir` and `-mcp` are repeatable (`-mcp a.json -mcp b.json`); every other flag keeps only its last occurrence. `-resume` names one session by id or file path and, when given, beats `-continue`. `-no-config` skips `~/.config/bulle/config.yml` entirely: defaults plus environment plus flags. An invalid file gets a coloured report and one prompt — yes boots with defaults, no exits with the documentation link |
 | Environment | `BULLE_PROFILE`, `BULLE_BACKEND`, `BULLE_MODEL`, `BULLE_PROVIDER_BASE_URL`, `BULLE_PROVIDER_API_KEY`, `BULLE_EFFORT`, `BULLE_ROOT`, `BULLE_SYSTEM_PROMPT`, `BULLE_ADDITIONAL_PROMPT`, `BULLE_BASH`, `BULLE_THINKING`, `BULLE_PROJECT_CONTEXT`, `BULLE_SKILLS`, `BULLE_TRUST_SKILLS`, `BULLE_SKILL_DIRS`, `BULLE_APPROVE_TOOLS`, `BULLE_DIFFS`, `BULLE_SHOW_HOOKS`, `BULLE_SHOW_HOOK_OUTPUT`, `BULLE_MAX_ITERATIONS`, `BULLE_COMPACT_AT`, `BULLE_MAX_CONCURRENCY`, `BULLE_MAX_PARALLEL_AGENTS`, `BULLE_COMPACTION_JUDGE`, `BULLE_COMPACTION_JUDGE_PROVIDER`, `BULLE_FETCH`, `BULLE_TASKS`, `TYPESAFE_API_KEY` | A misspelt boolean (`BULLE_BASH=yez`) is treated as unmentioned, not as `false`, and falls through to the layer below. `BULLE_SKILL_DIRS` is colon-separated, the same convention `PATH` itself uses for a list of directories. `BULLE_PROVIDER_BASE_URL` and `BULLE_PROVIDER_API_KEY` belong to the active provider — see [Custom providers](#custom-providers). `TYPESAFE_API_KEY` is the compaction judge's key and beats `BULLE_COMPACTION_JUDGE_API_KEY`; it is the one credential to keep in the environment rather than the file. The compaction ladder's own ratios and tail bounds are sunstopped — they are read when present and still take effect, but they are no longer documented or scaffolded. `BULLE_COMPACTION_JUDGE_PROVIDER` names the judge's decision model (`jev` or `clef`) and is the one new judge key. |
-| File | `~/.bulle.yml` | Preferences only, **no credentials** — those already have two homes: the environment, and the Anthropic SDK's own profile. A file can avoid holding one even where it needs one: `api_key_command` names the program that prints the key (`provider.api_key_command`, `limits.compaction.judge.api_key_command`) — see [Keeping the key out of the file](#keeping-the-key-out-of-the-file). `KnownFields(true)`: an unrecognised key (`max_iteration:`, one letter short) is refused rather than silently ignored |
+| File | `~/.config/bulle/config.yml` | Preferences only, **no credentials** — those already have two homes: the environment, and the Anthropic SDK's own profile. A file can avoid holding one even where it needs one: `api_key_command` names the program that prints the key (`provider.api_key_command`, `limits.compaction.judge.api_key_command`) — see [Keeping the key out of the file](#keeping-the-key-out-of-the-file). `KnownFields(true)`: an unrecognised key (`max_iteration:`, one letter short) is refused rather than silently ignored |
 | Defaults | — | `provider.backend: anthropic`, `root: .`, `tools.run_command: true`, `reasoning.thinking: true`, `discovery.project_context: true`, `discovery.skills: true`, `discovery.trust_skills: false`, `discovery.trust_hooks: false`, `sources.skill_dirs: []`, `sources.mcp: {}`, `security.approve_tools: false`, `security.deny_elevation: true`, `ui.diffs: true`, `ui.show_hooks: true`, `ui.show_hook_output: true`, `limits.max_iterations: 5`, `limits.compact_at: unset` (an absolute override when set; unset derives the ceiling from `soft_ratio` × the context window, `0` disables), `limits.max_concurrency: 16`, `limits.max_parallel_agents: 16`, `limits.compaction.judge.enabled: false`, `limits.compaction.judge.provider: jev` (`limits.compaction.window_tokens` and `reserve_tokens` are unset: the first is the backend's own window, the second a fifth of it), `tools.web_fetch: true`, `tools.tasks: true`, `tools.parallel_agents: true`, `ui.rendering_mode: tui`, `ui.group_tools: true`, `ui.show_thinking: true` |
 
 `project_context` and `skills` default **on**, unlike `bash`: each fails soft to nothing when
@@ -107,7 +107,22 @@ the person running this should opt into, not defaults sprung on them. See
 [Context and skills](#context-and-skills) and
 [Tool approval](#tool-approval) below.
 
-### `~/.bulle.yml`
+### Where bulle keeps its files
+
+Bulle follows the XDG base directory spec. A relative `XDG_*` value is ignored.
+
+| Directory | Default | Holds |
+|---|---|---|
+| Config | `$XDG_CONFIG_HOME/bulle` or `~/.config/bulle` | `config.yml`, `profiles/`, `jobs/` |
+| Data | `$XDG_DATA_HOME/bulle` or `~/.local/share/bulle` | `memory/`, `sessions/`, `chat/` (Matrix keys, rooms, recovery key) |
+| State | `$XDG_STATE_HOME/bulle` or `~/.local/state/bulle` | `trust.json`, `ledger.json`, `cron.jsonl`, `logs/` |
+| Runtime | `$XDG_RUNTIME_DIR/bulle` or `$TMPDIR/bulle-<uid>` | `chat.sock`, `ide/`, IDE sockets |
+
+On first run, bulle moves an older `~/.bulle/` and `~/.bulle.yml` into these
+directories. It never overwrites: an entry whose destination already exists
+stays where it was. `BULLE_CHAT_SOCK` still overrides the chat socket path.
+
+### `~/.config/bulle/config.yml`
 
 The file is grouped: each family of settings lives under its own key, the same
 families the code groups them into. The old flat layout (every key at the top
@@ -226,7 +241,7 @@ unreadable or malformed one is: a config silently ignored is worse than no confi
 setting carefully written is simply not in effect and nothing says so.
 
 Scheduled jobs are no longer part of this file at all — they live one YAML file
-per job in `~/.bulle/jobs/`. See [Cron jobs](#cron-jobs) for the folder, its
+per job in `~/.config/bulle/jobs/`. See [Cron jobs](#cron-jobs) for the folder, its
 trust gate and the per-job overrides.
 
 `prompt_placeholder` is the ghost text shown while the prompt is empty. The prompt has no prefix:
@@ -259,7 +274,7 @@ export BULLE_MODEL=auto
 bulle
 ```
 
-Or the same provider in `~/.bulle.yml`:
+Or the same provider in `~/.config/bulle/config.yml`:
 
 ```yaml
 provider:
@@ -337,16 +352,16 @@ command route is for when it is not, and for the files you keep in git.
 
 ### Profiles and /model command
 
-Profiles define reusable identities in `~/.bulle/profiles/<name>.yml`. Bulle reads any `.yml` file in that folder on startup and during interactive sessions.
+Profiles define reusable identities in `~/.config/bulle/profiles/<name>.yml`. Bulle reads any `.yml` file in that folder on startup and during interactive sessions.
 
 A profile carries **identity and model-aware settings**: which backend and model to reach, how
 hard that model should think, the limits that suit it, and the persona layered on top of the
-prompt. **Behaviour** — tools, security, sources, gates — stays in `~/.bulle.yml`. That split is
+prompt. **Behaviour** — tools, security, sources, gates — stays in `~/.config/bulle/config.yml`. That split is
 the point: one profile then works in every checkout without carrying that checkout's environment
-along, and a single edit to `~/.bulle.yml` moves every profile at once.
+along, and a single edit to `~/.config/bulle/config.yml` moves every profile at once.
 
 ```yaml
-# ~/.bulle/profiles/fast.yml
+# ~/.config/bulle/profiles/fast.yml
 name: fast
 provider:
   backend: google
@@ -364,7 +379,7 @@ limits:
 additional_prompt: Answer in short paragraphs and name every file you change.
 ```
 
-You can select a profile in `~/.bulle.yml` using the top-level `profile` key:
+You can select a profile in `~/.config/bulle/config.yml` using the top-level `profile` key:
 
 ```yaml
 profile: fast
@@ -373,10 +388,10 @@ profile: fast
 Or pass `-profile <name>` on the command line, or set `BULLE_PROFILE=<name>` in the environment. Whichever layer names a profile, it applies in the same place. Precedence order follows:
 
 ```
-defaults < ~/.bulle.yml < profile < environment < flags
+defaults < ~/.config/bulle/config.yml < profile < environment < flags
 ```
 
-A profile is a layer of its own, and it sits **above `~/.bulle.yml`**: the identity it names wins
+A profile is a layer of its own, and it sits **above `~/.config/bulle/config.yml`**: the identity it names wins
 over the file, so `profile: fast` moves the backend even when the file names one too, and one
 profile then works in every checkout. It is not a complete override — the environment and the
 flags still win over it, field by field, so a `BULLE_MAX_ITERATIONS` or `-max-iterations` beats the
@@ -432,7 +447,7 @@ for `clef` — over `limits.compaction.judge.api_key`.
 With the judge off, compaction behaves exactly as it did before this ladder
 existed.
 
-Enabling it is one key in `~/.bulle.yml`. No flag and no environment variable are
+Enabling it is one key in `~/.config/bulle/config.yml`. No flag and no environment variable are
 required:
 
 ```yaml
@@ -516,13 +531,13 @@ same risk.
 `~/.agents/skills/` (no trust needed, the user's own machine), every one under a **trusted**
 `.agents/skills/` found the same way the context walk works, and every one under a directory
 named by `-skill-dir` (repeatable), `BULLE_SKILL_DIRS` (colon-separated) or `skill_dirs` in
-`~/.bulle.yml`. Only a skill's `name` and `description` ever reach the system prompt; the
+`~/.config/bulle/config.yml`. Only a skill's `name` and `description` ever reach the system prompt; the
 model reads the rest with `read_file` once it decides a skill applies. `-trust-skills` trusts
 every project-local `.agents/skills/` found on that run and remembers the decision in
-`~/.bulle/trust.json`, keyed by canonical directory — run it once per project, not on every
+`~/.local/state/bulle/trust.json`, keyed by canonical directory — run it once per project, not on every
 launch.
 
-**MCP servers** (`mcp.go`). A server is written inline under `sources.mcp:` in `~/.bulle.yml` — nothing
+**MCP servers** (`mcp.go`). A server is written inline under `sources.mcp:` in `~/.config/bulle/config.yml` — nothing
 else is needed to start one:
 ```yaml
 sources:
@@ -535,7 +550,7 @@ The key is the server name;the definition uses the keys the `mcpServers` format 
 (stdio), `"type": "http"` + `url` (remote), `env`, `cwd`, `headers`, `disabled`. Both stdio and HTTP
 servers work, on **either backend**:the tools are bridged to `nacelle.Tool`, so
 `-approve-tools` gates them like every other tool and `-backend openrouter` gets them too. `${VAR}`和
-`${VAR:-default}` expand,, so a token stays in the environment rather than in `~/.bulle.yml`. Writing
+`${VAR:-default}` expand,, so a token stays in the environment rather than in `~/.config/bulle/config.yml`. Writing
 the definition here means there is no second file to keep in step and no pointer to remember to point tor
 
 For the times a server is already configured for another client, `-mcp <file>` (repeatable) names
@@ -552,9 +567,9 @@ refusing to work rather than as a server that is down.
 
 Nothing is discovered. A `.mcp.json` sitting in the working directory is **not** read, because it
 names executables to run — strictly worse than the project-local `.agents/skills/` this client
-already gates behind `~/.bulle/trust.json`, since a skill is text the model may decline to act
+already gates behind `~/.local/state/bulle/trust.json`, since a skill is text the model may decline to act
 on and this is a subprocess started before the model is asked anything. Every server bulle
-opens was named on the command line or in your own `~/.bulle.yml`.
+opens was named on the command line or in your own `~/.config/bulle/config.yml`.
 
 The spec defines the `SKILL.md` file, not where it has to live on disk — every tool picks its
 own directory (Claude Code reads `~/.claude/skills/`, pi reads `~/.agents/skills/` and its own
@@ -574,7 +589,7 @@ question this client otherwise had no way to check short of a debug build.
 `bash off` earns its place because the symptom arrives from the model rather than from this
 client: asked to build and run something, it answers that it has no terminal and cannot run a
 command. That is true and deliberate — `run_command` is unconfined, so it stays opt-in — but
-nothing connected that answer back to a `tools.run_command: false` written once in `~/.bulle.yml` and
+nothing connected that answer back to a `tools.run_command: false` written once in `~/.config/bulle/config.yml` and
 forgotten. Turn it on with `-bash`, `BULLE_BASH=1`, or `tools.run_command: true`.
 
 ## Reading a page
@@ -652,7 +667,7 @@ bulle cron trust news      # approve one job file's current contents
 
 ### The jobs folder
 
-Each job is one YAML file in `~/.bulle/jobs/` — `news.yml`, `healthchecks.yml`,
+Each job is one YAML file in `~/.config/bulle/jobs/` — `news.yml`, `healthchecks.yml`,
 one file per job, the job's own fields at the top level of the file rather than
 wrapped in a list. The job's name defaults to the filename stem, so `news.yml`
 defines the job `news` and `bulle cron run news` runs it; a `name:` key
@@ -664,7 +679,7 @@ daemon and no reload step: a file dropped in appears in `cron list` on the next
 invocation, a file edited changes the job, and a file deleted takes the job
 with it. Deleting the file is the off switch.
 
-Job files decode strictly, the way `~/.bulle.yml` itself does: a typo in a
+Job files decode strictly, the way `~/.config/bulle/config.yml` itself does: a typo in a
 job file is a hard error naming the file, not a silent half-job. Loud is the
 right setting for something that fires at 2am.
 
@@ -679,11 +694,11 @@ must approve the exact bytes before they run.
   someone runs `bulle cron trust <name>`, which prints the file's path, its
   name and its prompt, and asks before recording anything.
 - Trusting records a SHA-256 hash of the file's contents against its path in
-  `~/.bulle/trust.json`, the same store that remembers approved skill
+  `~/.local/state/bulle/trust.json`, the same store that remembers approved skill
   directories. Editing the file changes the hash, and a changed file is
   refused again — trust re-arms on every edit, so no one-line change to a
   trusted job slips through unreviewed.
-- Trust is per machine. A `~/.bulle/jobs/` folder synced across machines
+- Trust is per machine. A `~/.config/bulle/jobs/` folder synced across machines
   carries the files but not the approvals, so each machine needs its own
   `bulle cron trust` — the person trusting is a person at that machine's
   keyboard, and that is the point.
@@ -696,7 +711,7 @@ does creates the timer.
 ### A job file
 
 ```yaml
-# ~/.bulle/jobs/news.yml — one file, one job; the job's name is the stem.
+# ~/.config/bulle/jobs/news.yml — one file, one job; the job's name is the stem.
 when: daily
 prompt: |-
   Summarise what changed on the pages in my feed list since yesterday.
@@ -755,8 +770,8 @@ exactly on the config's settings.
 
 ### Migration
 
-The inline `cron:` list in `~/.bulle.yml` is gone. A config still carrying it
-is refused at load with an error naming `~/.bulle/jobs/` — the same refusal an
+The inline `cron:` list in `~/.config/bulle/config.yml` is gone. A config still carrying it
+is refused at load with an error naming `~/.config/bulle/jobs/` — the same refusal an
 unknown key gets, because a silently ignored job list is a scheduler that
 quietly stopped existing. Each list entry becomes its own file in the folder:
 the entry's `name` names the file (`news` becomes `news.yml`), the rest of the
@@ -788,7 +803,7 @@ revoked token would restart in a loop forever under `Restart=always`.
 
 ### The chat block
 
-Everything lives under `chat:` in `~/.bulle.yml`. It is off until `enabled` is `true`, and an
+Everything lives under `chat:` in `~/.config/bulle/config.yml`. It is off until `enabled` is `true`, and an
 untouched file with it off opens no connection.
 
 ```yaml
@@ -917,7 +932,7 @@ rather than left as an empty value.
 ### The crypto database
 
 Matrix end-to-end encryption keeps a device's keys, and bulle keeps them in a sqlite database
-under `~/.bulle/chat/`. The **pickle key** encrypts the stored device keys at rest, so losing
+under `~/.local/share/bulle/chat/`. The **pickle key** encrypts the stored device keys at rest, so losing
 it is the same as losing the database: bulle comes up as a new device, which Element shows as
 a new unverified device. Back the pickle key up somewhere other than beside the database. The
 plan names a backup story as an open risk; there is none beyond that yet.
@@ -950,7 +965,7 @@ chat:
 Self-signing writes account data on the homeserver, so it stays off until you ask. It runs
 once, and it refuses to run again on an account that already has cross-signing keys, because a
 second identity would un-verify every device signed by the first. The run that creates the
-identity prints a **recovery key** once and writes it to `~/.bulle/chat/recovery.key` with mode
+identity prints a **recovery key** once and writes it to `~/.local/share/bulle/chat/recovery.key` with mode
 0600. Keep it: the signing keys otherwise live only in the account's server-side secure secret
 storage, and the recovery key is the only way to get them onto a fresh database.
 
@@ -1331,13 +1346,13 @@ to local sender rules.
 The chat surface applies its own gate and ignores `security.approve_tools`.
 Reads run freely: `courrier inbox|list|read|search|triage`, `agenda events
 list`, `opus task list|show`, `mycelium memory search`, and `cat` or `ls` under
-`~/.bulle/memory` and the Journal folder. Anything else, including sending mail,
+`~/.local/share/bulle/memory` and the Journal folder. Anything else, including sending mail,
 posts a card in the room. Reply ✅ or "oui" to run it, ❌ or "non" to cancel; no
 answer in ten minutes cancels. Cron runs never ask: they refuse writes.
 
 ### Memory
 
-`~/.bulle/memory/` holds `USER.md` (1,500 characters), `MEMORY.md` (2,500),
+`~/.local/share/bulle/memory/` holds `USER.md` (1,500 characters), `MEMORY.md` (2,500),
 `notes/YYYY-MM-DD.md` and `backups/`. The `remember` tool appends to today's
 note and confirms only after the line is read back from disk. The 03:30
 `consolidate` job promotes durable facts into `MEMORY.md` within the caps and

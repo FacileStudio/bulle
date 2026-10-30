@@ -205,7 +205,7 @@ func writeFile(path, content string) error { return os.WriteFile(path, []byte(co
 func TestJobConfigAppliesProfile(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	pdir := filepath.Join(home, ".bulle", "profiles")
+	pdir := filepath.Join(home, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(pdir, 0o755); err != nil {
 		t.Fatal(err)
 	}

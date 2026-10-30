@@ -53,15 +53,15 @@ func (d Deps) withDefaults() (Deps, error) {
 }
 
 func (d Deps) withDirs() (Deps, error) {
-	home, err := settings.HomeDir()
+	state, err := settings.StateDir()
 	if err != nil {
 		return d, err
 	}
 	if d.StateDir == "" {
-		d.StateDir = filepath.Join(home, "state")
+		d.StateDir = state
 	}
 	if d.LogDir == "" {
-		d.LogDir = filepath.Join(home, "logs")
+		d.LogDir = filepath.Join(state, "logs")
 	}
 	if d.Ledger == nil {
 		d.Ledger, err = NewLedger("")

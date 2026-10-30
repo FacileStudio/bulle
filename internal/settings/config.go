@@ -12,9 +12,6 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-// ConfigFile is where settings are read from when the flags leave them out.
-const ConfigFile = ".bulle.yml"
-
 // Limits is the threshold settings that cap the run. Embedded in Config so
 // every field still reads as c.MaxIterations.
 type Limits struct {
@@ -219,8 +216,7 @@ func Load(path string) (Config, error) {
 // value that wins — passing Defaults(system) here silently discards the whole
 // file, and every untyped setting in it with it.
 func Settings(system string, flags Config) (Config, error) {
-	migrateLegacyHome()
-	migrateLegacyConfig()
+	migrateLegacy()
 	env := FromEnv()
 	if flags.NoConfig != nil && *flags.NoConfig {
 		return settingsNoConfig(system, flags, env)
@@ -228,7 +224,7 @@ func Settings(system string, flags Config) (Config, error) {
 	if created, err := Scaffold(ConfigPath()); err != nil {
 		return Config{}, err
 	} else if created {
-		fmt.Fprintln(os.Stderr, "wrote ~/.bulle.yml with the default settings")
+		fmt.Fprintf(os.Stderr, "wrote %s with the default settings\n", ConfigPath())
 	}
 	file, err := Load(ConfigPath())
 	if err != nil {

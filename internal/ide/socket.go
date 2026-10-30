@@ -1,27 +1,23 @@
 package ide
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+
+	"github.com/FacileStudio/bulle/internal/settings"
 )
 
-// SocketPath is where this process listens: $XDG_RUNTIME_DIR/bulle/<pid>.sock,
-// or $TMPDIR/bulle-<uid>/<pid>.sock when the runtime directory is unset. Both
-// are per-user directories, which matters because what arrives on the socket
-// can answer an approval.
+// SocketPath is where this process listens: <pid>.sock inside
+// settings.RuntimeDir. That is a per-user directory, which matters because
+// what arrives on the socket can answer an approval.
 func SocketPath(pid int) (string, error) {
-	name := fmt.Sprintf("%d.sock", pid)
-	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
-		return filepath.Join(dir, "bulle", name), nil
+	dir, err := settings.RuntimeDir()
+	if err != nil {
+		return "", err
 	}
-	uid := os.Getuid()
-	if uid < 0 {
-		return "", errors.New("no user id to build the IDE socket path from")
-	}
-	return filepath.Join(os.TempDir(), fmt.Sprintf("bulle-%d", uid), name), nil
+	return filepath.Join(dir, fmt.Sprintf("%d.sock", pid)), nil
 }
 
 // listen opens the socket, creating its directory 0700 so only its owner can

@@ -16,7 +16,7 @@ import (
 // for the given project root. If projectRoot is empty, it lists all sessions.
 // If the sessions directory doesn't exist, it returns an empty slice.
 func ListSessionFiles(projectRoot string) []string {
-	base, err := settings.HomeDir()
+	base, err := settings.DataDir()
 	if err != nil {
 		return nil
 	}

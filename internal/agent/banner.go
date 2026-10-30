@@ -39,7 +39,7 @@ import (
 // client: asked to build something, it answers that it has no terminal and
 // cannot run a command. That is true and deliberate — run_command is
 // unconfined, so it stays a decision — but nothing on screen connected it to
-// a line in ~/.bulle.yml written once and forgotten. Saying "bash off"
+// a line in ~/.config/bulle/config.yml written once and forgotten. Saying "bash off"
 // where the model's own capabilities are listed is the shortest path from
 // that answer back to the switch that causes it.
 //
