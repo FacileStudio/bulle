@@ -107,6 +107,14 @@ the person running this should opt into, not defaults sprung on them. See
 [Context and skills](#context-and-skills) and
 [Tool approval](#tool-approval) below.
 
+### Checking that everything runs
+
+`bulle status` prints one line per check (`ok`, `warn` or `FAIL`): the config
+loads, the chat service is active and its socket answers, every assistant cron
+entry is installed, the last `assistant watch` is recent, each enabled job is
+trusted and installed, and `courrier triage` is supported. It exits 1 when any
+line says `FAIL`.
+
 ### Where bulle keeps its files
 
 Bulle follows the XDG base directory spec. A relative `XDG_*` value is ignored.

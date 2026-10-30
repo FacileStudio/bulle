@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.88.0] - 2026-10-30
+
+### Added
+
+- feat(status): `bulle status` checks the config, the chat daemon and its socket, the assistant crontab entries, the last watch, every cron job (trusted, installed) and the mail triage in one call, and exits 1 on any failure (`cmd/status*.go`)
+
 ## [0.87.3] - 2026-10-30
 
 ### Added
