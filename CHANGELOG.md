@@ -2,10 +2,16 @@
 
 ## [Unreleased]
 
+## [0.87.0] - 2026-10-30
+
 ### Changed
 
 - refactor(settings): config, data, state and runtime files follow the XDG base directories; `~/.bulle/` and `~/.bulle.yml` migrate on first run and are never overwritten (`internal/settings/xdg.go`, `internal/settings/migrate.go`)
 - refactor(chat): the chat socket and the IDE discovery files live in the runtime directory, not `~/.bulle/`
+
+### Fixed
+
+- fix(tests): eleven tests read or wrote the developer's real home; they now run under `xdgtest.Isolate`
 
 ## [0.86.0] - 2026-10-30
 
@@ -70,7 +76,7 @@
 
 ### Added
 
-- feat(chat): local IPC socket server for the chat daemon (`~/.local/share/bulle/chat.sock`), allowing external tools and cron jobs to dispatch messages and trigger conversational turns (`internal/chat/ipc.go`, `cmd/chat_ipc.go`)
+- feat(chat): local IPC socket server for the chat daemon (`~/.bulle/chat.sock`), allowing external tools and cron jobs to dispatch messages and trigger conversational turns (`internal/chat/ipc.go`, `cmd/chat_ipc.go`)
 - feat(chat): CLI commands `bulle chat send` and `bulle chat trigger` to interact directly with the running chat daemon (`cmd/chat_send.go`, `cmd/chat_trigger.go`)
 - feat(cron): native Matrix delivery (`delivery: matrix` and `delivery: matrix:<room>`) via chat daemon IPC socket (`internal/agent/cronlog.go`)
 - feat(cron): support `profile: <name>` inheritance in job specs to cleanly inherit provider configuration without duplicating YAML blocks (`internal/settings/cron.go`, `internal/agent/cronapply.go`)
@@ -99,7 +105,7 @@
 
 ### Changed
 
-- refactor: rename the project from `kori` to `bulle` — binary, module path, config directory (`~/.config/bulle/config.yml`), environment variables (`BULLE_*`), install script, Homebrew cask, GoReleaser project name and every remaining `kori` reference in docs and tests (`main.go`, `cmd`, `internal`, `docs`, `README.md`, `ROADMAP.md`, `filet.yml`, `.goreleaser.yml`, `install.sh`, `.gitignore`)
+- refactor: rename the project from `kori` to `bulle` — binary, module path, config directory (`~/.bulle.yml`), environment variables (`BULLE_*`), install script, Homebrew cask, GoReleaser project name and every remaining `kori` reference in docs and tests (`main.go`, `cmd`, `internal`, `docs`, `README.md`, `ROADMAP.md`, `filet.yml`, `.goreleaser.yml`, `install.sh`, `.gitignore`)
 
 ### Fixed
 
@@ -122,7 +128,7 @@
 
 ### Added
 
-- feat(ide): a session can publish itself to an editor over a unix socket — `--ide`, or `$BULLE_IDE` for every session in a shell. It writes `$XDG_RUNTIME_DIR/bulle/ide/<pid>.json` (0600 in a 0700 directory, removed on exit) and listens on `$XDG_RUNTIME_DIR/bulle/<pid>.sock`, newline-delimited JSON, one object per line, every object carrying a protocol version and a type. The frozen contract is `docs/ide-protocol.md` and its first consumer is `bulle.nvim`. The session reports the run's shape (`hello`, `turn`, `done`), what it is doing (`tool`, `edit`, `error`), and the one thing that needs an answer (`approval`); the editor can answer an approval, run a prompt with its cursor's place attached, ask the session to scroll to a file, and stop a run. The `edit` event carries the changed line span in the new file plus the added and removed counts, so an editor marks a change without re-deriving it or reading the file. Forward compatibility is mandatory on both sides — a receiver ignores an unknown type and unknown fields inside a known one — so a protocol version bump is never a breaking change. A session that publishes to nobody pays nothing for it: with neither the flag nor the variable there is no socket, no file, no goroutine and no hook, and the nil surface costs a nil check (`internal/ide`, `internal/tui`, `internal/agent`, `cmd`, `docs/ide-protocol.md`)
+- feat(ide): a session can publish itself to an editor over a unix socket — `--ide`, or `$BULLE_IDE` for every session in a shell. It writes `~/.bulle/ide/<pid>.json` (0600 in a 0700 directory, removed on exit) and listens on `$XDG_RUNTIME_DIR/bulle/<pid>.sock`, newline-delimited JSON, one object per line, every object carrying a protocol version and a type. The frozen contract is `docs/ide-protocol.md` and its first consumer is `bulle.nvim`. The session reports the run's shape (`hello`, `turn`, `done`), what it is doing (`tool`, `edit`, `error`), and the one thing that needs an answer (`approval`); the editor can answer an approval, run a prompt with its cursor's place attached, ask the session to scroll to a file, and stop a run. The `edit` event carries the changed line span in the new file plus the added and removed counts, so an editor marks a change without re-deriving it or reading the file. Forward compatibility is mandatory on both sides — a receiver ignores an unknown type and unknown fields inside a known one — so a protocol version bump is never a breaking change. A session that publishes to nobody pays nothing for it: with neither the flag nor the variable there is no socket, no file, no goroutine and no hook, and the nil surface costs a nil check (`internal/ide`, `internal/tui`, `internal/agent`, `cmd`, `docs/ide-protocol.md`)
 - feat(tui): the stats line under the state line now opens with `provider · model` — `openrouter · deepseek/deepseek-v4.1-flash` — ahead of the price, in the banner's own words, so which model is being billed is readable mid-run rather than only at launch. It follows a `/model` switch, and it names the *resolved* model: a config that leaves `provider.model` empty lets the backend supply its own default, and the banner and the session config now read one shared helper for it, so the two cannot disagree. The session total, the token pair and the context figure now come from `total()`/`tokenTotals()` for the footer, `/cost`, `/status` and the recap alike, instead of four hand-written sums (`internal/agent`, `internal/tui`). Incidental: `/status` no longer prints an empty `anthropic/` for a session that never named a model
 
 ### Fixed
@@ -138,11 +144,11 @@
 ### Changed
 
 - feat(compaction)!: the tier ladder is two rungs instead of three. `limits.compaction.hard_ratio` is **removed**, and `limits.compaction.mid_ratio` is **renamed to `smart_ratio`** — the old name is refused at load by the strict decoder rather than silently ignored, and under the environment layer `BULLE_COMPACTION_MID_RATIO` and `BULLE_COMPACTION_HARD_RATIO` are now refused too, since that layer would otherwise ignore them and quietly run on the default. Migrating is deleting one line and renaming the other; there is nothing to re-tune, since the forced fold is now derived rather than configured. Whether a pass *forces* is no longer scheduled by that second ratio: it is derived, from whether the fold the judge produced would leave the conversation under its trigger (`compaction.LandsUnder`, `compaction.Fold.Forced`). A fixed ratio was a proxy for that question and a coarse one — two conversations at 0.81 and 0.89 of the usable window ran the same pass, though only the second needed forcing — and it drifted on large windows, because the reserve is capped at 64k and stops growing above a 320k window: the old `hard` rung sat at 72% of the raw window at 200k but 84% at 1M, later than the 70–75% the field converges on. What forcing costs is bounded but real: it never drops a block, since a `prune` still needs the judge's probability and confidence — but the blocks it overrides are exactly the ones the judge said must survive verbatim, and they go to a summarizer whose prompt says to be as short as correctness allows, so a fact in one can be lost to summarization. That is why the decision is made on an upper bound of the rebuilt size rather than a guess. The judge is no longer asked to force either — `JudgeRequest.Force` is gone, and forcing is one lever pulled after the verdicts rather than a parameter to the question that produced them (`internal/compaction`, `internal/settings`, `internal/tui`, `internal/agent`)
-- docs(compaction): the `limits.compaction` block in `~/.config/bulle/config.yml` now says which settings are a decision and which are a default — `judge.enabled` and `compact_at` are the two that are yours, and the ratios carry the rule that the soft tier is free and the smart tier is a call, so raise `soft_ratio` before touching `smart_ratio`. No value changed (`internal/settings`, `README.md`, `docs/configuration.md`)
+- docs(compaction): the `limits.compaction` block in `~/.bulle.yml` now says which settings are a decision and which are a default — `judge.enabled` and `compact_at` are the two that are yours, and the ratios carry the rule that the soft tier is free and the smart tier is a call, so raise `soft_ratio` before touching `smart_ratio`. No value changed (`internal/settings`, `README.md`, `docs/configuration.md`)
 
 ### Fixed
 
-- fix(settings): `TestShowHooksFromEnv` and `TestSetupAgentCustomTools` resolved settings through the real chain and so read the developer's own `~/.config/bulle/config.yml` and whichever profile it names — an unrelated key in someone's config could fail the suite, which is exactly how the `hard_ratio` removal surfaced. Both now run on a home of their own, the way their siblings already did (`internal/settings`, `internal/agent`)
+- fix(settings): `TestShowHooksFromEnv` and `TestSetupAgentCustomTools` resolved settings through the real chain and so read the developer's own `~/.bulle.yml` and whichever profile it names — an unrelated key in someone's config could fail the suite, which is exactly how the `hard_ratio` removal surfaced. Both now run on a home of their own, the way their siblings already did (`internal/settings`, `internal/agent`)
 
 ## [0.75.0] - 2026-09-24
 
@@ -262,10 +268,10 @@
 
 ### Added
 - feat(settings): `session.additional_prompt` (`BULLE_ADDITIONAL_PROMPT`, `-additional-prompt`), appended after the base prompt and skills catalog so a specialist persona layers on without replacing the harness guidance
-- feat(settings): profiles carry `limits` and `additional_prompt`, keeping identity and model-aware tuning together while tools and security stay in `~/.config/bulle/config.yml`
+- feat(settings): profiles carry `limits` and `additional_prompt`, keeping identity and model-aware tuning together while tools and security stay in `~/.bulle.yml`
 
 ### Fixed
-- fix(settings): a profile's identity now beats `~/.config/bulle/config.yml` however the profile is selected — before, the file's own `profile:` key lost to the file's other keys while `-profile` and `BULLE_PROFILE` won, so one profile meant two different things and a scaffolded config could name a profile and never see its backend
+- fix(settings): a profile's identity now beats `~/.bulle.yml` however the profile is selected — before, the file's own `profile:` key lost to the file's other keys while `-profile` and `BULLE_PROFILE` won, so one profile meant two different things and a scaffolded config could name a profile and never see its backend
 - fix(docs): `example.bulle.yml` is byte-identical to the first-boot scaffold again, and a test now fails when they drift; the documented `ui.rendering_mode` and `ui.transparent_blocks` defaults follow the code (`tui`, `true`)
 
 ## [0.68.0] - 2026-09-18
@@ -288,7 +294,7 @@
 
 ### Added
 - feat(tui): `/model` command for dynamic profile and model switching mid-session
-- feat(settings): `~/.config/bulle/profiles/` directory for reusable provider and reasoning configs
+- feat(settings): `~/.bulle/profiles/` directory for reusable provider and reasoning configs
 - feat(cmd): `--profile` flag and `BULLE_PROFILE` env var for profile selection
 - feat(sessions): resume last session by default and generate short 8-char hex session IDs
 
@@ -301,7 +307,7 @@
 ### Added
 - feat(sessions): background session management with `bulle sessions` (alias `bulle list`), attach/resume, and kill
 - feat(sessions): detached execution via `--detach` (`-d`) flag, `/detach` TUI command, and `ctrl+d`
-- feat(settings): configurable `limits.max_concurrency` and `limits.max_parallel_agents` in `~/.config/bulle/config.yml` (default 16)
+- feat(settings): configurable `limits.max_concurrency` and `limits.max_parallel_agents` in `~/.bulle.yml` (default 16)
 
 ### Fixed
 - fix(parallel): upgrade default subagent concurrency limit to 16 concurrent workers
