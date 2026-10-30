@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.86.0] - 2026-10-30
+
 ### Added
 
 - feat(assistant): `bulle assistant watch|digest|consolidate|install|status`, quiet hours, three daily digests and a dedupe ledger (`internal/assistant`, `cmd/assistant*.go`)
@@ -15,6 +17,13 @@
 
 - fix(cron): matrix delivery sends only text inside `<deliver></deliver>` and drops untagged output (`internal/agent/cronmatrix.go`)
 - feat(chat): read receipts on accepted messages (`internal/chat/presence.go`)
+- fix(chat): refuse tool inputs whose keys differ only by case, so the approval gate and the shell tool read the same command (`internal/agent/chatapprove_gate.go`)
+- fix(chat): allow only listed flags on read-only `courrier`, `agenda`, `opus` and `mycelium` commands, and ask before `web_fetch` (`internal/agent/chatapprove*.go`)
+- fix(chat): approval cards show decoded fields, wait for delivery before listening, and refuse a typed verdict when several cards are pending (`cmd/chat_approve*.go`)
+- fix(chat): cap voice downloads and ffmpeg output, and keep temp paths out of chat errors (`internal/chat/voice*.go`)
+- fix(assistant): lock the ledger across processes, run digests with no tools, and lock watch and digest runs (`internal/assistant`, `internal/agent/assistanttoolless.go`)
+- fix(assistant): digests honour snooze and noise, sender rules match exact addresses, and cron gets `CRON_TZ` (`internal/assistant`, `cmd/assistant_install.go`)
+- fix(memory): `/forget` needs four characters and reports its backups, consolidation drops at most three lines, and `Revert` saves a safety copy (`internal/memory`)
 
 ## [0.85.4] - 2026-10-27
 
