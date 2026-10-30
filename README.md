@@ -144,7 +144,7 @@ sources:
 The block above is the full scaffold — the file bulle writes on first boot,
 and the `TestExampleConfigIsTheScaffoldTemplate` test checks it is byte-identical
 to `example.bulle.yml`. The rest of the surface (tools, reasoning, discovery,
-ui, sandbox, remote, chat, gates, sources, hooks) is documented in
+ui, sandbox, remote, chat, assistant, gates, sources, hooks) is documented in
 [docs/configuration.md](docs/configuration.md); a key missing from the block
 above is not a broken setting, it is a setting kept to its default.
 

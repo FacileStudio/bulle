@@ -56,3 +56,15 @@ func parseClock(s string) (int, bool) {
 	}
 	return t.Hour()*60 + t.Minute(), true
 }
+
+// SetQuiet silences interrupts until the given time by writing quiet.json.
+func SetQuiet(stateDir string, until time.Time) error {
+	data, err := json.Marshal(quietFile{Until: until})
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(stateDir, 0o700); err != nil {
+		return err
+	}
+	return writeAtomic(filepath.Join(stateDir, "quiet.json"), data)
+}

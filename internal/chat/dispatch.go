@@ -31,6 +31,9 @@ func (d *daemon) accept(ctx context.Context, m Message) {
 		report(d.a.Name(), refused)
 		return
 	}
+	if d.cmds != nil && d.cmds.Intercept != nil && m.Is(KindText) && d.cmds.Intercept(m) {
+		return
+	}
 	name, _, _ := d.cmds.match(m)
 	switch {
 	case m.Is(KindReaction):

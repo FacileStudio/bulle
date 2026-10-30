@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Added
+
+- feat(assistant): `bulle assistant watch|digest|consolidate|install|status`, quiet hours, three daily digests and a dedupe ledger (`internal/assistant`, `cmd/assistant*.go`)
+- feat(assistant): classified mail through `courrier triage`, VIP override and a local fallback for older servers (`internal/assistant/source_mail*.go`)
+- feat(chat): rooms persist across restarts, nudges are recorded into the room and the conversation rolls over at 04:00 (`cmd/chat_room*.go`)
+- feat(chat): quiet notices, reactions as replies, `/stop /new /snooze /quiet /forget /status` and voice notes (`internal/chat`, `cmd/chat_commands.go`)
+- feat(chat): in-room approvals gate every non-read-only tool call (`internal/agent/chatapprove*.go`, `cmd/chat_approve*.go`)
+- feat(memory): bounded `USER.md` and `MEMORY.md`, a verified `remember` tool, `/forget` and nightly consolidation with backup (`internal/memory`)
+
+### Fixed
+
+- fix(cron): matrix delivery sends only text inside `<deliver></deliver>` and drops untagged output (`internal/agent/cronmatrix.go`)
+- feat(chat): read receipts on accepted messages (`internal/chat/presence.go`)
+
 ## [0.85.4] - 2026-10-27
 
 ### Fixed

@@ -112,20 +112,21 @@ func consumeHeadlessEvents(ctx context.Context, events <-chan engine.Event, targ
 // agent and a cleanup function the caller must defer. Extra hooks ride
 // the settings hooks.
 func BuildHeadlessAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook) (*nacelle.Agent, func(), error) {
-	return buildAgentWith(config, extra, nil)
+	return buildAgentWith(config, extra, nil, nil)
 }
 
 // BuildChatAgent builds the same agent with the given approval gate in place
 // of the one security.approve_tools selects.
-func BuildChatAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, approve nacelle.Approve) (*nacelle.Agent, func(), error) {
-	return buildAgentWith(config, extra, approve)
+func BuildChatAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, approve nacelle.Approve, tools ...nacelle.Tool) (*nacelle.Agent, func(), error) {
+	return buildAgentWith(config, extra, approve, tools)
 }
 
-func buildAgentWith(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, override nacelle.Approve) (*nacelle.Agent, func(), error) {
+func buildAgentWith(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, override nacelle.Approve, more []nacelle.Tool) (*nacelle.Agent, func(), error) {
 	set, local, err := localTools(config)
 	if err != nil {
 		return nil, nil, err
 	}
+	local = append(local, more...)
 
 	mcp, local, err := mcpTools(config, local)
 	if err != nil {

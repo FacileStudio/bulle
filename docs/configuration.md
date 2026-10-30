@@ -1267,6 +1267,82 @@ override `--user`, so an instance that unexpectedly lands you as root is caught
 by the user check rather than by a name.
 
 
+## Personal assistant
+
+`bulle chat` doubles as a quiet personal assistant. Plain Go fetches mail,
+calendar and tasks, filters and dedupes them, and decides whether to speak. The
+model only writes the final two to five lines. Design and evidence:
+[plan-true-assistant.md](plan-true-assistant.md).
+
+```yaml
+assistant:
+  timezone: Europe/Paris
+  digests: {morning: "09:00", midday: "14:00", evening: "20:00"}
+  quiet_start: "22:00"
+  quiet_end: "08:00"
+  weekend_digests: [morning]
+  profile: free
+  vip: ["client@example.com"]
+  drop_senders: ["noreply@shop.example"]
+  sources:
+    mail_accounts: [1, 2, 3]
+    calendars: [1, 4, 9]
+    workspaces: [1, 2, 3]
+```
+
+Every key is optional. An empty `sources` list reads everything the Facile CLIs
+report, and `vip` addresses always interrupt, even when courrier marks them as
+bulk mail.
+
+### Schedule
+
+`bulle assistant install` writes the crontab entries: `watch` every 15
+minutes, one `digest` per entry in `digests`, and `consolidate` at 03:30. It
+refuses to run while the old `assistant-pulse` or `assistant-checkin` entries
+exist; pass `--replace-legacy` to remove them. Cron uses the host timezone, so
+set `CRON_TZ` or check it matches `assistant.timezone`.
+
+`watch` calls the model only when a hard trigger fires: an event within an
+hour, a task due today or newly overdue, or a new message from a VIP or a known
+sender. Nothing is sent during quiet hours, and nothing is surfaced twice
+unless it changed. Digests go out as quiet notices; interrupts notify.
+
+Mail comes from `courrier triage --all --unread --json`, which classifies each
+conversation as `bulk`, `known` or `unknown_human`. An older courrier falls back
+to local sender rules.
+
+### In the room
+
+| Input | Effect |
+|---|---|
+| `/stop` | cancels the running turn |
+| `/new` | starts a fresh conversation, carrying memory |
+| `/snooze` | snoozes the last nudge until 09:00 tomorrow |
+| `/quiet <hours>` | no interrupts for that long |
+| `/forget <text>` | removes matching lines from memory, with a backup |
+| `/status` | last watch, tracked items, memory size |
+| 💤 on a nudge | snooze its items |
+| 👎 on a nudge | mark its items as noise |
+| 👎 on "Retenu cette nuit" | restore yesterday's `MEMORY.md` |
+| voice note | transcribed locally, answered with the transcript quoted |
+
+### Approvals
+
+The chat surface applies its own gate and ignores `security.approve_tools`.
+Reads run freely: `courrier inbox|list|read|search|triage`, `agenda events
+list`, `opus task list|show`, `mycelium memory search`, and `cat` or `ls` under
+`~/.bulle/memory` and the Journal folder. Anything else, including sending mail,
+posts a card in the room. Reply ✅ or "oui" to run it, ❌ or "non" to cancel; no
+answer in ten minutes cancels. Cron runs never ask: they refuse writes.
+
+### Memory
+
+`~/.bulle/memory/` holds `USER.md` (1,500 characters), `MEMORY.md` (2,500),
+`notes/YYYY-MM-DD.md` and `backups/`. The `remember` tool appends to today's
+note and confirms only after the line is read back from disk. The 03:30
+`consolidate` job promotes durable facts into `MEMORY.md` within the caps and
+posts what it kept. Memory is frozen into each conversation when it starts.
+
 ## Voice notes
 
 The assistant transcribes Matrix voice notes locally with ffmpeg and

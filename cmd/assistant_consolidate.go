@@ -38,6 +38,7 @@ func postRetained(ctx context.Context, report memory.Report) string {
 	resp, err := chat.SendIPC(ctx, chat.IPCRequest{
 		Action: "send", Text: "Retenu cette nuit : " + strings.Join(report.Added, " ; "),
 		Notify: &quiet, Record: true,
+		Items: []string{"memory:consolidate:" + time.Now().Format("2006-01-02")},
 	})
 	if err == nil && !resp.OK {
 		err = errors.New(resp.Error)

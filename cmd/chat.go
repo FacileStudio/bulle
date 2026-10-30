@@ -83,8 +83,14 @@ func runChatDaemon() error {
 	fmt.Fprintf(os.Stderr, "bulle chat: %s listening as %s on %s\n", adapter.Name(), m.userID, m.homeserver)
 	rooms := newRoomRegistry(config)
 	defer func() { _ = rooms.Close() }()
+	reactions := chat.NewReactionRouter()
+	svc, err := newChatServices(adapter, rooms, reactions)
+	if err != nil {
+		return errors.Join(err, adapter.Close())
+	}
 	startChatIPC(ctx, m, adapter, rooms)
-	return errors.Join(chat.Run(ctx, adapter, chatResponder(rooms), router), adapter.Close())
+	startAntenneWatch(ctx)
+	return errors.Join(chat.RunWith(ctx, adapter, chatResponder(rooms), router, svc.commands(reactions)), adapter.Close())
 }
 
 // chatResponder routes incoming messages through the room's session.

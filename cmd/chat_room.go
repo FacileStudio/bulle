@@ -10,6 +10,7 @@ import (
 	"github.com/FacileStudio/bulle/internal/agent"
 	"github.com/FacileStudio/bulle/internal/compaction"
 	"github.com/FacileStudio/bulle/internal/engine"
+	"github.com/FacileStudio/bulle/internal/memory"
 	"github.com/FacileStudio/bulle/internal/sessions"
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -25,6 +26,7 @@ type chatRoom struct {
 	loc       *time.Location
 	now       func() time.Time
 	summarize func(context.Context, []nacelle.Message) string
+	memory    *memory.Store
 }
 
 type roomRegistry struct {
@@ -32,6 +34,8 @@ type roomRegistry struct {
 	config settings.Config
 	rooms  map[string]*chatRoom
 	asker  agent.Asker
+	nudges *nudgeLog
+	memory *memory.Store
 }
 
 func newRoomRegistry(config settings.Config) *roomRegistry {
@@ -47,7 +51,7 @@ func (r *roomRegistry) get(key string) (*chatRoom, error) {
 	if room, ok := r.rooms[key]; ok {
 		return room, nil
 	}
-	room, err := newChatRoom(r.config, key, r.asker)
+	room, err := newChatRoom(r.config, key, r.asker, r.memory)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +77,9 @@ func (r *roomRegistry) Close() error {
 	return nil
 }
 
-func newChatRoom(config settings.Config, key string, asker agent.Asker) (*chatRoom, error) {
-	a, cleanup, err := agent.BuildChatAgent(config, nil, agent.ChatApprove(key, asker))
+func newChatRoom(config settings.Config, key string, asker agent.Asker, mem *memory.Store) (*chatRoom, error) {
+	config, tools := withMemory(config, mem)
+	a, cleanup, err := agent.BuildChatAgent(config, nil, agent.ChatApprove(key, asker), tools...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,6 +94,7 @@ func newChatRoom(config settings.Config, key string, asker agent.Asker) (*chatRo
 		day:       day,
 		loc:       assistantLocation(config),
 		now:       time.Now,
+		memory:    mem,
 	}
 	room.summarize = room.compactSummary
 	return room, nil

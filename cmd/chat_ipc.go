@@ -25,8 +25,13 @@ func (rooms *roomRegistry) handleIPCSend(ctx context.Context, m chatMatrix, adap
 	if target == "" {
 		return errors.New("no room specified and no default room configured")
 	}
-	if err := adapter.Send(ctx, chat.Identity{Adapter: "matrix", Room: target}, req.Text); err != nil {
+	notify := req.Notify == nil || *req.Notify
+	id, err := chat.Deliver(ctx, adapter, chat.Identity{Adapter: "matrix", Room: target}, req.Text, notify)
+	if err != nil {
 		return err
+	}
+	if rooms.nudges != nil {
+		rooms.nudges.note(target, id, req.Items)
 	}
 	if !req.Record {
 		return nil

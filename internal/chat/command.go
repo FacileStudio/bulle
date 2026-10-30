@@ -14,6 +14,8 @@ type Handler func(ctx context.Context, m Message, args string) string
 // /stop always cancels the running turn of the room; Stop only customises the
 // reply. Audio answers an audio message, and OnReaction receives a reaction
 // whose target was registered in Reactions, with the item keys of that target.
+// Intercept sees every text message before the queue and returns true to take
+// it, which is how a pending approval reads a reply while its turn is blocked.
 type Commands struct {
 	Stop       Handler
 	New        Handler
@@ -23,6 +25,7 @@ type Commands struct {
 	Status     Handler
 	Audio      Handler
 	OnReaction func(ctx context.Context, m Message, keys []string) bool
+	Intercept  func(m Message) bool
 	Reactions  *ReactionRouter
 }
 

@@ -49,13 +49,7 @@ func (r *chatRoom) newDay(ctx context.Context) {
 	if msgs := conv.Messages(); len(msgs) > 0 && r.summarize != nil {
 		summary = r.summarize(ctx, msgs)
 	}
-	var fresh []nacelle.Message
-	if summary != "" {
-		fresh = []nacelle.Message{{
-			Role:  nacelle.RoleUser,
-			Parts: []nacelle.Part{nacelle.Text{Text: "Summary of the previous day:\n" + summary}},
-		}}
-	}
+	fresh := carriedMessage(summary, r.memory, r.now())
 	conv.Replace(fresh)
 	r.day = r.dayKey()
 }
