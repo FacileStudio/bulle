@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.89.2] - 2026-10-30
+
+### Fixed
+
+- fix(agent): the system prompt names the session's model and backend, so the model stops guessing its identity from unrelated environment variables (`internal/agent/environment_model.go`)
+
 ## [0.89.1] - 2026-10-30
 
 ### Fixed

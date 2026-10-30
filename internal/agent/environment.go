@@ -76,7 +76,9 @@ func DefaultSystemPrompt() string {
 }
 
 func environment(config Config, now time.Time, mcp connected) string {
-	return sessionBlock(config) + sessionMeta(now) + approvalNote(config) + bashRules(config) + webNote(config) + searchContentNote(config) + findFilesNote(config) + tasksNote() + parallelNote() + mcpNote(mcp)
+	head := sessionBlock(config) + sessionMeta(now) + modelNote(config) + approvalNote(config) + bashRules(config)
+	tools := webNote(config) + searchContentNote(config) + findFilesNote(config) + tasksNote() + parallelNote()
+	return head + tools + mcpNote(mcp)
 }
 
 func sessionBlock(config Config) string {
