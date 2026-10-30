@@ -13,25 +13,18 @@ var ErrSecret = errors.New("memory: the fact looks like a secret, store where to
 // rather than a fact about the user.
 var ErrInstruction = errors.New("memory: the fact reads like an instruction, only store facts about the user")
 
-var secretPatterns = []*regexp.Regexp{
-	regexp.MustCompile(`(?i)\b(password|passwd|mot de passe|mdp|token|secret|api[ _-]?key|cl[ée] api|private key)\b\s*(is|est|:|=)`),
-	regexp.MustCompile(`\bsk-[A-Za-z0-9_-]{16,}`),
-	regexp.MustCompile(`-----BEGIN [A-Z ]*PRIVATE KEY-----`),
-	regexp.MustCompile(`[A-Za-z0-9+/_=-]{40,}`),
-}
-
 var instructionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)ignore (all |any )?(previous|prior|above|earlier) (instructions|rules)`),
 	regexp.MustCompile(`(?i)ignore (toutes )?(les )?(instructions|r[èe]gles) pr[ée]c[ée]dentes`),
 	regexp.MustCompile(`(?i)\b(from now on|d[ée]sormais|dor[ée]navant),? (you|tu) (must|should|dois|devras)\b`),
 	regexp.MustCompile(`(?i)\b(always|toujours) (forward|transf[ée]r|send|envoie)\b.*\b(to|[àa])\b.*@`),
+	regexp.MustCompile(`(?i)\b(whenever|each time|every time|chaque fois|[àa] chaque fois)\b.*\b(forward|send|reply|delete|transf[ée]r|envoi|r[ée]pond|supprim)`),
+	regexp.MustCompile(`(?i)\b(never|ne jamais)\s+(tell|say|mention|dire|parler|mentionner)\b`),
 }
 
 func checkFact(fact string) error {
-	for _, p := range secretPatterns {
-		if p.MatchString(fact) {
-			return ErrSecret
-		}
+	if looksSecret(fact) {
+		return ErrSecret
 	}
 	for _, p := range instructionPatterns {
 		if p.MatchString(fact) {
@@ -95,4 +88,21 @@ func tail(text string) string {
 		return text
 	}
 	return string(runes[len(runes)-maxSourceChars:])
+}
+
+func (s *Store) withoutProfileFacts(facts []string) []string {
+	user, _ := s.readFile(s.path(UserFile))
+	have := map[string]bool{}
+	for line := range strings.SplitSeq(user, "\n") {
+		if line != "" {
+			have[lineFact(line)] = true
+		}
+	}
+	var out []string
+	for _, f := range facts {
+		if !have[normalized(f)] {
+			out = append(out, f)
+		}
+	}
+	return out
 }

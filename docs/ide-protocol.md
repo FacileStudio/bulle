@@ -14,6 +14,9 @@ While `bulle` runs with the IDE surface on, it writes one file per process:
 $XDG_RUNTIME_DIR/bulle/ide/<pid>.json
 ```
 
+Before bulle 0.87 this file lived in `~/.bulle/ide/`. A client that reads that
+path must read the runtime directory now (same fallbacks as the socket).
+
 ```json
 {
   "v": 1,
@@ -39,7 +42,8 @@ directory, and falls back to the newest `started` when several match.
 A unix socket, same machine only. No TCP, no TLS, no ports.
 
 - Default path `$XDG_RUNTIME_DIR/bulle/<pid>.sock`, falling back to
-  `$TMPDIR/bulle-<uid>/<pid>.sock` when `XDG_RUNTIME_DIR` is unset.
+  `/run/user/<uid>/bulle/<pid>.sock` when that login directory exists, then to
+  `$TMPDIR/bulle-<uid>/<pid>.sock`.
 - Newline-delimited JSON: one object per line, `\n` terminated, no literal
   newline inside an object.
 - Every object carries `"v": 1` and a `"t"` naming its type.

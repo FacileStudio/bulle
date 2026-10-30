@@ -102,6 +102,7 @@ func (s *Store) applyPlan(p plan, date string) (Report, error) {
 	}
 	kept, dropped := dropExact(splitLines(cur), p.Drop, MaxDropsPerRun)
 	allowed, unsafe := vetFacts(p.Add)
+	allowed = s.withoutProfileFacts(allowed)
 	added, merged := addFacts(kept, allowed)
 	rep := Report{Added: added, Dropped: dropped, Refused: unsafe}
 	if utf8.RuneCountInString(strings.TrimSpace(joinLines(merged))) > MemoryCap {

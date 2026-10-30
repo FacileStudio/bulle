@@ -124,7 +124,7 @@ Bulle follows the XDG base directory spec. A relative `XDG_*` value is ignored.
 | Config | `$XDG_CONFIG_HOME/bulle` or `~/.config/bulle` | `config.yml`, `profiles/`, `jobs/` |
 | Data | `$XDG_DATA_HOME/bulle` or `~/.local/share/bulle` | `memory/`, `sessions/`, `chat/` (Matrix keys, rooms, recovery key) |
 | State | `$XDG_STATE_HOME/bulle` or `~/.local/state/bulle` | `trust.json`, `ledger.json`, `cron.jsonl`, `logs/` |
-| Runtime | `$XDG_RUNTIME_DIR/bulle` or `$TMPDIR/bulle-<uid>` | `chat.sock`, `ide/`, IDE sockets |
+| Runtime | `$XDG_RUNTIME_DIR/bulle`, else `/run/user/<uid>/bulle`, else `$TMPDIR/bulle-<uid>` | `chat.sock`, `ide/`, IDE sockets |
 
 On first run, bulle moves an older `~/.bulle/` and `~/.bulle.yml` into these
 directories. It never overwrites: an entry whose destination already exists
@@ -1367,9 +1367,13 @@ posts a card in the room. Reply ✅ or "oui" to run it, ❌ or "non" to cancel; 
 answer in ten minutes cancels. Cron runs never ask: they refuse writes.
 
 Set `chat.auto_approve: true` to stop the questions: every tool call then
-runs unasked, including sending mail. Only the duplicate-key check stays on. The
-default is off, because a message or mail that reaches the agent can then run
-commands without you seeing them first.
+runs unasked, including sending mail. Nothing else gates a call: the
+duplicate-key check only refuses forged tool inputs, and it does not stop a
+well-formed call. The default is off, because a message, mail or web page that
+reaches the agent can then run commands without you seeing them first, and the
+agent can read your mail and the web. Each auto-approved call is written to the
+daemon's log (`journalctl --user -u bulle-chat`) and the daemon prints a warning
+at start-up while the setting is on.
 
 ### Memory
 

@@ -68,3 +68,32 @@ func TestMigrateLegacyNeverOverwrites(t *testing.T) {
 		t.Errorf("source must stay when the destination exists: %v", err)
 	}
 }
+
+func TestMigrateLegacyKeepsARelativeSymlinkWorking(t *testing.T) {
+	home := t.TempDir()
+	xdgtest.Isolate(t, home)
+	seed(t, filepath.Join(home, "dotfiles", "profiles", "p.yml"))
+	if err := os.MkdirAll(filepath.Join(home, ".bulle"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("../dotfiles/profiles", filepath.Join(home, ".bulle", "profiles")); err != nil {
+		t.Fatal(err)
+	}
+	migrateLegacy()
+	if _, err := os.Stat(filepath.Join(home, ".config", "bulle", "profiles", "p.yml")); err != nil {
+		t.Errorf("the moved symlink dangles: %v", err)
+	}
+}
+
+func TestMigrateLegacyClearsRuntimeLeftovers(t *testing.T) {
+	home := t.TempDir()
+	xdgtest.Isolate(t, home)
+	if err := os.MkdirAll(filepath.Join(home, ".bulle", "ide"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	seed(t, filepath.Join(home, ".bulle", "trust.json"))
+	migrateLegacy()
+	if _, err := os.Stat(filepath.Join(home, ".bulle")); !os.IsNotExist(err) {
+		t.Errorf("an empty ide/ must not keep ~/.bulle alive: %v", err)
+	}
+}

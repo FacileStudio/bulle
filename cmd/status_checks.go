@@ -23,11 +23,18 @@ func checkConfig() []statusLine {
 	} else {
 		lines = append(lines, statusLine{statusOK, "config", settings.ConfigPath()})
 	}
+	return append(lines, legacyLines()...)
+}
+
+func legacyLines() []statusLine {
+	var lines []statusLine
 	for _, legacy := range []string{".bulle", ".bulle.yml"} {
-		if path := homeFile(legacy); path != "" {
-			if _, err := os.Stat(path); err == nil {
-				lines = append(lines, statusLine{statusWarn, "legacy", path + " still exists, bulle did not migrate it"})
-			}
+		path := homeFile(legacy)
+		if path == "" {
+			continue
+		}
+		if entries, err := os.ReadDir(path); err == nil && len(entries) > 0 || err != nil && !os.IsNotExist(err) {
+			lines = append(lines, statusLine{statusWarn, "legacy", path + " still exists, bulle did not migrate it"})
 		}
 	}
 	return lines
@@ -69,12 +76,13 @@ func checkAssistant() []statusLine {
 }
 
 func watchLine(last time.Time, quiet bool) statusLine {
+	if last.IsZero() {
+		return statusLine{statusWarn, "watch", "never ran"}
+	}
 	when := last.Local().Format(time.RFC3339)
 	switch {
 	case quiet:
 		return statusLine{statusOK, "watch", "quiet hours, last run " + when}
-	case last.IsZero():
-		return statusLine{statusWarn, "watch", "never ran"}
 	case time.Since(last) > watchStaleAfter:
 		return statusLine{statusFail, "watch", "last run " + when + ", cron is not firing"}
 	}
@@ -92,7 +100,7 @@ func cronEntryLines(cfg settings.Assistant) []statusLine {
 	}
 	var missing []string
 	for _, e := range entries {
-		if !strings.Contains(crontab, "# BEGIN BULLE JOB "+e.Name) {
+		if !agent.JobInstalled(crontab, e.Name) {
 			missing = append(missing, e.Name)
 		}
 	}
@@ -108,12 +116,12 @@ func cronEntryLines(cfg settings.Assistant) []statusLine {
 func checkTriage(c interface{ Context() context.Context }) []statusLine {
 	ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "courrier", "triage", "--all", "--unread", "--json").CombinedOutput()
+	out, err := exec.CommandContext(ctx, "courrier", "triage", "--all", "--unread", "--limit", "1", "--json").CombinedOutput()
 	switch {
 	case err == nil:
 		return []statusLine{{statusOK, "mail triage", "courrier triage answers"}}
 	case strings.Contains(string(out), "does not support triage"):
 		return []statusLine{{statusWarn, "mail triage", "server too old, using the local sender-rule fallback"}}
 	}
-	return []statusLine{{statusFail, "mail triage", strings.TrimSpace(string(out))}}
+	return []statusLine{{statusFail, "mail triage", strings.TrimSpace(string(out) + " " + err.Error())}}
 }

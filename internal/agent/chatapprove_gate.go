@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/FacileStudio/nacelle"
@@ -31,16 +33,27 @@ func ChatApprove(room string, asker Asker, auto bool) nacelle.Approve {
 		if errors.Is(err, toolview.ErrDuplicateKey) || foldDuplicate(fields) {
 			return false
 		}
-		if auto || chatFreeTools[name] {
+		if chatFreeTools[name] {
 			return true
 		}
 		summary, free := describe(name, fields, input)
-		if free || asker == nil {
-			return free
+		if free {
+			return true
 		}
-		ok, err := asker.Ask(ctx, room, summary)
-		return err == nil && ok
+		return settle(ctx, room, asker, auto, summary)
 	}
+}
+
+func settle(ctx context.Context, room string, asker Asker, auto bool, summary string) bool {
+	if auto {
+		fmt.Fprintf(os.Stderr, "bulle chat: auto-approved %s\n", clip(summary))
+		return true
+	}
+	if asker == nil {
+		return false
+	}
+	ok, err := asker.Ask(ctx, room, summary)
+	return err == nil && ok
 }
 
 func foldDuplicate(fields map[string]json.RawMessage) bool {
@@ -54,4 +67,12 @@ func foldDuplicate(fields map[string]json.RawMessage) bool {
 		keys = append(keys, key)
 	}
 	return false
+}
+
+func clip(text string) string {
+	text = strings.Join(strings.Fields(text), " ")
+	if len([]rune(text)) > 200 {
+		return string([]rune(text)[:200]) + "..."
+	}
+	return text
 }

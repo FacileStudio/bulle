@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -41,6 +43,9 @@ type roomRegistry struct {
 }
 
 func newRoomRegistry(config settings.Config) *roomRegistry {
+	if autoApprove(config) {
+		fmt.Fprintln(os.Stderr, "bulle chat: auto_approve is on, every tool call runs without asking and is logged here")
+	}
 	return &roomRegistry{
 		config: config,
 		rooms:  make(map[string]*chatRoom),

@@ -61,6 +61,7 @@ func collectStatus(c *cobra.Command, version string) []statusLine {
 	lines = append(lines, checkConfig()...)
 	lines = append(lines, checkChat()...)
 	lines = append(lines, checkAssistant()...)
+	lines = append(lines, checkCronLogs()...)
 	lines = append(lines, checkJobs()...)
 	lines = append(lines, checkTriage(c)...)
 	return lines

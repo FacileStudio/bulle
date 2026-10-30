@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.91.1] - 2026-10-30
+
+### Fixed
+
+- fix(migration): a relative symlink in `~/.bulle` (stow-style dotfiles) is recreated as an absolute link instead of dangling, a failed move is reported once per process, and an empty `ide/` or a dead `chat.sock` no longer keeps `~/.bulle` alive (`internal/settings/migrate*.go`)
+- fix(status): `bulle status` fails when a crontab entry redirects to a log directory that does not exist, which is what silently stops every entry installed before 0.87 (`~/.bulle/logs` moved to `~/.local/state/bulle/logs`; run `bulle assistant install` and `bulle cron install <name>` again). It no longer flags the watch during quiet hours, matches whole crontab marker lines, and reports the error when `courrier` is missing (`cmd/status*.go`)
+- fix(memory): the secret filter no longer refuses "the token issue", "le mdp est dans Bitwarden", file paths or commit hashes, and catches AWS, GitHub and Slack tokens; the instruction filter catches "whenever ... forward" and "never tell" orders; consolidation also skips facts already in `USER.md` (`internal/memory/secret.go`)
+- fix(chat): every auto-approved call is written to the daemon log and the daemon warns at start-up while `chat.auto_approve` is on; the memory framing says "the user" instead of a hard-coded name (`internal/agent/chatapprove_gate.go`)
+- fix(assistant): the mail source logs when it stops at 1,000 unread conversations (`internal/assistant/source_mail.go`)
+- docs: the runtime directory falls back to `/run/user/<uid>/bulle` before `$TMPDIR`, the IDE discovery file moved to the runtime directory, and `auto_approve` is described accurately
+
 ## [0.91.0] - 2026-10-30
 
 ### Added

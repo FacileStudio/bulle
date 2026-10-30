@@ -1,9 +1,9 @@
 package settings
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 const (
@@ -38,6 +38,10 @@ func ConfigPath() string {
 	return filepath.Join(dir, UserConfigFile)
 }
 
+// migrated records the home directories already migrated by this process, so
+// a move that fails is reported once instead of on every path lookup.
+var migrated sync.Map
+
 // migrateLegacy carries an install from an older layout to the XDG one:
 // ~/.nacelle and ~/.nacelle.yml to ~/.bulle and ~/.bulle.yml, then ~/.bulle
 // and ~/.config/bulle/config.yml into the config, data and state directories. It never
@@ -47,6 +51,9 @@ func ConfigPath() string {
 func migrateLegacy() {
 	home, err := os.UserHomeDir()
 	if err != nil {
+		return
+	}
+	if _, done := migrated.LoadOrStore(home, true); done {
 		return
 	}
 	renameIfMissing(filepath.Join(home, nacelleHomeDir), filepath.Join(home, legacyHomeDir))
@@ -66,44 +73,6 @@ func migrateLegacy() {
 	if state, err := stateDir(); err == nil {
 		mergeInto(filepath.Join(legacy, "state"), state)
 	}
+	dropRuntimeLeftovers(legacy)
 	removeIfEmpty(legacy)
-}
-
-func mergeInto(from, to string) {
-	entries, err := os.ReadDir(from)
-	if err != nil {
-		return
-	}
-	for _, e := range entries {
-		renameIfMissing(filepath.Join(from, e.Name()), filepath.Join(to, e.Name()))
-	}
-	removeIfEmpty(from)
-}
-
-func removeIfEmpty(dir string) {
-	entries, err := os.ReadDir(dir)
-	if err != nil || len(entries) > 0 {
-		return
-	}
-	if err := os.Remove(dir); err != nil {
-		fmt.Fprintf(os.Stderr, "bulle: removing %s: %v\n", dir, err)
-	}
-}
-
-func renameIfMissing(from, to string) {
-	if missing(from) || !missing(to) {
-		return
-	}
-	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
-		fmt.Fprintf(os.Stderr, "bulle: creating %s: %v\n", filepath.Dir(to), err)
-		return
-	}
-	if err := os.Rename(from, to); err != nil {
-		fmt.Fprintf(os.Stderr, "bulle: moving %s to %s: %v\n", from, to, err)
-	}
-}
-
-func missing(path string) bool {
-	_, err := os.Lstat(path)
-	return os.IsNotExist(err)
 }

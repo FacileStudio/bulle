@@ -48,3 +48,21 @@ func TestWatchLineDoesNotFailDuringQuietHours(t *testing.T) {
 		t.Errorf("a watch that never ran is a warning: %+v", got)
 	}
 }
+
+func TestWatchLineNeverRanHasNoTimestamp(t *testing.T) {
+	got := watchLine(time.Time{}, true)
+	if got.level != statusWarn || strings.Contains(got.detail, "0001") {
+		t.Errorf("watchLine = %+v", got)
+	}
+}
+
+func TestMissingLogDirsFindsARedirectThatCannotOpen(t *testing.T) {
+	good := t.TempDir()
+	crontab := "# comment bulle >> /nonexistent/x.log\n" +
+		"*/15 * * * * /bin/bulle assistant watch >> " + good + "/w.log 2>&1\n" +
+		"0 9 * * * /bin/bulle cron run news >> /nonexistent/dir/n.log 2>&1\n"
+	got := missingLogDirs(crontab)
+	if len(got) != 1 || got[0] != "/nonexistent/dir" {
+		t.Errorf("missing = %v", got)
+	}
+}

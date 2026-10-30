@@ -62,9 +62,10 @@ func (m *MailSource) fetchTriage(ctx context.Context) ([]Item, error) {
 		}
 		rows = append(rows, m.wanted(doc.Items)...)
 		if len(doc.Items) == 0 || page*triagePageSize >= doc.Total {
-			break
+			return m.items(rows), nil
 		}
 	}
+	m.logTruncated()
 	return m.items(rows), nil
 }
 
@@ -91,4 +92,12 @@ func (m *MailSource) triagePage(ctx context.Context, page int) (Triage, error) {
 
 func (m *MailSource) wantsAccount(id int64) bool {
 	return pickedID(m.Settings.Sources.MailAccounts, int(id))
+}
+
+func (m *MailSource) logTruncated() {
+	w := m.Log
+	if w == nil {
+		w = os.Stderr
+	}
+	fmt.Fprintf(w, "assistant: courrier triage has more than %d unread conversations, the rest is ignored\n", maxTriagePages*triagePageSize)
 }

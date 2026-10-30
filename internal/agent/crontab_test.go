@@ -77,3 +77,13 @@ func TestStripLegacyUntaggedLineDoesNotMatchPrefix(t *testing.T) {
 		t.Errorf("expected news-alerts preserved, got %q", got)
 	}
 }
+
+func TestJobInstalledMatchesTheWholeMarkerLine(t *testing.T) {
+	crontab := "# BEGIN BULLE JOB news-daily\n0 9 * * * bulle cron run news-daily\n# END BULLE JOB news-daily\n"
+	if JobInstalled(crontab, "news") {
+		t.Error("news must not match news-daily")
+	}
+	if !JobInstalled(crontab, "news-daily") {
+		t.Error("news-daily is installed")
+	}
+}

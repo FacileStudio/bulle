@@ -14,8 +14,7 @@ func isJobInstalled(crontab, name string) bool {
 	if crontab == "" {
 		return false
 	}
-	beginMarker := "# BEGIN BULLE JOB " + name
-	return strings.Contains(crontab, beginMarker) || matchesLegacyCron(crontab, name)
+	return hasMarker(crontab, name) || matchesLegacyCron(crontab, name)
 }
 
 func readCrontab() (string, error) {
