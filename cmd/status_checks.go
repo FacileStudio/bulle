@@ -64,16 +64,21 @@ func checkAssistant() []statusLine {
 	if err != nil {
 		return append(lines, statusLine{statusFail, "watch", err.Error()})
 	}
-	last := assistant.LastWatch(state)
+	quiet := assistant.InQuiet(time.Now(), cfg, state)
+	return append(lines, watchLine(assistant.LastWatch(state), quiet))
+}
+
+func watchLine(last time.Time, quiet bool) statusLine {
+	when := last.Local().Format(time.RFC3339)
 	switch {
+	case quiet:
+		return statusLine{statusOK, "watch", "quiet hours, last run " + when}
 	case last.IsZero():
-		lines = append(lines, statusLine{statusWarn, "watch", "never ran"})
+		return statusLine{statusWarn, "watch", "never ran"}
 	case time.Since(last) > watchStaleAfter:
-		lines = append(lines, statusLine{statusFail, "watch", "last run " + last.Local().Format(time.RFC3339) + ", cron is not firing"})
-	default:
-		lines = append(lines, statusLine{statusOK, "watch", "last run " + last.Local().Format(time.RFC3339)})
+		return statusLine{statusFail, "watch", "last run " + when + ", cron is not firing"}
 	}
-	return lines
+	return statusLine{statusOK, "watch", "last run " + when}
 }
 
 func cronEntryLines(cfg settings.Assistant) []statusLine {

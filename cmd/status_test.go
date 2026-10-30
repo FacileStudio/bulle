@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -32,5 +33,18 @@ func TestJobLineFlagsAnEnabledJobThatIsNotInstalled(t *testing.T) {
 	job.Enabled = nil
 	if got := jobLine(settings.JobFile{Job: job}, ""); got.level != statusOK {
 		t.Errorf("a disabled job is fine: %+v", got)
+	}
+}
+
+func TestWatchLineDoesNotFailDuringQuietHours(t *testing.T) {
+	old := time.Now().Add(-6 * time.Hour)
+	if got := watchLine(old, true); got.level != statusOK {
+		t.Errorf("quiet hours must not fail: %+v", got)
+	}
+	if got := watchLine(old, false); got.level != statusFail {
+		t.Errorf("a stale watch outside quiet hours must fail: %+v", got)
+	}
+	if got := watchLine(time.Time{}, false); got.level != statusWarn {
+		t.Errorf("a watch that never ran is a warning: %+v", got)
 	}
 }
