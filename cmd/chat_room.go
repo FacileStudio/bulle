@@ -81,7 +81,7 @@ func (r *roomRegistry) Close() error {
 
 func newChatRoom(config settings.Config, key string, asker agent.Asker, mem *memory.Store) (*chatRoom, error) {
 	config, tools := withMemory(config, mem)
-	a, cleanup, err := agent.BuildChatAgent(config, nil, agent.ChatApprove(key, asker), tools...)
+	a, cleanup, err := agent.BuildChatAgent(config, nil, agent.ChatApprove(key, asker, autoApprove(config)), tools...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,4 +135,9 @@ func (r *chatRoom) turn(ctx context.Context, text string) (string, error) {
 		r.log.Line(sessions.FromModel, reply)
 	}
 	return reply, nil
+}
+
+func autoApprove(config settings.Config) bool {
+	flag := config.Chat.AutoApprove
+	return flag != nil && *flag
 }

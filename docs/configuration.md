@@ -1350,6 +1350,11 @@ list`, `opus task list|show`, `mycelium memory search`, and `cat` or `ls` under
 posts a card in the room. Reply ✅ or "oui" to run it, ❌ or "non" to cancel; no
 answer in ten minutes cancels. Cron runs never ask: they refuse writes.
 
+Set `chat.auto_approve: true` to stop the questions: every tool call then
+runs unasked, including sending mail. Only the duplicate-key check stays on. The
+default is off, because a message or mail that reaches the agent can then run
+commands without you seeing them first.
+
 ### Memory
 
 `~/.local/share/bulle/memory/` holds `USER.md` (1,500 characters), `MEMORY.md` (2,500),

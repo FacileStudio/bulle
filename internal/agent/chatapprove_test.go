@@ -105,7 +105,7 @@ func input(v any) json.RawMessage {
 func TestChatApprove(t *testing.T) {
 	ctx := context.Background()
 	asker := &fakeAsker{answer: true}
-	gate := ChatApprove("matrix:!r", asker)
+	gate := ChatApprove("matrix:!r", asker, false)
 	if !gate(ctx, "read_file", input(map[string]string{"path": "a"})) {
 		t.Error("read_file should be free")
 	}
@@ -129,17 +129,32 @@ func TestChatApprove(t *testing.T) {
 func TestChatApproveDenies(t *testing.T) {
 	ctx := context.Background()
 	cmd := input(map[string]string{"command": "rm x"})
-	if ChatApprove("r", &fakeAsker{answer: false})(ctx, "run_command", cmd) {
+	if ChatApprove("r", &fakeAsker{answer: false}, false)(ctx, "run_command", cmd) {
 		t.Error("denied answer must deny")
 	}
-	if ChatApprove("r", &fakeAsker{answer: true, err: errors.New("boom")})(ctx, "run_command", cmd) {
+	if ChatApprove("r", &fakeAsker{answer: true, err: errors.New("boom")}, false)(ctx, "run_command", cmd) {
 		t.Error("asker error must deny")
 	}
-	if ChatApprove("r", nil)(ctx, "run_command", cmd) {
+	if ChatApprove("r", nil, false)(ctx, "run_command", cmd) {
 		t.Error("nil asker must deny")
 	}
 	dup := json.RawMessage(`{"command":"date","command":"rm x"}`)
-	if ChatApprove("r", &fakeAsker{answer: true})(ctx, "run_command", dup) {
+	if ChatApprove("r", &fakeAsker{answer: true}, false)(ctx, "run_command", dup) {
 		t.Error("duplicate keys must deny")
+	}
+}
+
+func TestChatApproveAutoSkipsTheQuestionButNotTheForgeryCheck(t *testing.T) {
+	ctx := context.Background()
+	asker := &fakeAsker{answer: false}
+	gate := ChatApprove("r", asker, true)
+	if !gate(ctx, "run_command", json.RawMessage(`{"command":"rm x"}`)) {
+		t.Error("auto must approve a non-read command")
+	}
+	if len(asker.asked) != 0 {
+		t.Errorf("auto must not ask, asked %v", asker.asked)
+	}
+	if gate(ctx, "run_command", json.RawMessage(`{"command":"date","command":"rm x"}`)) {
+		t.Error("duplicate keys must still deny")
 	}
 }

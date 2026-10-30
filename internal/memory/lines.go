@@ -7,7 +7,7 @@ import (
 
 func splitLines(text string) []string {
 	out := []string{}
-	for _, l := range strings.Split(text, "\n") {
+	for l := range strings.SplitSeq(text, "\n") {
 		if strings.TrimSpace(l) != "" {
 			out = append(out, l)
 		}

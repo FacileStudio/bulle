@@ -10,6 +10,8 @@ import (
 type Chat struct {
 	Profile string `json:"profile,omitempty" yaml:"profile"`
 	Matrix  Matrix `json:"matrix" yaml:"matrix"`
+
+	AutoApprove *bool `json:"auto_approve" yaml:"auto_approve"`
 }
 
 // Matrix configures the Matrix adapter. Each credential can name a command
@@ -62,6 +64,7 @@ func StorePath() string {
 
 func (c *Chat) merge(over Chat) {
 	c.Matrix.merge(over.Matrix)
+	mergeBool(&c.AutoApprove, over.AutoApprove)
 }
 
 func (m *Matrix) merge(over Matrix) {

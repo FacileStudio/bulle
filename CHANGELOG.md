@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.87.3] - 2026-10-30
+
+### Added
+
+- feat(chat): `chat.auto_approve` runs every tool call in a room without asking; off by default (`internal/agent/chatapprove_gate.go`)
+
 ## [0.87.2] - 2026-10-30
 
 ### Fixed

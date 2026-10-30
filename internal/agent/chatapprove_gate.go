@@ -23,14 +23,15 @@ type Asker interface {
 }
 
 // ChatApprove builds the approval gate of the chat surface. Read-only tools
-// and read-only commands run free, everything else waits for the asker.
-func ChatApprove(room string, asker Asker) nacelle.Approve {
+// and read-only commands run free, everything else waits for the asker unless
+// auto is set, which approves every call that is not a duplicate-key forgery.
+func ChatApprove(room string, asker Asker, auto bool) nacelle.Approve {
 	return func(ctx context.Context, name string, input json.RawMessage) bool {
 		fields, err := toolview.StrictObject(input)
 		if errors.Is(err, toolview.ErrDuplicateKey) || foldDuplicate(fields) {
 			return false
 		}
-		if chatFreeTools[name] {
+		if auto || chatFreeTools[name] {
 			return true
 		}
 		summary, free := describe(name, fields, input)
