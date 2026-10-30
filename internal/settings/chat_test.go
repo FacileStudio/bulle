@@ -128,3 +128,12 @@ func TestChatBlockDecodesProfile(t *testing.T) {
 		t.Errorf("profile = %q, want free", loaded.Chat.Profile)
 	}
 }
+
+func TestChatProfileSurvivesTheMerge(t *testing.T) {
+	var base Config
+	over := Config{Chat: Chat{Profile: "chat"}}
+	base.merge(over)
+	if base.Chat.Profile != "chat" {
+		t.Errorf("chat.profile = %q, want chat", base.Chat.Profile)
+	}
+}

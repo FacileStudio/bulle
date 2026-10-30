@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.89.1] - 2026-10-30
+
+### Fixed
+
+- fix(settings): `chat.profile` was dropped when the config layers merged, so the chat daemon always ran on the global profile instead of the one named under `chat:` (`internal/settings/chat.go`)
+
 ## [0.89.0] - 2026-10-30
 
 ### Added

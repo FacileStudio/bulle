@@ -63,6 +63,7 @@ func StorePath() string {
 }
 
 func (c *Chat) merge(over Chat) {
+	fill(&c.Profile, over.Profile)
 	c.Matrix.merge(over.Matrix)
 	mergeBool(&c.AutoApprove, over.AutoApprove)
 }
