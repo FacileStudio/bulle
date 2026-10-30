@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"context"
-	"errors"
-	"strings"
 	"sync"
+	"time"
+
+	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/agent"
 	"github.com/FacileStudio/bulle/internal/compaction"
@@ -19,6 +20,11 @@ type chatRoom struct {
 	compactor *compaction.Engine
 	log       *sessions.SessionLog
 	cleanup   func()
+	path      string
+	day       string
+	loc       *time.Location
+	now       func() time.Time
+	summarize func(context.Context, []nacelle.Message) string
 }
 
 type roomRegistry struct {
@@ -40,7 +46,7 @@ func (r *roomRegistry) get(key string) (*chatRoom, error) {
 	if room, ok := r.rooms[key]; ok {
 		return room, nil
 	}
-	room, err := newChatRoom(r.config)
+	room, err := newChatRoom(r.config, key)
 	if err != nil {
 		return nil, err
 	}
@@ -60,27 +66,38 @@ func (r *roomRegistry) Close() error {
 	return nil
 }
 
-func newChatRoom(config settings.Config) (*chatRoom, error) {
+func newChatRoom(config settings.Config, key string) (*chatRoom, error) {
 	a, cleanup, err := agent.BuildHeadlessAgent(config, nil)
 	if err != nil {
 		return nil, err
 	}
-	compactor := agent.ChatCompactor(config, a)
-	conv := engine.NewConversation()
-	session := engine.NewSession(a, conv)
-	log := sessions.OpenSession(config.Backend, config.Model, config.Root)
-	return &chatRoom{
-		session:   session,
-		compactor: compactor,
-		log:       log,
+	path, _ := roomStorePath(key)
+	day, msgs := loadRoom(path)
+	room := &chatRoom{
+		session:   engine.NewSession(a, engine.NewConversation(msgs...)),
+		compactor: agent.ChatCompactor(config, a),
+		log:       sessions.OpenSession(config.Backend, config.Model, config.Root),
 		cleanup:   cleanup,
-	}, nil
+		path:      path,
+		day:       day,
+		loc:       assistantLocation(config),
+		now:       time.Now,
+	}
+	room.summarize = room.compactSummary
+	return room, nil
 }
 
 func (r *chatRoom) answer(ctx context.Context, text string) (string, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.rollDay(ctx)
 	r.compactIfNeeded(ctx)
+	reply, err := r.turn(ctx, text)
+	r.persist()
+	return reply, err
+}
+
+func (r *chatRoom) turn(ctx context.Context, text string) (string, error) {
 	if r.log != nil {
 		r.log.Line(sessions.FromReader, text)
 	}
@@ -99,74 +116,4 @@ func (r *chatRoom) answer(ctx context.Context, text string) (string, error) {
 		r.log.Line(sessions.FromModel, reply)
 	}
 	return reply, nil
-}
-
-func (r *chatRoom) compactIfNeeded(ctx context.Context) {
-	if r.compactor == nil {
-		return
-	}
-	conv := r.session.Conversation()
-	msgs := conv.Messages()
-	if len(msgs) == 0 {
-		return
-	}
-	size := compaction.EstTokens(compaction.Bytes(msgs))
-	trigger := r.compactor.Policy.Trigger()
-	if trigger <= 0 || size < trigger {
-		return
-	}
-	outcome := r.compactor.RunPassWithSize(ctx, msgs, size, false)
-	if outcome.Err == nil && outcome.Installs() {
-		newConv, _ := outcome.Apply(msgs)
-		conv.Replace(newConv)
-	}
-}
-
-func (r *chatRoom) retryOverflow(ctx context.Context) (string, error) {
-	if r.compactor == nil {
-		return "", errors.New("chat: context overflow with no compactor")
-	}
-	conv := r.session.Conversation()
-	msgs := conv.Messages()
-	outcome := r.compactor.RunPass(ctx, msgs, true)
-	if outcome.Err != nil {
-		return "", outcome.Err
-	}
-	if !outcome.Installs() {
-		return "", errors.New("chat: context overflow compaction failed")
-	}
-	newConv, _ := outcome.Apply(msgs)
-	conv.Replace(newConv)
-	events, err := r.session.Submit(ctx, "")
-	if err != nil {
-		return "", err
-	}
-	reply, err := r.drain(ctx, events)
-	if err != nil {
-		return "", err
-	}
-	if r.log != nil {
-		r.log.Line(sessions.FromModel, reply)
-	}
-	return reply, nil
-}
-
-func (r *chatRoom) drain(ctx context.Context, events <-chan engine.Event) (string, error) {
-	var out strings.Builder
-	for {
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case event, ok := <-events:
-			if !ok {
-				return strings.TrimSpace(out.String()), nil
-			}
-			switch event.Kind {
-			case engine.EventError:
-				return "", event.Err
-			case engine.EventTextDelta:
-				out.WriteString(event.Text)
-			}
-		}
-	}
 }

@@ -12,7 +12,7 @@ import (
 
 func startChatIPC(ctx context.Context, m chatMatrix, adapter chat.Adapter, rooms *roomRegistry) {
 	send := func(c context.Context, req chat.IPCRequest) error {
-		return handleIPCSend(c, m, adapter, req)
+		return rooms.handleIPCSend(c, m, adapter, req)
 	}
 	trigger := func(c context.Context, room, prompt string) (string, error) {
 		return rooms.handleIPCTrigger(c, m, adapter, room, prompt)
@@ -20,12 +20,30 @@ func startChatIPC(ctx context.Context, m chatMatrix, adapter chat.Adapter, rooms
 	go runIPCServer(ctx, send, trigger)
 }
 
-func handleIPCSend(ctx context.Context, m chatMatrix, adapter chat.Adapter, req chat.IPCRequest) error {
+func (rooms *roomRegistry) handleIPCSend(ctx context.Context, m chatMatrix, adapter chat.Adapter, req chat.IPCRequest) error {
 	target := resolveTargetRoom(req.Room, m.rooms)
 	if target == "" {
 		return errors.New("no room specified and no default room configured")
 	}
-	return adapter.Send(ctx, chat.Identity{Adapter: "matrix", Room: target}, req.Text)
+	if err := adapter.Send(ctx, chat.Identity{Adapter: "matrix", Room: target}, req.Text); err != nil {
+		return err
+	}
+	if !req.Record {
+		return nil
+	}
+	r, err := rooms.get(matrixRoomKey(target))
+	if err != nil {
+		return fmt.Errorf("record nudge: %w", err)
+	}
+	r.record(req.Text)
+	return nil
+}
+
+func matrixRoomKey(target string) string {
+	if strings.HasPrefix(target, "matrix:") {
+		return target
+	}
+	return "matrix:" + target
 }
 
 func (rooms *roomRegistry) handleIPCTrigger(ctx context.Context, m chatMatrix, adapter chat.Adapter, room, prompt string) (string, error) {
@@ -33,11 +51,7 @@ func (rooms *roomRegistry) handleIPCTrigger(ctx context.Context, m chatMatrix, a
 	if target == "" {
 		return "", errors.New("no room specified and no default room configured")
 	}
-	key := target
-	if !strings.HasPrefix(key, "matrix:") {
-		key = "matrix:" + key
-	}
-	r, err := rooms.get(key)
+	r, err := rooms.get(matrixRoomKey(target))
 	if err != nil {
 		return "", err
 	}

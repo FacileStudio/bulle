@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -93,7 +94,11 @@ func chatResponder(rooms *roomRegistry) chat.Responder {
 		if err != nil {
 			return "", err
 		}
-		return room.answer(ctx, m.Text)
+		reply, err := room.answer(ctx, m.Text)
+		if err == nil && strings.TrimSpace(reply) == "" {
+			return emptyReplyNotice(m.Text), nil
+		}
+		return reply, err
 	}
 }
 
