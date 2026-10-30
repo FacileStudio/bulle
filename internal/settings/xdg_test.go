@@ -3,6 +3,7 @@ package settings
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/xdgtest"
@@ -49,8 +50,24 @@ func TestXDGEnvOverridesAndRejectsRelativePaths(t *testing.T) {
 	}
 }
 
+func TestRuntimeDirFallsBackToTheLoginDirectory(t *testing.T) {
+	t.Setenv("XDG_RUNTIME_DIR", "")
+	root := t.TempDir()
+	login := filepath.Join(root, strconv.Itoa(os.Getuid()))
+	if err := os.Mkdir(login, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	runUserRoot = root
+	t.Cleanup(func() { runUserRoot = "/run/user" })
+	if got, err := RuntimeDir(); err != nil || got != filepath.Join(login, "bulle") {
+		t.Fatalf("runtime = %q, %v", got, err)
+	}
+}
+
 func TestRuntimeDirFallsBackToAPrivateTempDir(t *testing.T) {
 	t.Setenv("XDG_RUNTIME_DIR", "")
+	runUserRoot = t.TempDir()
+	t.Cleanup(func() { runUserRoot = "/run/user" })
 	got, err := RuntimeDir()
 	if err != nil || filepath.Base(got) == "" || filepath.Dir(got) != filepath.Clean(os.TempDir()) {
 		t.Fatalf("runtime = %q, %v", got, err)

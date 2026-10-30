@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.87.2] - 2026-10-30
+
+### Fixed
+
+- fix(settings): a process without `XDG_RUNTIME_DIR`, cron above all, falls back to `/run/user/<uid>/bulle`, so cron jobs reach the chat daemon's socket instead of looking under `/tmp` (`internal/settings/xdg.go`)
+
 ## [0.87.1] - 2026-10-30
 
 ### Fixed

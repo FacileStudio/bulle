@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+var runUserRoot = "/run/user"
+
 const xdgApp = "bulle"
 
 // ConfigDir is where bulle keeps what a person edits: config.yml, profiles/
@@ -32,11 +34,17 @@ func StateDir() (string, error) {
 }
 
 // RuntimeDir is where bulle keeps sockets and discovery files that must not
-// outlive a login. It is $XDG_RUNTIME_DIR/bulle, or a private directory under
-// the system temp dir when the variable is unset.
+// outlive a login. It is $XDG_RUNTIME_DIR/bulle. A process that does not
+// inherit the variable, cron above all, falls back to /run/user/<uid>/bulle
+// when that login directory exists, so it finds the same sockets as the
+// daemon; failing that, a private directory under the system temp dir.
 func RuntimeDir() (string, error) {
 	if dir := absoluteEnv("XDG_RUNTIME_DIR"); dir != "" {
 		return filepath.Join(dir, xdgApp), nil
+	}
+	login := filepath.Join(runUserRoot, strconv.Itoa(os.Getuid()))
+	if info, err := os.Stat(login); err == nil && info.IsDir() {
+		return filepath.Join(login, xdgApp), nil
 	}
 	return filepath.Join(os.TempDir(), xdgApp+"-"+strconv.Itoa(os.Getuid())), nil
 }

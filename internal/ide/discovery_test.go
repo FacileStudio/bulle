@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strconv"
 	"testing"
 	"time"
 
+	"github.com/FacileStudio/bulle/internal/settings"
 	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
@@ -128,7 +128,11 @@ func TestSocketPathFollowsTheRuntimeDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SocketPath without a runtime directory: %v", err)
 	}
-	want = filepath.Join("/tmp", "bulle-"+strconv.Itoa(os.Getuid()), "42.sock")
+	dir, err := settings.RuntimeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want = filepath.Join(dir, "42.sock")
 	if fallback != want {
 		t.Errorf("SocketPath fell back to %q, want %q", fallback, want)
 	}
