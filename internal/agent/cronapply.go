@@ -124,7 +124,7 @@ func runCronJob(name string) error {
 	ctx, cancel := jobContext(job.Timeout)
 	defer cancel()
 	started := time.Now()
-	prompt := formatJobPrompt(job.Prompt, started)
+	prompt := jobPrompt(job, started)
 	text, stats, runErr := runHeadlessConfigToContext(ctx, os.Stdout, prompt, cfg, extra)
 	rec, status := stats.record(job, cfg.Model, started, runErr)
 	logText := text

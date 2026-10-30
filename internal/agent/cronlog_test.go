@@ -115,7 +115,7 @@ func TestAppendCronLogDeliversViaMatrixSocket(t *testing.T) {
 		return matrixDeliveryResponse{OK: true}
 	})
 	t.Setenv("BULLE_CHAT_SOCK", sockPath)
-	if err := appendCronLog("matrix:!abc:matrix.org", "daily", cronOK, "daily done"); err != nil {
+	if err := appendCronLog("matrix:!abc:matrix.org", "daily", cronOK, "<deliver>daily done</deliver>"); err != nil {
 		t.Fatalf("appendCronLog failed: %v", err)
 	}
 	req := <-received
@@ -132,7 +132,7 @@ func TestAppendCronLogDeliversMatrixWithoutRoom(t *testing.T) {
 		return matrixDeliveryResponse{OK: true}
 	})
 	t.Setenv("BULLE_CHAT_SOCK", sockPath)
-	if err := appendCronLog("matrix", "daily", cronOK, "job output"); err != nil {
+	if err := appendCronLog("matrix", "daily", cronOK, "reasoning <deliver>job output</deliver>"); err != nil {
 		t.Fatalf("appendCronLog failed: %v", err)
 	}
 	req := <-received
@@ -163,7 +163,7 @@ func TestAppendCronLogMatrixFallback(t *testing.T) {
 	t.Setenv("HOME", home)
 	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(home, "nonexistent.sock"))
 
-	if err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "fallback text"); err != nil {
+	if err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "<deliver>fallback text</deliver>"); err != nil {
 		t.Fatalf("expected fallback to succeed, got %v", err)
 	}
 

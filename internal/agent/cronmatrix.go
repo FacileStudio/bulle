@@ -34,6 +34,31 @@ func isSilentOutput(text string) bool {
 	}
 }
 
+const matrixDeliverProtocol = "\n\nDelivery rules: only text inside <deliver></deliver> tags is sent to the chat room. " +
+	"Everything outside the tags (reasoning, notes, checks) is discarded. " +
+	"If nothing deserves the reader's attention, write no <deliver> block at all."
+
+func extractDeliverable(text string) string {
+	const open, closing = "<deliver>", "</deliver>"
+	end := strings.LastIndex(text, closing)
+	if end < 0 {
+		return ""
+	}
+	start := strings.LastIndex(text[:end], open)
+	if start < 0 {
+		return ""
+	}
+	return strings.TrimSpace(text[start+len(open) : end])
+}
+
+func jobPrompt(job settings.CronJob, now time.Time) string {
+	prompt := formatJobPrompt(job.Prompt, now)
+	if job.Delivery == "matrix" || strings.HasPrefix(job.Delivery, "matrix:") {
+		prompt += matrixDeliverProtocol
+	}
+	return prompt
+}
+
 func chatSocketPath() (string, error) {
 	if sock := os.Getenv("BULLE_CHAT_SOCK"); sock != "" {
 		return sock, nil
