@@ -9,6 +9,9 @@ import (
 	"unicode/utf8"
 )
 
+// MaxDropsPerRun caps how many existing lines one Consolidate run may drop.
+const MaxDropsPerRun = 3
+
 // Completer is the model call Consolidate needs.
 type Completer interface {
 	Complete(ctx context.Context, prompt string) (string, error)
@@ -92,7 +95,7 @@ func (s *Store) applyPlan(p plan, date string) (Report, error) {
 	if err != nil {
 		return Report{}, err
 	}
-	kept, dropped := dropExact(splitLines(cur), p.Drop)
+	kept, dropped := dropExact(splitLines(cur), p.Drop, MaxDropsPerRun)
 	added, merged := addFacts(kept, p.Add)
 	rep := Report{Added: added, Dropped: dropped}
 	if utf8.RuneCountInString(strings.TrimSpace(joinLines(merged))) > MemoryCap {

@@ -63,10 +63,10 @@ func TestRememberReadBack(t *testing.T) {
 
 func TestForgetAcrossFilesWithBackup(t *testing.T) {
 	s := New(t.TempDir())
-	add(t, s, UserFile, "- Likes Tea\n- Lives in Paris")
-	add(t, s, MemoryFile, "- tea at five")
-	note(t, s, "drinks TEA daily", noon)
-	n, err := s.Forget("tea")
+	add(t, s, UserFile, "- Likes Coffee\n- Lives in Paris")
+	add(t, s, MemoryFile, "- coffee at five")
+	note(t, s, "drinks COFFEE daily", noon)
+	n, err := s.Forget("coffee")
 	if err != nil || n != 3 {
 		t.Fatalf("removed %d err %v", n, err)
 	}
