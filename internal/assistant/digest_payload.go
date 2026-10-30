@@ -27,6 +27,7 @@ type Payload struct {
 	Items   []DigestItem `json:"items"`
 	Unknown []string     `json:"unknown_senders,omitempty"`
 	Bulk    int          `json:"bulk_never_mention"`
+	Sent    []SentItem   `json:"sent_recently,omitempty"`
 	listed  []Item
 }
 

@@ -58,7 +58,13 @@ func digestLocked(ctx context.Context, d Deps, name string) (DigestResult, error
 		fmt.Fprintf(d.Log, "assistant: partial fetch: %v\n", ferr)
 	}
 	items = d.Ledger.Unsuppressed(items, now)
-	return sendDigest(ctx, d, buildPayload(name, items, now), now)
+	p := buildPayload(name, items, now)
+	sent, serr := RecentSent(ctx, d)
+	if serr != nil {
+		fmt.Fprintf(d.Log, "assistant: sent mail context unavailable: %v\n", serr)
+	}
+	p.Sent = sent
+	return sendDigest(ctx, d, p, now)
 }
 
 func weekendSkip(d Deps, name string, now time.Time) bool {

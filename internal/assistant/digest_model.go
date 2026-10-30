@@ -11,6 +11,7 @@ const maxDigestChars = 1200
 
 const digestRules = "Tu écris un message court en français, 2 à 5 lignes, ton direct, tutoiement.\n" +
 	"Utilise uniquement les éléments du JSON. N'invente rien.\n" +
+	"Le champ sent_recently liste des mails que l'utilisateur a envoyés : c'est du contexte pour comprendre ses échanges (ce qu'il attend, ce qu'il a promis), ne le liste pas et ne le résume pas.\n" +
 	"Ne mentionne jamais le champ bulk_never_mention, ni des filtres, ni tes vérifications, ni des outils.\n" +
 	"Réponds uniquement avec le texte final entre <deliver> et </deliver>.\n"
 

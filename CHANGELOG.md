@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.89.0] - 2026-10-30
+
+### Added
+
+- feat(assistant): digests now carry the mail you sent in the last three days as context (`sent_recently`), so the model knows what you are waiting on; it never notifies on them (`internal/assistant/source_sent.go`)
+
 ## [0.88.2] - 2026-10-30
 
 ### Fixed
