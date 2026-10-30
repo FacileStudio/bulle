@@ -31,6 +31,7 @@ type roomRegistry struct {
 	mu     sync.Mutex
 	config settings.Config
 	rooms  map[string]*chatRoom
+	asker  agent.Asker
 }
 
 func newRoomRegistry(config settings.Config) *roomRegistry {
@@ -46,12 +47,18 @@ func (r *roomRegistry) get(key string) (*chatRoom, error) {
 	if room, ok := r.rooms[key]; ok {
 		return room, nil
 	}
-	room, err := newChatRoom(r.config, key)
+	room, err := newChatRoom(r.config, key, r.asker)
 	if err != nil {
 		return nil, err
 	}
 	r.rooms[key] = room
 	return room, nil
+}
+
+func (r *roomRegistry) useAsker(asker agent.Asker) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.asker = asker
 }
 
 // Close releases resources held by active room sessions.
@@ -66,8 +73,8 @@ func (r *roomRegistry) Close() error {
 	return nil
 }
 
-func newChatRoom(config settings.Config, key string) (*chatRoom, error) {
-	a, cleanup, err := agent.BuildHeadlessAgent(config, nil)
+func newChatRoom(config settings.Config, key string, asker agent.Asker) (*chatRoom, error) {
+	a, cleanup, err := agent.BuildChatAgent(config, nil, agent.ChatApprove(key, asker))
 	if err != nil {
 		return nil, err
 	}
