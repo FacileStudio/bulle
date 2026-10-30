@@ -1266,3 +1266,33 @@ machine you own is your call. A boite VM still resolves to `boite` unless you
 override `--user`, so an instance that unexpectedly lands you as root is caught
 by the user check rather than by a name.
 
+
+## Voice notes
+
+The assistant transcribes Matrix voice notes locally with ffmpeg and
+whisper.cpp. Nothing leaves the machine.
+
+Install ffmpeg from your package manager, then build whisper.cpp and fetch the
+base model:
+
+```sh
+git clone https://github.com/ggml-org/whisper.cpp
+cd whisper.cpp
+cmake -B build && cmake --build build -j --config Release
+install -m 0755 build/bin/whisper-cli ~/.local/bin/
+mkdir -p ~/.local/share/whisper
+curl -L -o ~/.local/share/whisper/ggml-base.bin \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+```
+
+The default command is:
+
+```text
+whisper-cli -m ~/.local/share/whisper/ggml-base.bin -l auto -nt -f {wav}
+```
+
+Set `assistant.voice.command` to use another engine. `{wav}` becomes the path
+of a 16 kHz mono wav file, and the transcript is read from standard output. The
+command is split into words and run without a shell, so pipes and redirects do
+not work; `~` is expanded. Notes over 25 MB are refused. When ffmpeg, the
+binary or the model is missing, the bot replies once with the install hint.
