@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/FacileStudio/bulle/internal/chat"
 )
+
+const ipcTriggerTimeout = 10 * time.Minute
 
 func startChatIPC(ctx context.Context, m chatMatrix, adapter chat.Adapter, rooms *roomRegistry) {
 	send := func(c context.Context, req chat.IPCRequest) error {
@@ -33,15 +36,26 @@ func (rooms *roomRegistry) handleIPCSend(ctx context.Context, m chatMatrix, adap
 	if rooms.nudges != nil {
 		rooms.nudges.note(target, id, req.Items)
 	}
-	if !req.Record {
-		return nil
+	if req.Record {
+		rooms.recordNudge(target, req)
 	}
+	return nil
+}
+
+func (rooms *roomRegistry) recordNudge(target string, req chat.IPCRequest) {
 	r, err := rooms.get(matrixRoomKey(target))
 	if err != nil {
-		return fmt.Errorf("record nudge: %w", err)
+		fmt.Fprintf(os.Stderr, "bulle chat: record nudge: %v\n", err)
+		return
 	}
-	r.record(req.Text)
-	return nil
+	r.record(recordedText(req))
+}
+
+func recordedText(req chat.IPCRequest) string {
+	if req.RecordText != "" {
+		return req.RecordText
+	}
+	return req.Text
 }
 
 func matrixRoomKey(target string) string {
@@ -60,6 +74,8 @@ func (rooms *roomRegistry) handleIPCTrigger(ctx context.Context, m chatMatrix, a
 	if err != nil {
 		return "", err
 	}
+	ctx, cancel := context.WithTimeout(ctx, ipcTriggerTimeout)
+	defer cancel()
 	reply, err := r.answer(ctx, prompt)
 	if err != nil {
 		return "", err
