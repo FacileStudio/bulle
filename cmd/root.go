@@ -38,6 +38,7 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.SetVersionTemplate("{{.Name}} {{.Version}}\n")
 	bindFlags(cmd, &f)
 	cmd.AddCommand(newCronCmd())
+	cmd.AddCommand(newAssistantCmd())
 	cmd.AddCommand(newChatCmd())
 	cmd.AddCommand(newBenchCmd())
 	cmd.AddCommand(newSandboxCmd())

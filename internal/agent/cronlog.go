@@ -112,6 +112,9 @@ type cronRun struct {
 	Compactions        int       `json:"compactions"`
 	Usage              cronUsage `json:"usage"`
 	Error              string    `json:"error,omitempty"`
+	Surfaced           *int      `json:"surfaced,omitempty"`
+	ModelCalled        *bool     `json:"model_called,omitempty"`
+	Delivery           string    `json:"delivery,omitempty"`
 }
 
 // cronStatePath is the central cron run log: one JSON line per run, every
