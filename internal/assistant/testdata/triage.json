@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-10-30T10:00:00Z",
+  "total": 4,
+  "counts": {"known": 1, "unknown_human": 1, "bulk": 2},
+  "items": [
+    {"account_id": 1, "account": "me@example.test", "thread_id": "20261023204141.40f2@notify.railway.app", "email_id": 1880, "subject": "Railway security update", "from_address": "hello@notify.railway.app", "from_name": "Railway", "date": "2026-10-23T20:41:41Z", "message_count": 1, "unread_count": 1, "class": "bulk", "reason": "list-unsubscribe"},
+    {"account_id": 1, "account": "me@example.test", "thread_id": "cajtkw-remarks@mail.example.test", "email_id": 1750, "subject": "Last remarks on the mockups", "from_address": "alice@example.org", "from_name": "Alice Martin", "date": "2026-10-24T09:12:00Z", "message_count": 3, "unread_count": 1, "class": "known", "reason": "in-sent-thread"},
+    {"account_id": 3, "account": "me@gmail.test", "thread_id": "intro-request@mail.example.test", "email_id": 77, "subject": "Quick question", "from_address": "stranger@example.net", "from_name": "", "date": "2026-10-25T08:00:00Z", "message_count": 1, "unread_count": 1, "class": "unknown_human", "reason": "no-signal"},
+    {"account_id": 3, "account": "me@gmail.test", "thread_id": "bank-statement@mail.example.test", "email_id": 78, "subject": "Your statement is ready", "from_address": "Boss@Example.org", "from_name": "Bank", "date": "2026-10-25T09:00:00Z", "message_count": 1, "unread_count": 1, "class": "bulk", "reason": "noreply-sender"}
+  ],
+  "page": 1,
+  "limit": 50
+}

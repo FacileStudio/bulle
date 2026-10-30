@@ -1,0 +1,6 @@
+{
+  "emails": [
+    {"id": 1880, "account_id": 1, "folder_id": 6, "thread_id": "20261023204141.40f2@notify.railway.app", "subject": "Railway security update", "from_address": "hello@notify.railway.app", "from_name": "Railway", "date": "2026-10-23T20:41:41Z", "is_read": false, "message_count": 1, "unread_count": 1},
+    {"id": 1750, "account_id": 1, "folder_id": 6, "thread_id": "cajtkw-remarks@mail.example.test", "subject": "Last remarks on the mockups", "from_address": "alice@example.org", "from_name": "Alice Martin", "date": "2026-10-24T09:12:00Z", "is_read": false, "message_count": 3, "unread_count": 1}
+  ]
+}

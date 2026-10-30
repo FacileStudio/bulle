@@ -1,0 +1,4 @@
+[
+  {"id": 1, "name": "Me", "email": "me@example.test", "imap_host": "imap.example.test", "imap_port": 993, "is_default": true},
+  {"id": 3, "name": "Google", "email": "me@gmail.test", "imap_host": "imap.gmail.test", "imap_port": 993, "is_default": false}
+]
