@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.88.1] - 2026-10-30
+
+### Fixed
+
+- fix(assistant): the mail source reads every `courrier triage` page (100 per page, at most 10) instead of only the first 50 conversations (`internal/assistant/source_mail.go`)
+
 ## [0.88.0] - 2026-10-30
 
 ### Added

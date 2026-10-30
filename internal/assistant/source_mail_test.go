@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/settings"
 )
 
-const triageKey = "courrier triage --all --unread --since 2h --json"
+const triageKey = "courrier triage --all --unread --limit 100 --page 1 --since 2h --json"
 
 func classes(items []Item) map[string]Class {
 	out := map[string]Class{}
@@ -91,12 +92,12 @@ func TestMailItemMapping(t *testing.T) {
 
 func TestMailFallback(t *testing.T) {
 	f := newFake(t, map[string]string{
-		"courrier accounts --json":                   "accounts.json",
-		"courrier inbox --account 1 --unread --json": "inbox_account1.json",
-		"courrier inbox --account 3 --unread --json": "inbox_account3.json",
-		"courrier triage --all --unread --json":      "triage.json",
+		"courrier accounts --json":                                   "accounts.json",
+		"courrier inbox --account 1 --unread --json":                 "inbox_account1.json",
+		"courrier inbox --account 3 --unread --json":                 "inbox_account3.json",
+		"courrier triage --all --unread --limit 100 --page 1 --json": "triage.json",
 	})
-	f.fails["courrier triage --all --unread --json"] = &CmdError{
+	f.fails["courrier triage --all --unread --limit 100 --page 1 --json"] = &CmdError{
 		Stderr: "this Courrier instance does not support triage; upgrade the server",
 		Err:    errors.New("exit status 1"),
 	}
@@ -125,9 +126,26 @@ func TestMailFallback(t *testing.T) {
 
 func TestMailOtherErrorsPropagate(t *testing.T) {
 	f := newFake(t, nil)
-	f.fails["courrier triage --all --unread --json"] = &CmdError{Stderr: "boom", Err: errors.New("exit status 1")}
+	f.fails["courrier triage --all --unread --limit 100 --page 1 --json"] = &CmdError{Stderr: "boom", Err: errors.New("exit status 1")}
 	src := &MailSource{Run: f.run}
 	if _, err := src.Fetch(context.Background()); err == nil {
 		t.Fatal("expected an error")
+	}
+}
+
+func TestMailTriageReadsEveryPage(t *testing.T) {
+	var pages []string
+	run := func(_ context.Context, _ string, args ...string) ([]byte, error) {
+		page := args[slices.Index(args, "--page")+1]
+		pages = append(pages, page)
+		item := `{"account_id":1,"thread_id":"t` + page + `","subject":"s","from_address":"a@b.c","class":"known","reason":"sent-to","unread_count":1}`
+		return []byte(`{"total":150,"items":[` + item + `]}`), nil
+	}
+	src := &MailSource{Run: run}
+	if _, err := src.Fetch(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(pages, ",") != "1,2" {
+		t.Errorf("pages read = %v, want 1 and 2", pages)
 	}
 }

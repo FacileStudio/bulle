@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +14,11 @@ import (
 	"github.com/FacileStudio/bulle/internal/settings"
 )
 
-const triageUnsupported = "does not support triage"
+const (
+	triageUnsupported = "does not support triage"
+	triagePageSize    = 100
+	maxTriagePages    = 10
+)
 
 // MailSource reads unread mail through courrier. It prefers `courrier triage`
 // and falls back to per-account inbox calls with local sender rules when the
@@ -49,22 +54,33 @@ func (m *MailSource) logFallback() {
 }
 
 func (m *MailSource) fetchTriage(ctx context.Context) ([]Item, error) {
-	args := []string{"courrier", "triage", "--all", "--unread"}
+	var rows []TriageItem
+	for page := 1; page <= maxTriagePages; page++ {
+		doc, err := m.triagePage(ctx, page)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range doc.Items {
+			if m.wantsAccount(t.AccountID) {
+				rows = append(rows, t)
+			}
+		}
+		if len(doc.Items) == 0 || page*triagePageSize >= doc.Total {
+			break
+		}
+	}
+	return m.items(rows), nil
+}
+
+func (m *MailSource) triagePage(ctx context.Context, page int) (Triage, error) {
+	args := []string{"courrier", "triage", "--all", "--unread", "--limit", strconv.Itoa(triagePageSize), "--page", strconv.Itoa(page)}
 	if m.Since != "" {
 		args = append(args, "--since", m.Since)
 	}
 	args = append(args, "--json")
 	var doc Triage
-	if err := runJSON(ctx, m.Run, m.Timeout, &doc, args...); err != nil {
-		return nil, err
-	}
-	var rows []TriageItem
-	for _, t := range doc.Items {
-		if m.wantsAccount(t.AccountID) {
-			rows = append(rows, t)
-		}
-	}
-	return m.items(rows), nil
+	err := runJSON(ctx, m.Run, m.Timeout, &doc, args...)
+	return doc, err
 }
 
 func (m *MailSource) wantsAccount(id int64) bool {
