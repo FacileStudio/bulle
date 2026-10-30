@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.91.0] - 2026-10-30
+
+### Added
+
+- feat(assistant): `assistant.journal_dir` makes the nightly `consolidate` read yesterday's journal and create today's file from the vault template (`internal/memory/journal.go`)
+
+### Fixed
+
+- fix(memory): consolidation never received the journal (`Options{}` was empty), and facts it proposed skipped the secret and instruction checks; both are fixed, and notes and journal are capped at 6,000 characters in the prompt (`internal/memory/consolidate.go`)
+
 ## [0.90.0] - 2026-10-30
 
 ### Added

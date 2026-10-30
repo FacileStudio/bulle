@@ -1307,11 +1307,19 @@ assistant:
   profile: free
   vip: ["client@example.com"]
   drop_senders: ["noreply@shop.example"]
+  journal_dir: ~/Documents/NuagePersonal/Wiki/Journal
   sources:
     mail_accounts: [1, 2, 3]
     calendars: [1, 4, 9]
     workspaces: [1, 2, 3]
 ```
+
+`journal_dir` is optional. When set, the 03:30 `consolidate` job creates today's
+`YYYY-MM-DD.md` from the vault template (frontmatter, `## Rêve`, `## Journal`) if
+it is missing, and reads yesterday's file as a source for `MEMORY.md`. It never
+overwrites an existing journal. Facts the model proposes are refused when they
+look like a secret or an order to the assistant, and the refused lines are listed
+in the report.
 
 Every key is optional. An empty `sources` list reads everything the Facile CLIs
 report, and `vip` addresses always interrupt, even when courrier marks them as

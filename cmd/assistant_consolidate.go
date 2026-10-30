@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -22,7 +24,7 @@ func runAssistantConsolidate(ctx context.Context) error {
 	if err != nil {
 		return recordAssistantRun(rec, err)
 	}
-	report, err := store.Consolidate(ctx, deps.Complete, started, memory.Options{})
+	report, err := store.Consolidate(ctx, deps.Complete, started, journalOptions(deps.Settings.JournalDir, started))
 	if err != nil {
 		return recordAssistantRun(rec, err)
 	}
@@ -58,4 +60,15 @@ func postRetained(ctx context.Context, report memory.Report) string {
 		return "failed"
 	}
 	return "ok"
+}
+
+func journalOptions(dir string, now time.Time) memory.Options {
+	if dir == "" {
+		return memory.Options{}
+	}
+	dir = expandTilde(dir)
+	if _, err := memory.EnsureJournal(dir, now); err != nil {
+		fmt.Fprintf(os.Stderr, "assistant: journal template: %v\n", err)
+	}
+	return memory.Options{JournalPath: memory.JournalPath(dir, now.AddDate(0, 0, -1))}
 }

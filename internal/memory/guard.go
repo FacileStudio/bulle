@@ -77,3 +77,22 @@ func inNote(note, fact string) (string, bool) {
 	}
 	return "", false
 }
+
+func vetFacts(facts []string) (allowed, refused []string) {
+	for _, f := range facts {
+		if checkFact(f) != nil {
+			refused = append(refused, f)
+			continue
+		}
+		allowed = append(allowed, f)
+	}
+	return allowed, refused
+}
+
+func tail(text string) string {
+	runes := []rune(text)
+	if len(runes) <= maxSourceChars {
+		return text
+	}
+	return string(runes[len(runes)-maxSourceChars:])
+}

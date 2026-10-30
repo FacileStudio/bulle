@@ -24,6 +24,7 @@ type Assistant struct {
 	VIP            []string          `json:"vip,omitempty" yaml:"vip"`
 	DropSenders    []string          `json:"drop_senders,omitempty" yaml:"drop_senders"`
 	Voice          AssistantVoice    `json:"voice" yaml:"voice"`
+	JournalDir     string            `json:"journal_dir,omitempty" yaml:"journal_dir"`
 }
 
 // AssistantSources lists the Facile accounts, calendars and workspaces the
@@ -55,6 +56,7 @@ func DefaultAssistantDigests() map[string]string {
 
 func (a *Assistant) merge(over Assistant) {
 	fill(&a.Timezone, over.Timezone)
+	fill(&a.JournalDir, over.JournalDir)
 	fill(&a.QuietStart, over.QuietStart)
 	fill(&a.QuietEnd, over.QuietEnd)
 	fill(&a.Profile, over.Profile)
