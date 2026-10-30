@@ -14,9 +14,10 @@ import (
 func assistantEntries(a settings.Assistant, bin, logsDir string) ([]agent.CronEntry, error) {
 	a = a.WithDefaults()
 	line := func(name, args string) string {
-		return fmt.Sprintf("%s %s >> %s 2>&1", bin, args, filepath.Join(logsDir, name+".log"))
+		return fmt.Sprintf("%s %s >> %s 2>&1", cronQuote(bin), args, cronQuote(filepath.Join(logsDir, name+".log")))
 	}
 	entries := []agent.CronEntry{
+		{Name: "assistant-tz", Command: "CRON_TZ=" + cronQuote(a.Timezone)},
 		{Name: "assistant-watch", Schedule: "*/15 * * * *", Command: line("assistant-watch", "assistant watch")},
 	}
 	for _, name := range assistant.DigestNames() {
