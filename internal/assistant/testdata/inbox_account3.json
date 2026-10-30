@@ -1,0 +1,5 @@
+{
+  "emails": [
+    {"id": 77, "account_id": 3, "folder_id": 9, "thread_id": "promo@mail.example.test", "subject": "Autumn sale", "from_address": "offers@shop.example.net", "from_name": "Shop", "date": "2026-10-25T08:00:00Z", "is_read": false, "message_count": 1, "unread_count": 1}
+  ]
+}

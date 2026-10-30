@@ -1,0 +1,4 @@
+[
+  {"calendar_id": 1, "id": 37, "title": "Theatre class", "start_at": "2026-10-30T20:00:00+01:00", "end_at": "2026-10-30T21:00:00+01:00", "is_all_day": false, "status": "confirmed", "recurrence_rule": "FREQ=WEEKLY;BYDAY=FR"},
+  {"calendar_id": 1, "id": 38, "title": "Dropped meeting", "start_at": "2026-10-30T11:00:00+01:00", "end_at": "2026-10-30T12:00:00+01:00", "is_all_day": false, "status": "cancelled"}
+]

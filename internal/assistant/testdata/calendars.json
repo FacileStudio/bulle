@@ -1,0 +1,4 @@
+[
+  {"id": 1, "name": "Personal", "is_personal": true, "owner_id": 1, "role": "owner", "color": "#8b5cf6"},
+  {"id": 2, "name": "Shared", "is_personal": false, "owner_id": 1, "role": "owner", "color": "#3b82f6"}
+]
