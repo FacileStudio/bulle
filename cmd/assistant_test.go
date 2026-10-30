@@ -32,6 +32,26 @@ func TestAssistantInstallWritesExpectedLines(t *testing.T) {
 	}
 }
 
+func TestAssistantInstallWritesTimezoneFirstAndQuotesPaths(t *testing.T) {
+	var written string
+	ct := agent.Crontab{
+		Read:  func() (string, error) { return "CRON_TZ=old\n", nil },
+		Write: func(s string) error { written = s; return nil },
+	}
+	cfg := settings.Assistant{Timezone: "Europe/Paris"}
+	if err := installAssistantEntries(ct, cfg, "/opt/my bulle/100%/bulle", "/logs", false); err != nil {
+		t.Fatal(err)
+	}
+	tz := strings.Index(written, "CRON_TZ=Europe/Paris")
+	watch := strings.Index(written, "*/15")
+	if tz < 0 || watch < 0 || tz > watch {
+		t.Fatalf("CRON_TZ must precede entries:\n%s", written)
+	}
+	if !strings.Contains(written, `'/opt/my bulle/100\%/bulle' assistant watch`) {
+		t.Fatalf("path not quoted:\n%s", written)
+	}
+}
+
 func TestAssistantInstallRefusesLegacy(t *testing.T) {
 	legacy := "# BEGIN BULLE JOB assistant-checkin\n0 20 * * * bulle cron run assistant-checkin\n# END BULLE JOB assistant-checkin\n"
 	ct := agent.Crontab{

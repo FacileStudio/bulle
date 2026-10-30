@@ -58,15 +58,7 @@ func (r *chatRoom) reset(ctx context.Context) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.newDay(ctx)
-	r.persist()
-}
-
-func (r *chatRoom) record(text string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	conv := r.session.Conversation()
-	conv.AppendAssistantText(text)
-	conv.CloseTurn()
+	r.flushPending()
 	r.persist()
 }
 

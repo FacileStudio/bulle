@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -42,6 +43,7 @@ func recordAssistantRun(rec agent.AssistantRun, runErr error) error {
 		rec.Status, rec.Error = "failed", runErr.Error()
 	} else if rec.Delivery == assistant.DeliveryFailed {
 		rec.Status = "failed"
+		runErr = errors.New("assistant: delivery failed")
 	}
 	if err := agent.AppendAssistantRun(rec); err != nil {
 		fmt.Fprintf(os.Stderr, "assistant: recording run: %v\n", err)

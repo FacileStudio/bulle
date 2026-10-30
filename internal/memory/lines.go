@@ -22,13 +22,13 @@ func joinLines(lines []string) string {
 	return strings.Join(lines, "\n") + "\n"
 }
 
-func dropExact(lines, drops []string) (kept, dropped []string) {
+func dropExact(lines, drops []string, limit int) (kept, dropped []string) {
 	want := map[string]bool{}
 	for _, d := range drops {
 		want[d] = true
 	}
 	for _, l := range lines {
-		if want[l] {
+		if want[l] && len(dropped) < limit {
 			dropped = append(dropped, l)
 			continue
 		}

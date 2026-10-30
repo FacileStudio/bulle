@@ -83,7 +83,7 @@ func TestLedgerSnoozeAndNoise(t *testing.T) {
 	l, _ := newTestLedger(t)
 	now := time.Date(2026, 10, 30, 10, 0, 0, 0, time.UTC)
 	item := landingPage("todo")
-	if err := l.Snooze(item.Key(), now.Add(time.Hour)); err != nil {
+	if err := l.Snooze(item.Key(), now, now.Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	if l.ShouldSurface(item, now) {
@@ -92,10 +92,11 @@ func TestLedgerSnoozeAndNoise(t *testing.T) {
 	if !l.ShouldSurface(item, now.Add(2*time.Hour)) {
 		t.Fatal("snooze did not expire")
 	}
-	if err := l.MarkNoise(item.Key()); err != nil {
+	mail := Item{Source: SourceMail, ID: "t9"}
+	if err := l.MarkNoise(mail.Key()); err != nil {
 		t.Fatal(err)
 	}
-	if l.ShouldSurface(landingPage("done"), now.Add(48*time.Hour)) {
+	if l.ShouldSurface(mail, now.Add(48*time.Hour)) {
 		t.Fatal("noise surfaced")
 	}
 }

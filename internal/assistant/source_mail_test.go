@@ -104,7 +104,7 @@ func TestMailFallback(t *testing.T) {
 	src := &MailSource{
 		Run:      f.run,
 		Log:      &log,
-		Settings: settings.Assistant{DropSenders: []string{"shop.example.net"}, VIP: []string{"ALICE@example.org"}},
+		Settings: settings.Assistant{DropSenders: []string{"@shop.example.net"}, VIP: []string{"ALICE@example.org"}},
 	}
 	want := map[string]Class{
 		"20261023204141.40f2@notify.railway.app": ClassBulk,

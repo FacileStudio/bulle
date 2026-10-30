@@ -26,17 +26,28 @@ func runAssistantConsolidate(ctx context.Context) error {
 	if err != nil {
 		return recordAssistantRun(rec, err)
 	}
-	rec.Surfaced = len(report.Added)
-	if len(report.Added) > 0 {
+	rec.Surfaced = len(report.Added) + len(report.Dropped)
+	if len(report.Added)+len(report.Dropped) > 0 {
 		rec.Delivery = postRetained(ctx, report)
 	}
 	return recordAssistantRun(rec, nil)
 }
 
+func consolidateText(report memory.Report) string {
+	var parts []string
+	if len(report.Added) > 0 {
+		parts = append(parts, "Retenu cette nuit : "+strings.Join(report.Added, " ; "))
+	}
+	if len(report.Dropped) > 0 {
+		parts = append(parts, "Oublié cette nuit : "+strings.Join(report.Dropped, " ; "))
+	}
+	return strings.Join(parts, "\n")
+}
+
 func postRetained(ctx context.Context, report memory.Report) string {
 	quiet := false
 	resp, err := chat.SendIPC(ctx, chat.IPCRequest{
-		Action: "send", Text: "Retenu cette nuit : " + strings.Join(report.Added, " ; "),
+		Action: "send", Text: consolidateText(report),
 		Notify: &quiet, Record: true,
 		Items: []string{"memory:consolidate:" + time.Now().Format("2006-01-02")},
 	})

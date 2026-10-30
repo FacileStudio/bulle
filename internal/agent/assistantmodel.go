@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"io"
 
 	"github.com/FacileStudio/bulle/internal/settings"
 )
@@ -21,9 +20,9 @@ func AssistantProfile(name string) (string, error) {
 }
 
 // RunHeadlessPrompt runs one prompt through the headless agent with the named
-// profile, tools off, and returns the text. Cron jobs resolve config the same way.
+// profile and no tool, MCP server or hook, and returns the text. Cron jobs
+// resolve config the same way.
 func RunHeadlessPrompt(ctx context.Context, profile, prompt string) (string, error) {
-	ensureUserPath()
 	cfg, err := loadCronConfig()
 	if err != nil {
 		return "", err
@@ -33,10 +32,7 @@ func RunHeadlessPrompt(ctx context.Context, profile, prompt string) (string, err
 			return "", err
 		}
 	}
-	off := false
-	cfg.Bash, cfg.ApproveTools = &off, &off
-	text, _, err := runHeadlessConfigToContext(ctx, io.Discard, prompt, cfg, nil)
-	return text, err
+	return runToolless(ctx, cfg, prompt)
 }
 
 // AssistantSettings returns the assistant block of the resolved config.

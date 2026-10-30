@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -54,24 +55,9 @@ func (s *chatServices) cmdNew(ctx context.Context, m chat.Message, _ string) str
 	return "Nouvelle conversation."
 }
 
-func (s *chatServices) cmdSnooze(_ context.Context, m chat.Message, _ string) string {
-	keys := s.rooms.nudges.lastKeys(m.Room)
-	if len(keys) == 0 {
-		return "Rien à reporter."
-	}
-	s.snooze(keys)
-	return fmt.Sprintf("Reporté à demain 9h (%d élément(s)).", len(keys))
-}
-
-func (s *chatServices) snooze(keys []string) {
-	for _, key := range keys {
-		_ = s.ledger.SnoozeUntilTomorrow(key, time.Now(), s.location())
-	}
-}
-
 func (s *chatServices) cmdQuiet(_ context.Context, _ chat.Message, args string) string {
 	hours, err := strconv.ParseFloat(strings.TrimSpace(args), 64)
-	if err != nil || hours <= 0 || hours > 72 {
+	if err != nil || math.IsNaN(hours) || math.IsInf(hours, 0) || hours <= 0 || hours > 72 {
 		return "Usage : /quiet <heures> (entre 0 et 72)."
 	}
 	until := time.Now().Add(time.Duration(hours * float64(time.Hour)))
@@ -82,11 +68,15 @@ func (s *chatServices) cmdQuiet(_ context.Context, _ chat.Message, args string) 
 }
 
 func (s *chatServices) cmdForget(_ context.Context, _ chat.Message, args string) string {
-	n, err := s.memory.Forget(strings.TrimSpace(args))
+	res, err := s.memory.ForgetReport(strings.TrimSpace(args))
 	if err != nil {
 		return "Impossible d'oublier : " + err.Error()
 	}
-	return fmt.Sprintf("Oublié : %d ligne(s).", n)
+	reply := fmt.Sprintf("Oublié : %d ligne(s).", res.Removed)
+	if len(res.Backups) > 0 {
+		reply += " Sauvegardes (backups/) : " + strings.Join(res.Backups, ", ")
+	}
+	return reply
 }
 
 func (s *chatServices) cmdStatus(_ context.Context, _ chat.Message, _ string) string {

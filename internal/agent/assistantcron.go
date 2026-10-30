@@ -30,8 +30,14 @@ func SystemCrontab() Crontab {
 }
 
 // FormatEntryBlock renders an entry between its BULLE JOB markers.
+// An empty Schedule renders the command alone, which is how an environment
+// line such as CRON_TZ=Europe/Paris is managed.
 func FormatEntryBlock(e CronEntry) string {
-	return fmt.Sprintf("# BEGIN BULLE JOB %s\n%s %s\n# END BULLE JOB %s", e.Name, e.Schedule, e.Command, e.Name)
+	body := e.Schedule + " " + e.Command
+	if e.Schedule == "" {
+		body = e.Command
+	}
+	return fmt.Sprintf("# BEGIN BULLE JOB %s\n%s\n# END BULLE JOB %s", e.Name, body, e.Name)
 }
 
 // InstalledLegacyJobs lists the legacy assistant jobs present in the crontab.

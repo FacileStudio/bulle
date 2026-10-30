@@ -83,7 +83,7 @@ func TestForgetReportsLinesRemoved(t *testing.T) {
 	if _, err := s.memory.Remember("Yann likes tea", time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.cmdForget(context.Background(), chat.Message{}, "tea"); got != "Oublié : 1 ligne(s)." {
+	if got := s.cmdForget(context.Background(), chat.Message{}, "likes tea"); !strings.HasPrefix(got, "Oublié : 1 ligne(s). Sauvegardes (backups/) : ") {
 		t.Fatalf("reply = %q", got)
 	}
 }

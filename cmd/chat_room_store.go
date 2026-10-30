@@ -53,7 +53,7 @@ func loadRoom(path string) (string, []nacelle.Message) {
 			msgs = append(msgs, nacelle.Message{Role: nacelle.Role(e.Role), Parts: []nacelle.Part{nacelle.Text{Text: e.Text}}})
 		}
 	}
-	return day, msgs
+	return day, userFirst(msgs)
 }
 
 func roomText(m nacelle.Message) string {

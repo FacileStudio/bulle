@@ -23,6 +23,8 @@ type IPCRequest struct {
 	Notify *bool    `json:"notify,omitempty"`
 	Record bool     `json:"record,omitempty"`
 	Items  []string `json:"items,omitempty"`
+
+	RecordText string `json:"record_text,omitempty"`
 }
 
 // IPCSend delivers one outbound message. Notify nil means the message should

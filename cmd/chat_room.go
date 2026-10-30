@@ -17,6 +17,8 @@ import (
 
 type chatRoom struct {
 	mu        sync.Mutex
+	pmu       sync.Mutex
+	pending   []string
 	session   *engine.Session
 	compactor *compaction.Engine
 	log       *sessions.SessionLog
@@ -101,11 +103,15 @@ func newChatRoom(config settings.Config, key string, asker agent.Asker, mem *mem
 }
 
 func (r *chatRoom) answer(ctx context.Context, text string) (string, error) {
-	r.mu.Lock()
+	if err := r.lockCtx(ctx); err != nil {
+		return "", err
+	}
 	defer r.mu.Unlock()
 	r.rollDay(ctx)
+	r.flushPending()
 	r.compactIfNeeded(ctx)
 	reply, err := r.turn(ctx, text)
+	r.flushPending()
 	r.persist()
 	return reply, err
 }

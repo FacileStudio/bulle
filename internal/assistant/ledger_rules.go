@@ -33,6 +33,11 @@ func taskPhase(due, now time.Time) string {
 	return ""
 }
 
+// NextNineAM is the next 09:00 in loc strictly after now.
+func NextNineAM(now time.Time, loc *time.Location) time.Time {
+	return nextNineAM(now, loc)
+}
+
 func nextNineAM(now time.Time, loc *time.Location) time.Time {
 	y, m, d := now.In(loc).Date()
 	at := time.Date(y, m, d, 9, 0, 0, 0, loc)

@@ -39,7 +39,11 @@ func (c *CalendarSource) Fetch(ctx context.Context) ([]Item, error) {
 	if c.Now != nil {
 		now = c.Now
 	}
-	from := now()
+	loc, err := time.LoadLocation(c.Settings.WithDefaults().Timezone)
+	if err != nil {
+		loc = time.UTC
+	}
+	from := now().In(loc)
 	var items []Item
 	for _, cal := range cals {
 		if !pickedID(c.Settings.Sources.Calendars, cal.ID) {
