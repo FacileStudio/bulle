@@ -21,20 +21,24 @@ func messageFrom(evt *event.Event, self id.UserID) (Message, bool) {
 	if evt == nil || evt.Sender == self || evt.Type != event.EventMessage {
 		return Message{}, false
 	}
-	text, ok := textOf(evt.Content.AsMessage())
+	content := evt.Content.AsMessage()
+	if media, ok := audioOf(content); ok {
+		return Message{Identity: identityOf(evt), Kind: KindAudio, Media: media, At: time.UnixMilli(evt.Timestamp)}, true
+	}
+	text, ok := textOf(content)
 	if !ok {
 		return Message{}, false
 	}
-	return Message{
-		Identity: Identity{
-			Adapter: "matrix",
-			Room:    evt.RoomID.String(),
-			Sender:  evt.Sender.String(),
-			Event:   evt.ID.String(),
-		},
-		Text: text,
-		At:   time.UnixMilli(evt.Timestamp),
-	}, true
+	return Message{Identity: identityOf(evt), Text: text, At: time.UnixMilli(evt.Timestamp)}, true
+}
+
+func identityOf(evt *event.Event) Identity {
+	return Identity{
+		Adapter: "matrix",
+		Room:    evt.RoomID.String(),
+		Sender:  evt.Sender.String(),
+		Event:   evt.ID.String(),
+	}
 }
 
 // textOf is the body of a message a human meant as an instruction, or false.

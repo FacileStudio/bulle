@@ -2,7 +2,6 @@ package chat
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"unicode/utf8"
@@ -30,20 +29,8 @@ const sendChunkBytes = maxEventBytes / 2
 // A long answer goes out as several messages. The alternative is one event the
 // homeserver rejects, which loses the whole reply rather than splitting it.
 func (m *Matrix) Send(ctx context.Context, to Identity, text string) error {
-	if to.Adapter != "matrix" {
-		return fmt.Errorf("matrix: refusing to send to a %q identity", to.Adapter)
-	}
-	if to.Room == "" {
-		return errors.New("matrix: no room to send to")
-	}
-	m.ensureRoom(ctx, id.RoomID(to.Room))
-	for _, chunk := range chunks(text, sendChunkBytes) {
-		if _, err := m.client.SendMessageEvent(ctx, id.RoomID(to.Room), event.EventMessage, replyTo(to, chunk)); err != nil {
-			return err
-		}
-		to.Event = ""
-	}
-	return nil
+	_, err := m.sendAs(ctx, to, text, event.MsgText)
+	return err
 }
 
 // ensureRoom verifies the room's encryption state and warms the membership
