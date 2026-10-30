@@ -10,6 +10,7 @@ import (
 
 	"github.com/FacileStudio/bulle/internal/compaction"
 	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 type model = Model
@@ -136,7 +137,7 @@ func spoken(m *Model) []string {
 
 func TestAutoResumeLoadsSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := sessions.OpenSession("anthropic", "claude-opus-5", ".")
 	if log == nil {
@@ -159,7 +160,7 @@ func TestAutoResumeLoadsSession(t *testing.T) {
 
 func TestAutoResumeNoSessionLeavesConversationEmpty(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	config := testSession()
 	config.AutoResume = true

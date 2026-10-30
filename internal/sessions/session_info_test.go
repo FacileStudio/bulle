@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestIsPIDRunning(t *testing.T) {
@@ -33,7 +35,7 @@ func createTestLog(t *testing.T, root string) *SessionLog {
 }
 
 func TestGetSessionAndListSessions(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	if list := ListSessions(""); list != nil {
 		t.Errorf("expected empty sessions list, got %v", list)
 	}
@@ -64,7 +66,7 @@ func TestGetSessionAndListSessions(t *testing.T) {
 }
 
 func TestListSessionsFilter(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	createTestLog(t, "/repo/alpha")
 
 	if len(ListSessions("/repo/alpha")) != 1 {
@@ -96,7 +98,7 @@ func createDeadSessionFile(t *testing.T, dir string, pid int) (string, string) {
 
 func TestMarkSessionStatusAndDeadProcess(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	dir := filepath.Join(home, ".local", "share", "bulle", "sessions")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
@@ -156,7 +158,7 @@ func verifyKilledSession(t *testing.T, filename string) {
 
 func TestKillSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	cmd := exec.Command("sleep", "30")
 	if err := cmd.Start(); err != nil {
 		t.Skipf("skipping process kill test: %v", err)
@@ -183,7 +185,7 @@ func TestKillSession(t *testing.T) {
 
 func TestDeleteSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("google", "gemini-2.5", "/test")
 	if log == nil {
@@ -201,7 +203,7 @@ func TestDeleteSession(t *testing.T) {
 }
 
 func TestGetSessionErrors(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	if _, err := GetSession(""); err == nil {
 		t.Errorf("expected error for empty id")
 	}

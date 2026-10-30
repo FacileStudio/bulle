@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/chat"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 type rig struct {
@@ -44,7 +45,7 @@ func (r *rig) Complete(context.Context, string) (string, error) {
 
 func newRig(t *testing.T, at string) *rig {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	loc, _ := time.LoadLocation("Europe/Paris")
 	now, err := time.ParseInLocation("2006-01-02 15:04", at, loc)
 	if err != nil {

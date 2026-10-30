@@ -180,7 +180,7 @@ func TestLedgerConcurrentMarkSurfaced(t *testing.T) {
 	l, path := newTestLedger(t)
 	now := time.Now()
 	var wg sync.WaitGroup
-	for i := 0; i < 20; i++ {
+	for i := range 20 {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()

@@ -76,7 +76,7 @@ func TestModelCommandSwitchDirectModel(t *testing.T) {
 func TestModelCommandSwitchProfile(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
-	t.Setenv("HOME", dir)
+	xdgtest.Isolate(t, dir)
 	profilesDir := filepath.Join(dir, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)
@@ -122,7 +122,7 @@ func TestStatusCmdOutputsActiveModel(t *testing.T) {
 func TestApplyProfileSwitchResetsReasoningBudget(t *testing.T) {
 	t.Setenv("GEMINI_API_KEY", "test-key")
 	dir := t.TempDir()
-	t.Setenv("HOME", dir)
+	xdgtest.Isolate(t, dir)
 	profilesDir := filepath.Join(dir, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
 		t.Fatal(err)

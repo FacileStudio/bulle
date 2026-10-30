@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/sessions"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestInitReplaysResumedSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := sessions.OpenSession("anthropic", "claude-opus-5", "/repo")
 	if log == nil {

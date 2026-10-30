@@ -3,6 +3,8 @@ package tui
 import (
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // The editor's commands, each one taking the path the terminal already had: a
@@ -80,7 +82,7 @@ func TestAnEditorOpenMovesTheTranscriptToThePath(t *testing.T) {
 // what makes an editor able to drive it at all: there is no other path from a
 // socket command to this loop.
 func TestBootHandsTheModelToTheEditor(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	surface := &fakeSurface{}
 	config := testSession()
 	m := NewModel(nil, "banner", nil, config)

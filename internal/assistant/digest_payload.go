@@ -1,6 +1,7 @@
 package assistant
 
 import (
+	"slices"
 	"sort"
 	"time"
 )
@@ -45,7 +46,7 @@ func buildPayload(name string, items []Item, now time.Time) Payload {
 	}
 	p.listed = ranked
 	for _, it := range mailOf(items, ClassUnknownHuman) {
-		if len(p.Unknown) < maxUnknown && !contains(p.Unknown, it.Who) {
+		if len(p.Unknown) < maxUnknown && !slices.Contains(p.Unknown, it.Who) {
 			p.Unknown = append(p.Unknown, it.Who)
 			p.listed = append(p.listed, it)
 		}
@@ -106,13 +107,4 @@ func toDigestItem(it Item, now time.Time) DigestItem {
 		}
 	}
 	return d
-}
-
-func contains(list []string, s string) bool {
-	for _, v := range list {
-		if v == s {
-			return true
-		}
-	}
-	return false
 }

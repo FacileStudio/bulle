@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,7 +13,9 @@ const maxSenderMap = 2000
 
 func readJSONFile(path string, v any) {
 	if data, err := os.ReadFile(path); err == nil {
-		_ = json.Unmarshal(data, v)
+		if err := json.Unmarshal(data, v); err != nil {
+			return
+		}
 	}
 }
 
@@ -34,9 +37,7 @@ func RecordMailSenders(stateDir string, senders map[string]string) error {
 		path := filepath.Join(stateDir, "mail-senders.json")
 		m := map[string]string{}
 		readJSONFile(path, &m)
-		for k, v := range senders {
-			m[k] = v
-		}
+		maps.Copy(m, senders)
 		for k := range m {
 			if len(m) <= maxSenderMap {
 				break

@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestListSessionFilesEmpty(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	files := ListSessionFiles("")
 	if len(files) != 0 {
 		t.Errorf("got %v, want empty", files)
@@ -24,7 +26,7 @@ func TestLoadSessionMissingFile(t *testing.T) {
 
 func TestSaveAndLoadSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {
@@ -71,7 +73,7 @@ func TestFormatSessionEntryShortStarted(t *testing.T) {
 
 func TestListSessionFilesFilter(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {
@@ -90,7 +92,7 @@ func TestListSessionFilesFilter(t *testing.T) {
 
 func TestResolveSessionByIdAndPath(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {
@@ -117,7 +119,7 @@ func TestResolveSessionByIdAndPath(t *testing.T) {
 
 func TestRestoreAtLaunch(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	res := RestoreAtLaunch("", "/repo", false)
 	if res.Conversation != nil || res.Name != "" || res.Path != "" || res.Error != "" {
@@ -150,7 +152,7 @@ func TestRestoreAtLaunch(t *testing.T) {
 
 func TestOpenResumeSession(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	if log := OpenResumeSession("", "anthropic", "claude", "/repo"); log != nil {
 		t.Errorf("expected nil log for empty path, got %v", log)

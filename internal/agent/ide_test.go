@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/ide"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // A session that publishes to no editor hands over nothing. The nil check is
@@ -21,7 +22,7 @@ func TestASessionWithNoEditorHandsOverNoSurface(t *testing.T) {
 // A started socket is handed over as the surface the terminal drives, which is
 // the one conversion between the socket's command interface and the terminal's.
 func TestAStartedSocketIsHandedOverAsASurface(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_RUNTIME_DIR", t.TempDir())
 	srv, err := ide.Start(ide.Options{})
 	if err != nil {

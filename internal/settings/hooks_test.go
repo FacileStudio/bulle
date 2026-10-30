@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/nacelle"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 type hookConfig = []HookSpec
@@ -47,7 +49,7 @@ const guardYAML = `hooks:
 `
 
 func TestAProjectHooksFileIsRefusedUntilTrusted(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	root := writeHooks(t, guardYAML)
 
 	hooks, notice, err := LoadProjectHooks(root, false)
@@ -66,7 +68,7 @@ func TestAProjectHooksFileIsRefusedUntilTrusted(t *testing.T) {
 // remembered per content hash: loading works after trusting, and one byte
 // changed is a different file, whatever the path says.
 func TestTrustingAHooksFileLoadsItAndAnEditRearms(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	root := writeHooks(t, guardYAML)
 
 	if _, notice, err := LoadProjectHooks(root, true); err != nil || notice != "" {
@@ -91,7 +93,7 @@ func TestTrustingAHooksFileLoadsItAndAnEditRearms(t *testing.T) {
 }
 
 func TestUnknownEventOrEmptyCommandIsRefusedAtLoad(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	for name, yaml := range map[string]string{
 		"event": `hooks:
   - on: on_stop

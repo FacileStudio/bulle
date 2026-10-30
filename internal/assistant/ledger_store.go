@@ -15,9 +15,9 @@ import (
 type Entry struct {
 	FirstSeen    time.Time `json:"first_seen"`
 	LastSeen     time.Time `json:"last_seen"`
-	LastSurfaced time.Time `json:"last_surfaced,omitempty"`
+	LastSurfaced time.Time `json:"last_surfaced,omitzero"`
 	Fingerprint  string    `json:"fingerprint,omitempty"`
-	SnoozedUntil time.Time `json:"snoozed_until,omitempty"`
+	SnoozedUntil time.Time `json:"snoozed_until,omitzero"`
 	Noise        bool      `json:"noise,omitempty"`
 	LastStatus   string    `json:"last_status,omitempty"`
 	Phase        string    `json:"phase,omitempty"`
@@ -87,7 +87,9 @@ func (l *Ledger) update(fn func()) error {
 }
 
 func (l *Ledger) refresh() {
-	_ = withLock(l.lockPath(), false, l.load)
+	if err := withLock(l.lockPath(), false, l.load); err != nil {
+		return
+	}
 }
 
 func (l *Ledger) save() error {

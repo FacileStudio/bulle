@@ -112,7 +112,7 @@ func TestReactionReachesHandler(t *testing.T) {
 
 func TestReactionRouterIsBounded(t *testing.T) {
 	r := NewReactionRouter()
-	for i := 0; i < reactionRouterSize+10; i++ {
+	for i := range reactionRouterSize + 10 {
 		r.Register(strings.Repeat("e", i+1), []string{"k"})
 	}
 	if r.Lookup("e") != nil || r.Lookup(strings.Repeat("e", reactionRouterSize+10)) == nil {

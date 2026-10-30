@@ -34,4 +34,7 @@ func WatchAntenne(ctx context.Context, run func()) {
 			run()
 		}
 	}
+	if err := sc.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "bulle: antenne tail: %v\n", err)
+	}
 }

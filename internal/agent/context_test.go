@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // noGlobalInstructions points HOME at an empty directory, so a test about
@@ -14,7 +16,7 @@ import (
 // whose machine ran them.
 func noGlobalInstructions(t *testing.T) {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 }
 
 // A monorepo's root CLAUDE.md carries suite-wide convention and a
@@ -107,7 +109,7 @@ func TestProjectContextReadsASymlinkedDuplicateOnce(t *testing.T) {
 // global section is not manufactured for it a second time.
 func TestProjectContextSkipsAGlobalFileTheWalkAlreadyRead(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	if err := os.MkdirAll(filepath.Join(home, ".agents"), 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
@@ -171,7 +173,7 @@ func TestProjectContextStripsHTMLComments(t *testing.T) {
 // even than the filesystem root, per projectContext's own doc comment.
 func TestProjectContextIncludesTheGlobalAgentsFile(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	if err := os.MkdirAll(filepath.Join(home, ".agents"), 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
@@ -204,7 +206,7 @@ func TestProjectContextIncludesTheGlobalAgentsFile(t *testing.T) {
 // not adopted the convention, not a degraded one — it must not error or
 // leave a header with nothing under it.
 func TestProjectContextToleratesNoAgentsDirectory(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	dir := t.TempDir()
 	if err := os.WriteFile(filepath.Join(dir, "AGENTS.md"), []byte("project preference"), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)

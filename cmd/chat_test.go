@@ -17,6 +17,7 @@ import (
 	"github.com/FacileStudio/bulle/internal/chat"
 	"github.com/FacileStudio/bulle/internal/engine"
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestChatHelpCommand(t *testing.T) {
@@ -75,7 +76,7 @@ func TestChatVerifyHelpCommand(t *testing.T) {
 
 func TestChatSendCommand(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	sock := filepath.Join(home, "chat.sock")
 	t.Setenv("BULLE_CHAT_SOCK", sock)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -102,7 +103,7 @@ func TestChatSendCommand(t *testing.T) {
 
 func TestChatTriggerCommand(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	sock := filepath.Join(home, "chat.sock")
 	t.Setenv("BULLE_CHAT_SOCK", sock)
 	ctx, cancel := context.WithCancel(context.Background())

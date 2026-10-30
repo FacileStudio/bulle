@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestSessionsHelpCommand(t *testing.T) {
@@ -83,7 +85,7 @@ func TestBuildDetachedArgs(t *testing.T) {
 }
 
 func TestResumeNoSessionsReturnsError(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	cmd := newRootCmd("v0.57.0")
 	var buf bytes.Buffer
 	cmd.SetOut(&buf)

@@ -4,11 +4,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestXDGDirsHonourTheEnvironment(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	for _, name := range []string{"XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_RUNTIME_DIR"} {
 		t.Setenv(name, "")
 	}
@@ -31,7 +33,7 @@ func TestXDGDirsHonourTheEnvironment(t *testing.T) {
 
 func TestXDGEnvOverridesAndRejectsRelativePaths(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	abs := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", abs)
 	t.Setenv("XDG_DATA_HOME", "relative/path")

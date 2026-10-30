@@ -120,7 +120,7 @@ func TestApplyProfileCarriesLimitsAndPersona(t *testing.T) {
 func setupProfileEnvWith(t *testing.T, profileFile, profileYml, fileYml string) {
 	t.Helper()
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	clearEnv(t, "BULLE_BACKEND", "NACELLE_BACKEND", "BULLE_PROFILE", "NACELLE_PROFILE",
 		"BULLE_MAX_ITERATIONS", "NACELLE_MAX_ITERATIONS")
 

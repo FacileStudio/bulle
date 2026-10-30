@@ -162,7 +162,7 @@ func TestDeliverMatrixSocketError(t *testing.T) {
 
 func TestAppendCronLogMatrixFallback(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	t.Setenv("BULLE_CHAT_SOCK", filepath.Join(home, "nonexistent.sock"))
 
 	if err := appendCronLog("matrix:!bad:matrix.org", "daily", cronOK, "<deliver>fallback text</deliver>"); err != nil {

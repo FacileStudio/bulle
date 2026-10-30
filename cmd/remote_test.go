@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestNewRemoteCmd(t *testing.T) {
@@ -27,7 +28,7 @@ func TestNewRemoteCmd(t *testing.T) {
 }
 
 func TestRunRemote_NoArgsShowsHelp(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	cmd := newRemoteCmd()
 	cmd.SetOut(io.Discard)
 	if err := cmd.RunE(cmd, nil); err != nil {

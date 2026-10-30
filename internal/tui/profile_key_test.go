@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/nacelle"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // Switching profiles mid-session reads the profile file rather than the resolved
@@ -15,7 +17,7 @@ import (
 // credential at all.
 func TestProfileSwitchResolvesAKeyFromItsCommand(t *testing.T) {
 	dir := t.TempDir()
-	t.Setenv("HOME", dir)
+	xdgtest.Isolate(t, dir)
 	profiles := filepath.Join(dir, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(profiles, 0o755); err != nil {
 		t.Fatal(err)

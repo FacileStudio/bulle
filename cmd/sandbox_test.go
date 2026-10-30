@@ -10,6 +10,7 @@ import (
 
 	"github.com/FacileStudio/bulle/internal/sandbox"
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func writeBoiteInstance(t *testing.T, dir, name string, port int) {
@@ -164,7 +165,7 @@ func TestBuildSandboxOptions_ExplicitPrint(t *testing.T) {
 }
 
 func TestRunSandbox_NoArgsShowsHelp(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	cmd := newSandboxCmd()
 	cmd.SetOut(io.Discard)
 	if err := cmd.RunE(cmd, nil); err != nil {
@@ -174,7 +175,7 @@ func TestRunSandbox_NoArgsShowsHelp(t *testing.T) {
 
 func TestRunSandbox_UsesDefaultTarget(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	t.Setenv("BOITE_INSTANCES_DIR", t.TempDir())
 	cfgPath := filepath.Join(home, ".bulle.yml")
 	if err := os.WriteFile(cfgPath, []byte("sandbox:\n  default: ghost-vm\n"), 0o644); err != nil {

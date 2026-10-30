@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"context"
+	"slices"
 	"strconv"
 	"time"
 
@@ -86,13 +87,5 @@ func (c *CalendarSource) events(ctx context.Context, cal calendarRef, from time.
 }
 
 func pickedID(ids []int, id int) bool {
-	if len(ids) == 0 {
-		return true
-	}
-	for _, v := range ids {
-		if v == id {
-			return true
-		}
-	}
-	return false
+	return len(ids) == 0 || slices.Contains(ids, id)
 }

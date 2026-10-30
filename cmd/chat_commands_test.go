@@ -24,7 +24,11 @@ func testServices(t *testing.T) *chatServices {
 	}
 	reactions := chat.NewReactionRouter()
 	rooms := newRoomRegistry(settings.Config{})
-	t.Cleanup(func() { _ = rooms.Close() })
+	t.Cleanup(func() {
+		if err := rooms.Close(); err != nil {
+			t.Error(err)
+		}
+	})
 	rooms.nudges = newNudgeLog(reactions)
 	return &chatServices{
 		rooms:     rooms,

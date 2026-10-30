@@ -1,11 +1,15 @@
 package skills
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
+)
 
 // A directory nobody has trusted yet is the ordinary state for a project
 // bulle has never run against, not a corrupt store.
 func TestLoadTrustIsEmptyWithNoStoreYet(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 
 	store, err := loadTrust()
 	if err != nil {
@@ -23,7 +27,7 @@ func TestLoadTrustIsEmptyWithNoStoreYet(t *testing.T) {
 // next run, which means a fresh process reading the file back, not just the
 // in-memory map still holding it.
 func TestATrustDecisionSurvivesASaveAndFreshLoad(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	dir := "/home/example/project/.agents/skills"
 
 	store, err := loadTrust()
@@ -47,7 +51,7 @@ func TestATrustDecisionSurvivesASaveAndFreshLoad(t *testing.T) {
 // Trusting one directory must not trust its neighbour — the whole reason
 // trust is keyed by canonical directory rather than granted globally.
 func TestTrustingOneDirectoryDoesNotTrustAnother(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	store := map[string]trustRecord{}
 	trust(store, "/home/example/trusted-project/.agents/skills")
 

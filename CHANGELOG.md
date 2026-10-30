@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.87.1] - 2026-10-30
+
+### Fixed
+
+- fix(tests): tests that pointed only `HOME` at a temp dir now isolate every `XDG_*` variable, so CI no longer reads the runner's own directories (`internal/xdgtest`)
+- fix(lint): clear every info-level filet finding so the `fail-on: info` gate passes (`internal/assistant`, `cmd`, `internal/settings`)
+- fix(assistant): ledger timestamps use `omitzero`, so unset times are left out of the JSON instead of written as year 1
+
 ## [0.87.0] - 2026-10-30
 
 ### Changed

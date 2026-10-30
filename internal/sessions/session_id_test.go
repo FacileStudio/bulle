@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestGenerateSessionIDFormat(t *testing.T) {
@@ -25,7 +27,7 @@ func TestGenerateSessionIDFormat(t *testing.T) {
 
 func TestResolveSessionByPrefixAndPID(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {

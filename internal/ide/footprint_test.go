@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // TestAStaleDiscoveryFileForAnotherPidIsLeftAlone pins the half of the stale
@@ -11,7 +13,7 @@ import (
 // one a killed process left behind is still there afterwards. Which of them is
 // stale is the reader's call, and it decides by checking that the pid is alive.
 func TestAStaleDiscoveryFileForAnotherPidIsLeftAlone(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_RUNTIME_DIR", filepath.Join(t.TempDir(), "run"))
 	if err := os.MkdirAll(Dir(), 0o700); err != nil {
 		t.Fatalf("creating the discovery directory: %v", err)

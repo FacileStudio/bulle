@@ -27,7 +27,7 @@ func NextDigest(a settings.Assistant, name string, now time.Time) time.Time {
 		loc = time.UTC
 	}
 	local := now.In(loc)
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		y, m, d := local.Date()
 		at := time.Date(y, m, d+i, mins/60, mins%60, 0, 0, loc)
 		if at.After(now) && digestDay(a, name, at) {

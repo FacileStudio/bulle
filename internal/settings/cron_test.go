@@ -22,7 +22,7 @@ func writeJob(t *testing.T, dir, name, yaml string) {
 // job, the stem names it when the file stays silent, a name: key overrides,
 // and an override group decodes into its own struct.
 func TestLoadJobsReadsOneJobPerFile(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	dir := JobsDir()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
@@ -54,7 +54,7 @@ func TestLoadJobsReadsOneJobPerFile(t *testing.T) {
 // TestAMissingJobsFolderLoadsAsNoJobs keeps first-run ordinary: no
 // ~/.bulle/jobs/ yet is zero jobs, not an error.
 func TestAMissingJobsFolderLoadsAsNoJobs(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 
 	jobs, err := LoadJobs(JobsDir())
 	if err != nil {

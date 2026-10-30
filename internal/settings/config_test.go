@@ -14,7 +14,7 @@ func written(t *testing.T, body string) {
 	t.Helper()
 
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	if body == "" {
 		return
 	}
@@ -207,7 +207,7 @@ func TestATypoInAKeyIsRefusedRatherThanIgnored(t *testing.T) {
 // meant bulle could not run with every setting passed on the command line,
 // for want of a file it was never going to read.
 func TestAnUnresolvableHomeMeansNoConfigFileRatherThanNoProgram(t *testing.T) {
-	t.Setenv("HOME", "")
+	xdgtest.Isolate(t, "")
 
 	config, err := settings(Config{Provider: Provider{Model: "from-the-flag"}})
 	if err != nil {

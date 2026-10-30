@@ -10,6 +10,8 @@ import (
 
 	"github.com/FacileStudio/nacelle"
 	"github.com/FacileStudio/nacelle/tools"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // shellSandbox keeps a test's commands away from the real home: the test
@@ -18,7 +20,7 @@ import (
 // built from those same isolated values.
 func shellSandbox(t *testing.T) {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), "xdg"))
 }
 

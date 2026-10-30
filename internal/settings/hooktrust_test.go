@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // TestIsTrustedRefusesChangedContentUntilSavedAgain pins the trust contract
@@ -12,7 +14,7 @@ import (
 // bytes it covered, and one byte changed re-arms it until someone saves
 // again.
 func TestIsTrustedRefusesChangedContentUntilSavedAgain(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	path := filepath.Join(t.TempDir(), "hooks.yml")
 	raw := []byte("hooks:\n  - on: before_tool_call\n    run: echo hi\n")
 
@@ -42,7 +44,7 @@ func TestIsTrustedRefusesChangedContentUntilSavedAgain(t *testing.T) {
 // approval recorded in the old hooks.json is honored by the shared store.
 func TestHooksJSONApprovalsSurviveTheSharedStore(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	path := filepath.Join(home, "project", HooksFile)
 	raw := []byte("hooks:\n  - on: before_tool_call\n    run: echo hi\n")
 	writeOldHooksTrust(t, home, path, raw)
@@ -57,7 +59,7 @@ func TestHooksJSONApprovalsSurviveTheSharedStore(t *testing.T) {
 // holds once the fallback no longer matters.
 func TestTheFirstSaveFoldsHooksJSONForward(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	path := filepath.Join(home, "project", HooksFile)
 	raw := []byte("hooks:\n  - on: before_tool_call\n    run: echo hi\n")
 	writeOldHooksTrust(t, home, path, raw)

@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestTargetSessionLogKeepsTheTargetRootVerbatim(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 
 	log := newSessionLog("anthropic", "claude-opus-5", "target:staging")
 	if log == nil {
@@ -25,7 +27,7 @@ func TestTargetSessionLogKeepsTheTargetRootVerbatim(t *testing.T) {
 }
 
 func TestListSessionFilesMatchesTargetRootsByIdentity(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 
 	targetLog := newSessionLog("anthropic", "claude-opus-5", "target:staging")
 	localLog := newSessionLog("anthropic", "claude-opus-5", "/repo")
@@ -50,7 +52,7 @@ func TestListSessionFilesMatchesTargetRootsByIdentity(t *testing.T) {
 }
 
 func TestListSessionFilesDoesNotFoldTargetRootsIntoTheHostCWD(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)

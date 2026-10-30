@@ -11,6 +11,7 @@ import (
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/engine"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func testRoom(path string, now time.Time, summary string) *chatRoom {
@@ -34,7 +35,7 @@ func joined(r *chatRoom) string {
 }
 
 func TestRoomPersistsAcrossRebuild(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	path, err := roomStorePath("matrix:!room")
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +70,7 @@ func TestRoomPersistsAcrossRebuild(t *testing.T) {
 }
 
 func TestRoomDayBoundaryCarriesSummary(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	path, _ := roomStorePath("matrix:!day")
 	evening := time.Date(2026, 10, 30, 23, 0, 0, 0, time.UTC)
 	room := testRoom(path, evening, "talked about the landing page")

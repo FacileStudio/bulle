@@ -66,7 +66,7 @@ func migrateLegacy() {
 	if state, err := stateDir(); err == nil {
 		mergeInto(filepath.Join(legacy, "state"), state)
 	}
-	_ = os.Remove(legacy)
+	removeIfEmpty(legacy)
 }
 
 func mergeInto(from, to string) {
@@ -77,7 +77,17 @@ func mergeInto(from, to string) {
 	for _, e := range entries {
 		renameIfMissing(filepath.Join(from, e.Name()), filepath.Join(to, e.Name()))
 	}
-	_ = os.Remove(from)
+	removeIfEmpty(from)
+}
+
+func removeIfEmpty(dir string) {
+	entries, err := os.ReadDir(dir)
+	if err != nil || len(entries) > 0 {
+		return
+	}
+	if err := os.Remove(dir); err != nil {
+		fmt.Fprintf(os.Stderr, "bulle: removing %s: %v\n", dir, err)
+	}
 }
 
 func renameIfMissing(from, to string) {

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // writeSkill creates dir/SKILL.md with the given frontmatter body (the
@@ -135,7 +137,7 @@ func TestSkillsInToleratesAMissingDirectory(t *testing.T) {
 // prove it is actually read.
 func TestGlobalSkillsReadsFromTheHomeAgentsDirectory(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	writeSkill(t, filepath.Join(home, ".agents", "skills", "brave-search"),
 		"name: brave-search\ndescription: Web search via an API.")
 
@@ -176,7 +178,7 @@ func TestProjectSkillContainersFindsEveryLevel(t *testing.T) {
 // could see this: the walk never passed through the home they had set.
 func TestProjectSkillContainersSkipsTheGlobalDirectory(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	writeSkill(t, filepath.Join(home, ".agents", "skills", "shared"),
 		"name: shared\ndescription: a global skill")
 	root := filepath.Join(home, "Code", "project")
@@ -206,7 +208,7 @@ func TestProjectSkillContainersSkipsTheGlobalDirectory(t *testing.T) {
 // a project's .agents/skills can carry instructions to run arbitrary
 // scripts, so it does not load until something has decided to trust it.
 func TestLoadSkillsSkipsUntrustedProjectSkills(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	root := t.TempDir()
 	writeSkill(t, filepath.Join(root, ".agents", "skills", "risky"),
 		"name: risky\ndescription: not yet reviewed")
@@ -225,7 +227,7 @@ func TestLoadSkillsSkipsUntrustedProjectSkills(t *testing.T) {
 // run, and it remembers the decision so the next run does not need the flag
 // again. Both have to be true, not just the first.
 func TestLoadSkillsWithTrustNewLoadsAndPersists(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	root := t.TempDir()
 	writeSkill(t, filepath.Join(root, ".agents", "skills", "reviewed"),
 		"name: reviewed\ndescription: looked at it, seems fine")

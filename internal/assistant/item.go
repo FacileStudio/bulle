@@ -41,8 +41,8 @@ type Item struct {
 	Title   string    `json:"title"`
 	Who     string    `json:"who,omitempty"`
 	Account string    `json:"account,omitempty"`
-	When    time.Time `json:"when,omitempty"`
-	Due     time.Time `json:"due,omitempty"`
+	When    time.Time `json:"when,omitzero"`
+	Due     time.Time `json:"due,omitzero"`
 	Status  string    `json:"status,omitempty"`
 	Count   int       `json:"count,omitempty"`
 	Class   Class     `json:"class,omitempty"`

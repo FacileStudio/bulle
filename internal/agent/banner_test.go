@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestCountedNounPluralizes(t *testing.T) {
@@ -71,7 +73,7 @@ func TestBannerEchoesATargetRootVerbatim(t *testing.T) {
 }
 
 func TestAugmentSystemCountsContextFilesAndSkills(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte("project preference"), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)

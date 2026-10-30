@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestDiscoveryFileNamesTheRunningSession(t *testing.T) {
@@ -86,7 +88,7 @@ func TestCloseRemovesTheDiscoveryFileAndTheSocket(t *testing.T) {
 }
 
 func TestSetSessionUpdatesTheDiscoveryFile(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_RUNTIME_DIR", filepath.Join(t.TempDir(), "run"))
 	srv, err := Start(Options{})
 	if err != nil {

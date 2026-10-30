@@ -31,7 +31,7 @@ func DefaultSend(ctx context.Context, req chat.IPCRequest) error {
 
 func deliver(ctx context.Context, d Deps, req chat.IPCRequest) string {
 	var err error
-	for i := 0; i < sendAttempts; i++ {
+	for i := range sendAttempts {
 		if err = d.Send(ctx, req); err == nil {
 			return DeliveryOK
 		}

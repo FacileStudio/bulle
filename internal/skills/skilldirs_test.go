@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // -skill-dir is how another tool's skills reach the model without moving or
@@ -35,7 +37,7 @@ func TestExtraSkillsToleratesAMissingDirectory(t *testing.T) {
 // all — this is the one place "~/.claude/skills" has to work from either.
 func TestExpandHomeResolvesALeadingTilde(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	if got, want := expandHome("~/.claude/skills"), filepath.Join(home, ".claude", "skills"); got != want {
 		t.Errorf("expandHome(~/.claude/skills) = %q, want %q", got, want)
@@ -49,7 +51,7 @@ func TestExpandHomeResolvesALeadingTilde(t *testing.T) {
 // skill has to reach the rendered system prompt from one loadSkills call,
 // not just from extraSkills in isolation.
 func TestLoadSkillsIncludesExtraDirs(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	other := t.TempDir()
 	writeSkill(t, filepath.Join(other, "deploy"), "name: deploy\ndescription: ships the app")
 

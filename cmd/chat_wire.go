@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/FacileStudio/bulle/internal/assistant"
 	"github.com/FacileStudio/bulle/internal/chat"
@@ -41,5 +43,9 @@ func startAntenneWatch(ctx context.Context) {
 	if err != nil {
 		return
 	}
-	go assistant.WatchAntenne(ctx, func() { _, _ = assistant.Watch(ctx, deps) })
+	go assistant.WatchAntenne(ctx, func() {
+		if _, err := assistant.Watch(ctx, deps); err != nil {
+			fmt.Fprintf(os.Stderr, "bulle chat: antenne watch: %v\n", err)
+		}
+	})
 }

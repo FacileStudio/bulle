@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/FacileStudio/bulle/internal/settings"
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 func TestApplyJobOverridesEachGroup(t *testing.T) {
@@ -107,7 +108,7 @@ func TestJobHooksBuildAndRefuseBadSpecs(t *testing.T) {
 }
 
 func TestTrustCronJobAsksAndRecords(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	dir := settings.JobsDir()
 	if err := mkJobDir(dir); err != nil {
 		t.Fatal(err)
@@ -126,7 +127,7 @@ func TestTrustCronJobAsksAndRecords(t *testing.T) {
 }
 
 func TestTrustReArmsAfterAnEdit(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	dir := settings.JobsDir()
 	if err := mkJobDir(dir); err != nil {
 		t.Fatal(err)
@@ -204,7 +205,7 @@ func writeFile(path, content string) error { return os.WriteFile(path, []byte(co
 
 func TestJobConfigAppliesProfile(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 	pdir := filepath.Join(home, ".config", "bulle", "profiles")
 	if err := os.MkdirAll(pdir, 0o755); err != nil {
 		t.Fatal(err)

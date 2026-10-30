@@ -20,7 +20,7 @@ import (
 func opened(t *testing.T) (*sessionLog, func() []string) {
 	t.Helper()
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {
@@ -196,7 +196,7 @@ func checkRotatedFiles(t *testing.T, dir string) {
 // TestSessionRotation verifies that session logs rotate at 256KB and gzip the old file.
 func TestSessionRotation(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	xdgtest.Isolate(t, home)
 
 	log := newSessionLog("anthropic", "claude-opus-5", "/repo")
 	if log == nil {

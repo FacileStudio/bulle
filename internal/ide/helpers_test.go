@@ -4,13 +4,15 @@ import (
 	"net"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/bulle/internal/xdgtest"
 )
 
 // startTestServer opens a server against temporary home and runtime
 // directories, so a test creates nothing on the machine it runs on.
 func startTestServer(t *testing.T, opts Options) *Server {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	xdgtest.Isolate(t, t.TempDir())
 	t.Setenv("XDG_RUNTIME_DIR", filepath.Join(t.TempDir(), "run"))
 	srv, err := Start(opts)
 	if err != nil {
