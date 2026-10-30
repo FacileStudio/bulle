@@ -112,6 +112,16 @@ func consumeHeadlessEvents(ctx context.Context, events <-chan engine.Event, targ
 // agent and a cleanup function the caller must defer. Extra hooks ride
 // the settings hooks.
 func BuildHeadlessAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook) (*nacelle.Agent, func(), error) {
+	return buildAgentWith(config, extra, nil)
+}
+
+// BuildChatAgent builds the same agent with the given approval gate in place
+// of the one security.approve_tools selects.
+func BuildChatAgent(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, approve nacelle.Approve) (*nacelle.Agent, func(), error) {
+	return buildAgentWith(config, extra, approve)
+}
+
+func buildAgentWith(config settings.Config, extra map[nacelle.HookPoint][]nacelle.Hook, override nacelle.Approve) (*nacelle.Agent, func(), error) {
 	set, local, err := localTools(config)
 	if err != nil {
 		return nil, nil, err
@@ -124,6 +134,9 @@ func BuildHeadlessAgent(config settings.Config, extra map[nacelle.HookPoint][]na
 
 	augmentSystem(&config, mcp)
 	_, approve := approval.Build(*config.ApproveTools)
+	if override != nil {
+		approve = override
+	}
 
 	hooks, _, err := settings.SessionHooks(config)
 	if err != nil {
@@ -153,37 +166,4 @@ func mergeHooks(hooks, extra map[nacelle.HookPoint][]nacelle.Hook) map[nacelle.H
 		out[point] = append(out[point], hs...)
 	}
 	return out
-}
-
-// closeOnErr returns the original err if cleanup succeeds, or the cleanup
-// error if cleanup fails. The caller should prefer the cleanup error only
-// when it wants to surface close failures over the original failure.
-func closeOnErr(err error, closers ...any) error {
-	if err == nil {
-		return nil
-	}
-	if cerr := closeAll(closers...); cerr != nil {
-		return cerr
-	}
-	return err
-}
-
-// closeAll calls Close on every closer it receives. It returns the last
-// error returned by a Close() error call, if any.
-func closeAll(closers ...any) error {
-	var lastErr error
-	for _, c := range closers {
-		if c == nil {
-			continue
-		}
-		switch v := c.(type) {
-		case interface{ Close() error }:
-			if err := v.Close(); err != nil {
-				lastErr = err
-			}
-		case interface{ Close() }:
-			v.Close()
-		}
-	}
-	return lastErr
 }
