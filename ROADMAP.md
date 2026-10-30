@@ -90,6 +90,27 @@ Design and evidence live in `docs/plan-matrix-chat.md`; the settings are in
 
 ---
 
+## Track L — Personal assistant
+
+A quiet assistant on Matrix that runs on free models: code fetches, filters and dedupes,
+the model only writes the final lines. Plan, decisions and evidence in
+`docs/plan-true-assistant.md`. Target `v0.86.0`.
+
+- **Digests and interrupts** — 09:00, 14:00, 20:00 digests, quiet hours 22:00-08:00, a
+  code-only watch that wakes the model only on hard triggers.
+- **Ledger and mail filter** — nothing surfaced twice unless it changed; known humans and VIPs
+  only, bulk mail never shown. Courrier classifies mail itself (`courrier triage`, plan in
+  `docs/plan-courrier-triage.md`); bulle keeps a local fallback for older servers.
+- **Persistent rooms** — room conversations survive restarts and include the nudges sent.
+- **Approvals in chat** — reads run freely, writes wait for a ✅ or a reply. This reverses
+  Track K's "approval buttons in chat: not doing".
+- **Memory** — bounded `USER.md` and `MEMORY.md`, add-only daily notes, nightly consolidation
+  with backup and veto, `/forget`.
+- **Chat UX** — quiet notices, reactions as replies, `/stop /new /snooze /quiet /forget
+  /status`, voice notes through local whisper.cpp.
+
+---
+
 ## Release process
 
 1. Core lands changes, tags `vX.Y.Z`.
