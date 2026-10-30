@@ -60,16 +60,22 @@ func (m *MailSource) fetchTriage(ctx context.Context) ([]Item, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, t := range doc.Items {
-			if m.wantsAccount(t.AccountID) {
-				rows = append(rows, t)
-			}
-		}
+		rows = append(rows, m.wanted(doc.Items)...)
 		if len(doc.Items) == 0 || page*triagePageSize >= doc.Total {
 			break
 		}
 	}
 	return m.items(rows), nil
+}
+
+func (m *MailSource) wanted(items []TriageItem) []TriageItem {
+	var rows []TriageItem
+	for _, t := range items {
+		if m.wantsAccount(t.AccountID) {
+			rows = append(rows, t)
+		}
+	}
+	return rows
 }
 
 func (m *MailSource) triagePage(ctx context.Context, page int) (Triage, error) {

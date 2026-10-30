@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.88.2] - 2026-10-30
+
+### Fixed
+
+- fix(assistant): split the triage page loop so `filet check` passes again (`internal/assistant/source_mail.go`)
+
 ## [0.88.1] - 2026-10-30
 
 ### Fixed
