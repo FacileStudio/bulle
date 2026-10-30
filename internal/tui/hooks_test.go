@@ -19,7 +19,7 @@ func TestHookExecutionShownInConversation(t *testing.T) {
 		report: settings.HookReport{
 			Event:    nacelle.AfterToolCall,
 			Tool:     "edit_file",
-			Command:  "graft blast --no-refresh",
+			Command:  "filet check",
 			Duration: 15 * time.Millisecond,
 			Stdout:   "blast radius: 2 files",
 		},
@@ -43,7 +43,7 @@ func TestHookExecutionWithoutOutputWhenDisabled(t *testing.T) {
 		report: settings.HookReport{
 			Event:    nacelle.AfterToolCall,
 			Tool:     "edit_file",
-			Command:  "graft blast --no-refresh",
+			Command:  "filet check",
 			Duration: 15 * time.Millisecond,
 			Stdout:   "blast radius: 2 files",
 		},
@@ -67,7 +67,7 @@ func TestHookExecutionNotShownWhenDisabled(t *testing.T) {
 		report: settings.HookReport{
 			Event:    nacelle.AfterToolCall,
 			Tool:     "edit_file",
-			Command:  "graft blast --no-refresh",
+			Command:  "filet check",
 			Duration: 15 * time.Millisecond,
 			Stdout:   "blast radius: 2 files",
 		},
@@ -87,7 +87,7 @@ func TestHookExecutionWithLabelShown(t *testing.T) {
 		report: settings.HookReport{
 			Event:    nacelle.AfterToolCall,
 			Tool:     "edit_file",
-			Command:  "graft blast --no-refresh",
+			Command:  "filet check",
 			Label:    "post-edit hook",
 			Duration: 15 * time.Millisecond,
 			Stdout:   "blast radius: 2 files",

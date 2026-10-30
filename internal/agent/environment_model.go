@@ -10,6 +10,6 @@ func modelNote(config Config) string {
 		return ""
 	}
 	return fmt.Sprintf("\n\nYou are running as the model %q through the %q backend. "+
-		"Environment variables such as OPENAI_BASE_URL or GRAFT_MODEL do not describe this session; "+
+		"Environment variables such as OPENAI_BASE_URL do not describe this session; "+
 		"if asked which model you are, answer with this one.", config.Model, config.Backend)
 }
