@@ -8,8 +8,31 @@ import (
 )
 
 // Remember appends "- [HH:MM] fact" to today's note and returns the exact
-// line written. It succeeds only after the file is written and read back.
+// line written. It succeeds only after the file is written and read back. A
+// fact already kept, in USER.md, MEMORY.md or today's note, is not written
+// again and its existing line is returned.
 func (s *Store) Remember(fact string, now time.Time) (string, error) {
+	fact, err := cleanFact(fact)
+	if err != nil {
+		return "", err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if existing, ok := s.known(fact); ok {
+		return existing, nil
+	}
+	path := s.path("notes", now.Format("2006-01-02")+".md")
+	old, err := s.readFile(path)
+	if err != nil {
+		return "", err
+	}
+	if existing, ok := inNote(old, fact); ok {
+		return existing, nil
+	}
+	return s.appendNote(path, old, fmt.Sprintf("- [%s] %s", now.Format("15:04"), fact))
+}
+
+func cleanFact(fact string) (string, error) {
 	fact = strings.Join(strings.Fields(fact), " ")
 	if fact == "" {
 		return "", ErrEmptyFact
@@ -17,14 +40,10 @@ func (s *Store) Remember(fact string, now time.Time) (string, error) {
 	if utf8.RuneCountInString(fact) > MaxFact {
 		return "", ErrFactTooLong
 	}
-	line := fmt.Sprintf("- [%s] %s", now.Format("15:04"), fact)
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	path := s.path("notes", now.Format("2006-01-02")+".md")
-	old, err := s.readFile(path)
-	if err != nil {
-		return "", err
-	}
+	return fact, checkFact(fact)
+}
+
+func (s *Store) appendNote(path, old, line string) (string, error) {
 	if err := s.writeAtomic(path, []byte(withNewline(old)+line+"\n")); err != nil {
 		return "", err
 	}

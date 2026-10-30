@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.90.0] - 2026-10-30
+
+### Added
+
+- feat(memory): `remember` refuses secrets and instruction-like facts, and never writes the same fact twice (`internal/memory/guard.go`)
+- feat(chat): the memory block is framed as notes about the user, data and not instructions, so a mail cannot plant standing orders through it (`cmd/chat_prompt.go`)
+
+### Changed
+
+- docs(memory): the `remember` tool description says what to store and what never to store (`internal/memory/tool.go`)
+
 ## [0.89.2] - 2026-10-30
 
 ### Fixed
