@@ -13,15 +13,6 @@ var (
 	dateArg     = regexp.MustCompile(`^(-u|-I|--iso-8601|\+[A-Za-z0-9%:_/.-]+)$`)
 )
 
-var courrierSubs = map[string]bool{
-	"inbox": true, "list": true, "read": true, "search": true, "folders": true,
-	"accounts": true, "triage": true, "contacts": true,
-}
-
-var listingSubs = map[string]bool{"folders": true, "accounts": true, "contacts": true}
-
-var listingActions = map[string]bool{"list": true, "show": true, "search": true}
-
 // ReadOnly reports whether a run_command string is on the exact read-only
 // allowlist, or is the single permitted Journal append form. Any ambiguity
 // returns false, which means the command needs an approval.
@@ -94,31 +85,11 @@ func allowedWords(home string, a []string) bool {
 	case "courrier":
 		return courrierOK(a)
 	case "agenda":
-		return len(a) >= 3 && (a[1] == "calendars" || a[1] == "events") && a[2] == "list"
+		return agendaOK(a)
 	case "opus":
 		return opusOK(a)
 	case "mycelium":
-		return len(a) >= 3 && a[1] == "memory" && a[2] == "search"
+		return myceliumOK(a)
 	}
 	return false
-}
-
-func courrierOK(a []string) bool {
-	if len(a) < 2 || !courrierSubs[a[1]] {
-		return false
-	}
-	if !listingSubs[a[1]] || len(a) < 3 || strings.HasPrefix(a[2], "-") {
-		return true
-	}
-	return listingActions[a[2]]
-}
-
-func opusOK(a []string) bool {
-	if len(a) >= 3 && a[1] == "workspace" && a[2] == "list" {
-		return true
-	}
-	if len(a) < 5 || a[1] != "-w" || !workspaceID.MatchString(a[2]) || a[3] != "task" {
-		return false
-	}
-	return a[4] == "list" || a[4] == "show"
 }

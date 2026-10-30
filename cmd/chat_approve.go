@@ -23,7 +23,7 @@ type approvals struct {
 	reactions *chat.ReactionRouter
 	pending   map[string][]*approvalCard
 	wait      time.Duration
-	after     func(time.Duration) <-chan time.Time
+	timer     func(time.Duration) (<-chan time.Time, func())
 }
 
 func newApprovals(adapter chat.Adapter, reactions *chat.ReactionRouter) *approvals {
@@ -32,7 +32,7 @@ func newApprovals(adapter chat.Adapter, reactions *chat.ReactionRouter) *approva
 		reactions: reactions,
 		pending:   map[string][]*approvalCard{},
 		wait:      approvalWait,
-		after:     time.After,
+		timer:     realTimer,
 	}
 }
 
@@ -45,21 +45,32 @@ func roomIdentity(key string) chat.Identity {
 	return chat.Identity{Adapter: adapter, Room: room}
 }
 
-// Ask posts a notifying approval card in the room and waits for a verdict. A
-// timeout, a cancelled context or a delivery failure denies.
+func realTimer(d time.Duration) (<-chan time.Time, func()) {
+	t := time.NewTimer(d)
+	return t.C, func() { t.Stop() }
+}
+
+// Ask posts a notifying approval card in the room and waits for a verdict. The
+// card only becomes answerable once its delivery returned, so a stray reply
+// cannot approve a card the human has not seen. A timeout, a cancelled context
+// or a delivery failure denies.
 func (a *approvals) Ask(ctx context.Context, room string, summary string) (bool, error) {
-	card := &approvalCard{reply: make(chan bool, 1)}
-	a.add(room, card)
-	defer a.drop(room, card)
 	id, err := chat.Deliver(ctx, a.adapter, roomIdentity(room), approvalText(summary), true)
 	if err != nil {
 		return false, err
 	}
-	a.bind(room, card, id)
+	card := &approvalCard{event: id, reply: make(chan bool, 1)}
+	a.add(room, card)
+	defer a.drop(room, card)
+	if id != "" {
+		a.reactions.Register(id, []string{"approval:" + room})
+	}
+	expired, stop := a.timer(a.wait)
+	defer stop()
 	select {
 	case ok := <-card.reply:
 		return ok, nil
-	case <-a.after(a.wait):
+	case <-expired:
 		return false, nil
 	case <-ctx.Done():
 		return false, ctx.Err()
@@ -70,11 +81,4 @@ func (a *approvals) add(room string, card *approvalCard) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.pending[room] = append(a.pending[room], card)
-}
-
-func (a *approvals) bind(room string, card *approvalCard, id string) {
-	a.mu.Lock()
-	card.event = id
-	a.mu.Unlock()
-	a.reactions.Register(id, []string{"approval:" + room})
 }

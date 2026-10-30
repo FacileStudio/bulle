@@ -12,6 +12,7 @@ import (
 type cardAdapter struct {
 	mu    sync.Mutex
 	cards []string
+	texts []string
 	sent  chan string
 }
 
@@ -19,9 +20,17 @@ func (c *cardAdapter) Name() string { return "matrix" }
 
 func (c *cardAdapter) Receive(context.Context, func(chat.Message)) error { return nil }
 
-func (c *cardAdapter) Send(context.Context, chat.Identity, string) error { return nil }
+func (c *cardAdapter) Send(_ context.Context, _ chat.Identity, text string) error {
+	c.mu.Lock()
+	c.texts = append(c.texts, text)
+	c.mu.Unlock()
+	return nil
+}
 
-func (c *cardAdapter) SendQuiet(context.Context, chat.Identity, string) (string, error) {
+func (c *cardAdapter) SendQuiet(_ context.Context, _ chat.Identity, text string) (string, error) {
+	c.mu.Lock()
+	c.texts = append(c.texts, text)
+	c.mu.Unlock()
 	return "", nil
 }
 
@@ -73,7 +82,7 @@ func newTestApprovals() (*approvals, *cardAdapter, chan time.Time) {
 	ad := &cardAdapter{sent: make(chan string, 4)}
 	a := newApprovals(ad, chat.NewReactionRouter())
 	clock := make(chan time.Time, 1)
-	a.after = func(time.Duration) <-chan time.Time { return clock }
+	a.timer = func(time.Duration) (<-chan time.Time, func()) { return clock, func() {} }
 	return a, ad, clock
 }
 

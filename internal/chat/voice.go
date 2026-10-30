@@ -34,15 +34,6 @@ type Downloader interface {
 	Download(ctx context.Context, m Media) ([]byte, error)
 }
 
-var voiceRun = func(ctx context.Context, name string, args []string) ([]byte, error) {
-	out, err := exec.CommandContext(ctx, name, args...).Output()
-	var exit *exec.ExitError
-	if errors.As(err, &exit) {
-		return out, fmt.Errorf("%w: %s", err, strings.TrimSpace(string(exit.Stderr)))
-	}
-	return out, err
-}
-
 // QuoteTranscript renders what was heard, for the integrator to put in front
 // of the reply.
 func QuoteTranscript(text string) string {
@@ -75,7 +66,7 @@ func Transcribe(ctx context.Context, dl Downloader, cfg settings.AssistantVoice,
 	}
 	dir, err := os.MkdirTemp("", "bulle-voice-")
 	if err != nil {
-		return "", err
+		return "", errors.New("prepare audio")
 	}
 	defer os.RemoveAll(dir)
 	wav, err := voiceConvert(ctx, dir, data)
@@ -89,15 +80,23 @@ func voiceConvert(ctx context.Context, dir string, data []byte) (string, error) 
 	in := filepath.Join(dir, "in")
 	wav := filepath.Join(dir, "out.wav")
 	if err := os.WriteFile(in, data, 0o600); err != nil {
-		return "", err
+		return "", errors.New("prepare audio")
 	}
 	ctx, cancel := context.WithTimeout(ctx, voiceTimeout)
 	defer cancel()
-	_, err := voiceRun(ctx, "ffmpeg", []string{"-y", "-i", in, "-ar", "16000", "-ac", "1", wav})
+	_, err := voiceRun(ctx, "ffmpeg", ffmpegArgs(in, wav))
 	if err != nil {
 		return "", voiceFailure("ffmpeg", err)
 	}
 	return wav, nil
+}
+
+func ffmpegArgs(in, wav string) []string {
+	return []string{
+		"-nostdin", "-y", "-protocol_whitelist", "file,pipe", "-i", in,
+		"-vn", "-t", fmt.Sprint(int(voiceMaxDuration.Seconds())),
+		"-ar", "16000", "-ac", "1", wav,
+	}
 }
 
 func voiceListen(ctx context.Context, argv []string, wav string) (string, error) {

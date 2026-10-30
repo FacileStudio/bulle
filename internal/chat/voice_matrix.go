@@ -18,7 +18,12 @@ func (m *Matrix) Download(ctx context.Context, media Media) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse media url: %w", err)
 	}
-	data, err := m.client.DownloadBytes(ctx, uri)
+	resp, err := m.client.Download(ctx, uri)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := readCapped(resp.Body)
 	if err != nil {
 		return nil, err
 	}

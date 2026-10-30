@@ -4,18 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strings"
 
 	"github.com/FacileStudio/nacelle"
 
 	"github.com/FacileStudio/bulle/internal/toolview"
 )
 
-const summaryLimit = 300
-
 var chatFreeTools = map[string]bool{
 	"read_file": true, "list_directory": true, "find_files": true,
-	"search_content": true, "web_fetch": true, "tasks": true, "remember": true,
+	"search_content": true, "tasks": true, "remember": true,
 }
 
 // Asker puts one approval question to the human in a room and returns the
@@ -29,7 +27,7 @@ type Asker interface {
 func ChatApprove(room string, asker Asker) nacelle.Approve {
 	return func(ctx context.Context, name string, input json.RawMessage) bool {
 		fields, err := toolview.StrictObject(input)
-		if errors.Is(err, toolview.ErrDuplicateKey) {
+		if errors.Is(err, toolview.ErrDuplicateKey) || foldDuplicate(fields) {
 			return false
 		}
 		if chatFreeTools[name] {
@@ -44,16 +42,15 @@ func ChatApprove(room string, asker Asker) nacelle.Approve {
 	}
 }
 
-func describe(name string, fields map[string]json.RawMessage, input json.RawMessage) (string, bool) {
-	if name == "run_command" {
-		var command string
-		if json.Unmarshal(fields["command"], &command) == nil && command != "" {
-			return "`" + command + "`", ReadOnly(command)
+func foldDuplicate(fields map[string]json.RawMessage) bool {
+	keys := make([]string, 0, len(fields))
+	for key := range fields {
+		for _, other := range keys {
+			if strings.EqualFold(key, other) {
+				return true
+			}
 		}
+		keys = append(keys, key)
 	}
-	text := string(input)
-	if len(text) > summaryLimit {
-		text = text[:summaryLimit] + "..."
-	}
-	return fmt.Sprintf("l'outil `%s` avec %s", name, text), false
+	return false
 }

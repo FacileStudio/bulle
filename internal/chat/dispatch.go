@@ -49,12 +49,16 @@ func (d *daemon) accept(ctx context.Context, m Message) {
 
 func (d *daemon) queue(ctx context.Context, m Message) {
 	markSeen(ctx, d.a, m.Identity)
+	epoch := d.turns.epoch(m.Key())
 	gate, release := d.inTurn.wait(m.Key())
 	d.wg.Go(func() {
 		if gate != nil {
 			<-gate
 		}
 		defer release()
+		if d.turns.epoch(m.Key()) != epoch {
+			return
+		}
 		answer(ctx, d.a, d.responder(), m)
 	})
 }

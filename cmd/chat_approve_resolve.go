@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/FacileStudio/bulle/internal/chat"
 )
@@ -81,11 +84,26 @@ func (a *approvals) Intercept(m chat.Message) bool {
 	}
 	room := m.Key()
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	cards := a.pending[room]
 	if len(cards) == 0 {
+		a.mu.Unlock()
 		return false
 	}
+	if len(cards) > 1 {
+		a.mu.Unlock()
+		a.askForReaction(room)
+		return true
+	}
 	a.settle(room, cards[0], verdict)
+	a.mu.Unlock()
 	return true
+}
+
+func (a *approvals) askForReaction(room string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	text := "Plusieurs validations attendent : réponds par ✅ ou ❌ directement sur la carte concernée."
+	if _, err := chat.Deliver(ctx, a.adapter, roomIdentity(room), text, false); err != nil {
+		fmt.Fprintf(os.Stderr, "bulle chat: approval notice: %v\n", err)
+	}
 }
