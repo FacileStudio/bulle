@@ -175,6 +175,11 @@ func (m *Matrix) Receive(ctx context.Context, handle func(Message)) error {
 			handle(msg)
 		}
 	})
+	syncer.OnEventType(event.EventReaction, func(_ context.Context, evt *event.Event) {
+		if msg, ok := reactionFrom(evt, m.self); ok {
+			handle(msg)
+		}
+	})
 	if err := m.watchInvites(); err != nil {
 		return err
 	}

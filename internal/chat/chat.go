@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -98,25 +97,7 @@ type Responder func(ctx context.Context, m Message) (string, error)
 // received it. Messages in one conversation are answered in turn; different
 // conversations run at the same time.
 func Run(ctx context.Context, a Adapter, respond Responder, router Router) error {
-	inTurn := newSerial()
-	var wg sync.WaitGroup
-	err := a.Receive(ctx, func(m Message) {
-		if refused := router.Check(m, time.Now()); refused != nil {
-			report(a.Name(), refused)
-			return
-		}
-		markSeen(ctx, a, m.Identity)
-		gate, release := inTurn.wait(m.Key())
-		wg.Go(func() {
-			if gate != nil {
-				<-gate
-			}
-			defer release()
-			answer(ctx, a, respond, m)
-		})
-	})
-	wg.Wait()
-	return err
+	return RunWith(ctx, a, respond, router, nil)
 }
 
 // answer runs one message and replies with what came back. A failed run still
