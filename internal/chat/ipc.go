@@ -19,7 +19,20 @@ type IPCRequest struct {
 	Room   string `json:"room,omitempty"`
 	Text   string `json:"text,omitempty"`
 	Prompt string `json:"prompt,omitempty"`
+
+	Notify *bool    `json:"notify,omitempty"`
+	Record bool     `json:"record,omitempty"`
+	Items  []string `json:"items,omitempty"`
 }
+
+// IPCSend delivers one outbound message. Notify nil means the message should
+// notify; false asks for a quiet notice. Record appends the text to the room's
+// conversation, and Items names the ledger keys the message is about so a
+// reaction can be routed back to them.
+type IPCSend func(ctx context.Context, req IPCRequest) error
+
+// IPCTrigger runs one prompt through a room's session and returns the reply.
+type IPCTrigger func(ctx context.Context, room, prompt string) (string, error)
 
 // IPCResponse is the reply returned by the chat daemon.
 type IPCResponse struct {
@@ -41,7 +54,7 @@ func SocketPath() (string, error) {
 }
 
 // ServeIPC runs the IPC Unix domain socket server until the context is canceled.
-func ServeIPC(ctx context.Context, path string, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) error {
+func ServeIPC(ctx context.Context, path string, send IPCSend, trigger IPCTrigger) error {
 	if path == "" {
 		var err error
 		if path, err = SocketPath(); err != nil {
@@ -85,7 +98,7 @@ func listenIPC(path string) (*net.UnixListener, error) {
 	return ln, nil
 }
 
-func acceptIPC(ctx context.Context, ln *net.UnixListener, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) error {
+func acceptIPC(ctx context.Context, ln *net.UnixListener, send IPCSend, trigger IPCTrigger) error {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 	stop := context.AfterFunc(ctx, func() {
@@ -108,7 +121,7 @@ func acceptIPC(ctx context.Context, ln *net.UnixListener, send func(context.Cont
 	}
 }
 
-func handleIPCConn(ctx context.Context, conn net.Conn, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) {
+func handleIPCConn(ctx context.Context, conn net.Conn, send IPCSend, trigger IPCTrigger) {
 	defer conn.Close()
 	stop := context.AfterFunc(ctx, func() {
 		conn.Close()
@@ -128,13 +141,13 @@ func handleIPCConn(ctx context.Context, conn net.Conn, send func(context.Context
 	}
 }
 
-func handleIPCRequest(ctx context.Context, req IPCRequest, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) IPCResponse {
+func handleIPCRequest(ctx context.Context, req IPCRequest, send IPCSend, trigger IPCTrigger) IPCResponse {
 	switch req.Action {
 	case "send":
 		if send == nil {
 			return IPCResponse{OK: false, Error: "send handler not configured"}
 		}
-		if err := send(ctx, req.Room, req.Text); err != nil {
+		if err := send(ctx, req); err != nil {
 			return IPCResponse{OK: false, Error: err.Error()}
 		}
 		return IPCResponse{OK: true}

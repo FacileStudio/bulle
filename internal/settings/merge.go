@@ -13,6 +13,7 @@ func (c *Config) merge(over Config) {
 	c.Sandbox.merge(over.Sandbox)
 	c.Remote.merge(over.Remote)
 	c.Chat.merge(over.Chat)
+	c.Assistant.merge(over.Assistant)
 	if over.Budget != nil {
 		c.Budget = over.Budget
 	}

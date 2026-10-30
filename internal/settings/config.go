@@ -185,14 +185,6 @@ type GateSpec struct {
 	Format      bool     `yaml:"format"`
 }
 
-// Automation groups the config's chained machinery. It is inline in the
-// YAML, so the keys stay top-level: hooks, gates. Scheduled jobs are not
-// here anymore — LoadJobs reads them from ~/.bulle/jobs/ instead.
-type Automation struct {
-	Hooks []HookSpec `yaml:"hooks"`
-	Gates []GateSpec `yaml:"gates"`
-}
-
 // Load reads the config file. A missing file is not an error — most people
 // never write one — but an unreadable or malformed one is.
 func Load(path string) (Config, error) {

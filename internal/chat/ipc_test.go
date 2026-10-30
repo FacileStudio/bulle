@@ -30,9 +30,9 @@ func TestIPCSend(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var gotRoom, gotText string
-	send := func(_ context.Context, room, text string) error {
-		gotRoom = room
-		gotText = text
+	send := func(_ context.Context, req IPCRequest) error {
+		gotRoom = req.Room
+		gotText = req.Text
 		return nil
 	}
 	errCh := make(chan error, 1)
@@ -86,7 +86,7 @@ func TestIPCErrors(t *testing.T) {
 	sock := filepath.Join(t.TempDir(), "test.sock")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	send := func(_ context.Context, _, _ string) error {
+	send := func(_ context.Context, _ IPCRequest) error {
 		return errors.New("send failed")
 	}
 	errCh := make(chan error, 1)

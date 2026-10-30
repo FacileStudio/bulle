@@ -11,8 +11,8 @@ import (
 )
 
 func startChatIPC(ctx context.Context, m chatMatrix, adapter chat.Adapter, rooms *roomRegistry) {
-	send := func(c context.Context, room, text string) error {
-		return handleIPCSend(c, m, adapter, room, text)
+	send := func(c context.Context, req chat.IPCRequest) error {
+		return handleIPCSend(c, m, adapter, req)
 	}
 	trigger := func(c context.Context, room, prompt string) (string, error) {
 		return rooms.handleIPCTrigger(c, m, adapter, room, prompt)
@@ -20,12 +20,12 @@ func startChatIPC(ctx context.Context, m chatMatrix, adapter chat.Adapter, rooms
 	go runIPCServer(ctx, send, trigger)
 }
 
-func handleIPCSend(ctx context.Context, m chatMatrix, adapter chat.Adapter, room, text string) error {
-	target := resolveTargetRoom(room, m.rooms)
+func handleIPCSend(ctx context.Context, m chatMatrix, adapter chat.Adapter, req chat.IPCRequest) error {
+	target := resolveTargetRoom(req.Room, m.rooms)
 	if target == "" {
 		return errors.New("no room specified and no default room configured")
 	}
-	return adapter.Send(ctx, chat.Identity{Adapter: "matrix", Room: target}, text)
+	return adapter.Send(ctx, chat.Identity{Adapter: "matrix", Room: target}, req.Text)
 }
 
 func (rooms *roomRegistry) handleIPCTrigger(ctx context.Context, m chatMatrix, adapter chat.Adapter, room, prompt string) (string, error) {
@@ -63,7 +63,7 @@ func resolveTargetRoom(room string, configured []string) string {
 	return ""
 }
 
-func runIPCServer(ctx context.Context, send func(context.Context, string, string) error, trigger func(context.Context, string, string) (string, error)) {
+func runIPCServer(ctx context.Context, send chat.IPCSend, trigger chat.IPCTrigger) {
 	if err := chat.ServeIPC(ctx, "", send, trigger); err != nil && !errors.Is(err, context.Canceled) {
 		fmt.Fprintf(os.Stderr, "bulle chat ipc: %v\n", err)
 	}

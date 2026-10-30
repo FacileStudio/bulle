@@ -40,11 +40,43 @@ func (i Identity) Key() string {
 	return i.Adapter + ":" + i.Room
 }
 
-// Message is one inbound text with the identity it arrived under.
+// Kind says what an inbound message carries. An empty Kind means text, so an
+// adapter that never sets it keeps its old behaviour.
+type Kind string
+
+const (
+	KindText     Kind = "text"
+	KindReaction Kind = "reaction"
+	KindAudio    Kind = "audio"
+)
+
+// Media points at a file an adapter received and has not downloaded.
+type Media struct {
+	URL      string `json:"url,omitempty"`
+	MimeType string `json:"mime_type,omitempty"`
+	Size     int64  `json:"size,omitempty"`
+	Key      string `json:"key,omitempty"`
+}
+
+// Message is one inbound event with the identity it arrived under. A reaction
+// carries the emoji in Reaction and the event it points at in Target; audio
+// carries Media.
 type Message struct {
 	Identity
-	Text string    `json:"text"`
-	At   time.Time `json:"at"`
+	Kind     Kind      `json:"kind,omitempty"`
+	Text     string    `json:"text"`
+	Reaction string    `json:"reaction,omitempty"`
+	Target   string    `json:"target,omitempty"`
+	Media    *Media    `json:"media,omitempty"`
+	At       time.Time `json:"at"`
+}
+
+// Is reports whether the message is of kind k, counting an empty Kind as text.
+func (m Message) Is(k Kind) bool {
+	if m.Kind == "" {
+		return k == KindText
+	}
+	return m.Kind == k
 }
 
 // Adapter is one platform connection. Name identifies it and is the string

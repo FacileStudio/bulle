@@ -80,9 +80,9 @@ func TestChatSendCommand(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var gotRoom, gotText string
-	send := func(_ context.Context, room, text string) error {
-		gotRoom = room
-		gotText = text
+	send := func(_ context.Context, req chat.IPCRequest) error {
+		gotRoom = req.Room
+		gotText = req.Text
 		return nil
 	}
 	go func() {
