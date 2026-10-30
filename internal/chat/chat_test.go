@@ -149,3 +149,25 @@ func TestRunShowsTypingIndicator(t *testing.T) {
 		t.Errorf("expected typing true then false, got: %v", a.typing)
 	}
 }
+
+type fakeReader struct {
+	fakeAdapter
+	seen []string
+}
+
+func (f *fakeReader) Seen(_ context.Context, to Identity) error {
+	f.seen = append(f.seen, to.Event)
+	return nil
+}
+
+func TestRunMarksMessageSeen(t *testing.T) {
+	m := msg("!r:x", "@alice:x", "hi")
+	m.Identity.Event = "$e1"
+	a := &fakeReader{fakeAdapter: fakeAdapter{in: []Message{m}}}
+	if err := Run(context.Background(), a, echo, Router{Allow: []string{"@alice:x"}}); err != nil {
+		t.Fatal(err)
+	}
+	if len(a.seen) != 1 || a.seen[0] != "$e1" {
+		t.Fatalf("seen = %v, want [$e1]", a.seen)
+	}
+}

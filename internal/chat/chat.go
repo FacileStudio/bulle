@@ -57,11 +57,6 @@ type Adapter interface {
 	Send(ctx context.Context, to Identity, text string) error
 }
 
-// Typer is an optional interface an adapter can implement to indicate typing.
-type Typer interface {
-	Typing(ctx context.Context, to Identity, typing bool) error
-}
-
 // Responder answers one message. It is a function rather than an interface
 // because a daemon has exactly one of them: the run itself.
 type Responder func(ctx context.Context, m Message) (string, error)
@@ -78,6 +73,7 @@ func Run(ctx context.Context, a Adapter, respond Responder, router Router) error
 			report(a.Name(), refused)
 			return
 		}
+		markSeen(ctx, a, m.Identity)
 		gate, release := inTurn.wait(m.Key())
 		wg.Go(func() {
 			if gate != nil {
@@ -108,46 +104,6 @@ func answer(ctx context.Context, a Adapter, respond Responder, m Message) {
 	}
 	if err := a.Send(ctx, m.Identity, text); err != nil {
 		report(a.Name(), err)
-	}
-}
-
-func startTyping(ctx context.Context, a Adapter, to Identity) func() {
-	typer, ok := a.(Typer)
-	if !ok {
-		return func() {}
-	}
-	tryTyping(ctx, typer, to, true)
-	done := make(chan struct{})
-	var once sync.Once
-	go runTypingLoop(ctx, typer, to, done)
-	return func() {
-		once.Do(func() {
-			close(done)
-			stopCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			defer cancel()
-			tryTyping(stopCtx, typer, to, false)
-		})
-	}
-}
-
-func runTypingLoop(ctx context.Context, typer Typer, to Identity, done <-chan struct{}) {
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-done:
-			return
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			tryTyping(ctx, typer, to, true)
-		}
-	}
-}
-
-func tryTyping(ctx context.Context, typer Typer, to Identity, typing bool) {
-	if err := typer.Typing(ctx, to, typing); err != nil {
-		report(to.Adapter, err)
 	}
 }
 

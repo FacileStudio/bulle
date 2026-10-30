@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"maunium.net/go/mautrix/event"
@@ -45,22 +44,6 @@ func (m *Matrix) Send(ctx context.Context, to Identity, text string) error {
 		to.Event = ""
 	}
 	return nil
-}
-
-// Typing updates the typing indicator for the given room.
-func (m *Matrix) Typing(ctx context.Context, to Identity, typing bool) error {
-	if m.client == nil {
-		return errors.New("matrix: client not initialized")
-	}
-	if to.Room == "" {
-		return errors.New("matrix: no room for typing indicator")
-	}
-	timeout := 20 * time.Second
-	if !typing {
-		timeout = 0
-	}
-	_, err := m.client.UserTyping(ctx, id.RoomID(to.Room), typing, timeout)
-	return err
 }
 
 // ensureRoom verifies the room's encryption state and warms the membership
