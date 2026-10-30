@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -23,7 +24,8 @@ type DigestResult struct {
 
 // Digest builds the payload for one digest, asks the model for the prose and
 // falls back to a template when the answer is unusable. Quiet hours do not
-// apply; weekends only run the names in WeekendDigests.
+// apply; weekends only run the names in WeekendDigests. Snoozed items and
+// noise never appear.
 func Digest(ctx context.Context, d Deps, name string) (DigestResult, error) {
 	if !slices.Contains(DigestNames(), name) {
 		return DigestResult{}, fmt.Errorf("unknown digest %q: want morning, midday or evening", name)
@@ -32,6 +34,18 @@ func Digest(ctx context.Context, d Deps, name string) (DigestResult, error) {
 	if err != nil {
 		return DigestResult{}, err
 	}
+	unlock, err := AcquireRun(d.StateDir)
+	if errors.Is(err, ErrLocked) {
+		return DigestResult{Delivery: DeliverySuppressed}, nil
+	}
+	if err != nil {
+		return DigestResult{}, err
+	}
+	defer unlock()
+	return digestLocked(ctx, d, name)
+}
+
+func digestLocked(ctx context.Context, d Deps, name string) (DigestResult, error) {
 	now := d.Now().In(d.location())
 	if weekendSkip(d, name, now) {
 		return DigestResult{Delivery: DeliverySuppressed}, nil
@@ -43,6 +57,7 @@ func Digest(ctx context.Context, d Deps, name string) (DigestResult, error) {
 	if ferr != nil {
 		fmt.Fprintf(d.Log, "assistant: partial fetch: %v\n", ferr)
 	}
+	items = d.Ledger.Unsuppressed(items, now)
 	return sendDigest(ctx, d, buildPayload(name, items, now), now)
 }
 
@@ -64,22 +79,27 @@ func sendDigest(ctx context.Context, d Deps, p Payload, now time.Time) (DigestRe
 	if len(p.listed) > 0 {
 		text, res.ModelCalled = modelDigest(ctx, d, p)
 	}
+	record := templateDigest(p, d.english())
 	if text == "" {
-		text = templateDigest(p, d.english())
+		text = record
 	}
 	if evening {
-		text = withDebrief(text)
+		text, record = withDebrief(text), withDebrief(record)
 	}
 	no := false
-	keys := make([]string, len(p.listed))
-	for i, it := range p.listed {
-		keys[i] = it.Key()
-	}
 	res.Delivery = deliver(ctx, d, chat.IPCRequest{
-		Action: "send", Text: text, Notify: &no, Record: true, Items: keys,
+		Action: "send", Text: text, RecordText: record, Notify: &no, Record: true, Items: itemKeys(p.listed),
 	})
 	if res.Delivery == DeliveryOK {
 		return res, d.Ledger.MarkSurfaced(p.listed, now)
 	}
 	return res, nil
+}
+
+func itemKeys(items []Item) []string {
+	keys := make([]string, len(items))
+	for i, it := range items {
+		keys[i] = it.Key()
+	}
+	return keys
 }

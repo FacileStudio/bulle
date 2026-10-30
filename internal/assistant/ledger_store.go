@@ -57,6 +57,7 @@ func NewLedger(path string) (*Ledger, error) {
 func (l *Ledger) load() error {
 	data, err := os.ReadFile(l.path)
 	if errors.Is(err, os.ErrNotExist) {
+		l.entries = map[string]*Entry{}
 		return nil
 	}
 	if err != nil {
@@ -69,11 +70,24 @@ func (l *Ledger) load() error {
 	return nil
 }
 
+func (l *Ledger) lockPath() string {
+	return filepath.Join(filepath.Dir(l.path), "ledger.lock")
+}
+
 func (l *Ledger) update(fn func()) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	fn()
-	return l.save()
+	return withLock(l.lockPath(), true, func() error {
+		if err := l.load(); err != nil {
+			return err
+		}
+		fn()
+		return l.save()
+	})
+}
+
+func (l *Ledger) refresh() {
+	_ = withLock(l.lockPath(), false, l.load)
 }
 
 func (l *Ledger) save() error {

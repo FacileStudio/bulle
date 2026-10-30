@@ -22,6 +22,7 @@ type MailSource struct {
 	Run      Runner
 	Settings settings.Assistant
 	Since    string
+	StateDir string
 	Timeout  time.Duration
 	Log      io.Writer
 	once     sync.Once
@@ -68,29 +69,4 @@ func (m *MailSource) fetchTriage(ctx context.Context) ([]Item, error) {
 
 func (m *MailSource) wantsAccount(id int64) bool {
 	return pickedID(m.Settings.Sources.MailAccounts, int(id))
-}
-
-func (m *MailSource) items(rows []TriageItem) []Item {
-	out := make([]Item, 0, len(rows))
-	for _, t := range rows {
-		it := Item{
-			Source:  SourceMail,
-			ID:      t.ThreadID,
-			Title:   t.Subject,
-			Who:     t.FromName,
-			Account: t.Account,
-			When:    t.Date,
-			Count:   t.MessageCount,
-			Class:   Class(t.Class),
-			Reason:  t.Reason,
-		}
-		if it.Who == "" {
-			it.Who = t.FromAddress
-		}
-		if IsVIP(t.FromAddress, m.Settings.VIP) {
-			it.Class, it.Reason = ClassVIP, "vip"
-		}
-		out = append(out, it)
-	}
-	return out
 }

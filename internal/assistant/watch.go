@@ -2,6 +2,7 @@ package assistant
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -24,9 +25,24 @@ func Watch(ctx context.Context, d Deps) (WatchResult, error) {
 	if err != nil {
 		return WatchResult{}, err
 	}
+	unlock, err := AcquireRun(d.StateDir)
+	if errors.Is(err, ErrLocked) {
+		return WatchResult{Delivery: DeliverySuppressed}, nil
+	}
+	if err != nil {
+		return WatchResult{}, err
+	}
+	defer unlock()
+	return watchLocked(ctx, d)
+}
+
+func watchLocked(ctx context.Context, d Deps) (WatchResult, error) {
 	now := d.Now()
 	if InQuiet(now, d.Settings, d.StateDir) {
 		return WatchResult{Delivery: DeliverySuppressed}, nil
+	}
+	if err := d.Ledger.Prune(now); err != nil {
+		fmt.Fprintf(d.Log, "assistant: prune ledger: %v\n", err)
 	}
 	items, ferr := fetchAll(ctx, d, sinceArg(LastWatch(d.StateDir), now))
 	if ferr != nil && len(items) == 0 {
@@ -49,10 +65,7 @@ func interrupt(ctx context.Context, d Deps, items []Item, now time.Time) (WatchR
 	hits := hardTriggers(d, items, now)
 	res := WatchResult{Surfaced: hits}
 	if len(hits) > 0 {
-		keys := make([]string, len(hits))
-		for i, it := range hits {
-			keys[i] = it.Key()
-		}
+		keys := itemKeys(hits)
 		yes := true
 		res.Delivery = deliver(ctx, d, chat.IPCRequest{
 			Action: "send", Text: interruptText(hits, now, d.english()),

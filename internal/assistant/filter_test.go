@@ -18,7 +18,7 @@ func TestIsVIP(t *testing.T) {
 }
 
 func TestClassifySender(t *testing.T) {
-	drop := []string{"Spammy.example"}
+	drop := []string{"@Spammy.example", "boss@acme.fr"}
 	cases := []struct {
 		addr   string
 		class  Class
@@ -30,6 +30,18 @@ func TestClassifySender(t *testing.T) {
 		{"mailer-daemon@x.test", ClassBulk, "noreply-sender"},
 		{"bob@spammy.example", ClassBulk, "drop-sender"},
 		{"alice@example.org", ClassUnknownHuman, "no-signal"},
+		{"alice@acme-marketing.fr", ClassUnknownHuman, "no-signal"},
+		{"bob@denotify.io", ClassUnknownHuman, "no-signal"},
+		{"newsletter@x.test", ClassBulk, "noreply-sender"},
+		{"x@mail.spammy.example", ClassUnknownHuman, "no-signal"},
+		{"boss@acme.fr", ClassBulk, "drop-sender"},
+		{"theboss@acme.fr", ClassUnknownHuman, "no-signal"},
+		{"alice@acme-marketing.fr", ClassUnknownHuman, "no-signal"},
+		{"bob@denotify.io", ClassUnknownHuman, "no-signal"},
+		{"newsletter@x.test", ClassBulk, "noreply-sender"},
+		{"x@mail.spammy.example", ClassUnknownHuman, "no-signal"},
+		{"boss@acme.fr", ClassBulk, "drop-sender"},
+		{"theboss@acme.fr", ClassUnknownHuman, "no-signal"},
 	}
 	for _, c := range cases {
 		class, reason := ClassifySender(c.addr, drop)

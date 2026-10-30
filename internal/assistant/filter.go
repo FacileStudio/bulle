@@ -12,11 +12,6 @@ import (
 
 const defaultTimeout = 30 * time.Second
 
-var builtinBulkPatterns = []string{
-	"noreply", "no-reply", "notify.", "newsletter", "marketing",
-	"mailer-daemon", "news@", "updates@",
-}
-
 // Runner runs one external command and returns its standard output. Sources
 // take it as a value so tests never need the real binaries.
 type Runner func(ctx context.Context, name string, args ...string) ([]byte, error)
@@ -67,30 +62,6 @@ func IsVIP(addr string, vip []string) bool {
 	addr = strings.TrimSpace(addr)
 	for _, v := range vip {
 		if strings.EqualFold(addr, strings.TrimSpace(v)) {
-			return true
-		}
-	}
-	return false
-}
-
-// ClassifySender is the local fallback when courrier cannot classify: built-in
-// automated-sender patterns and the user's drop list make a row bulk, anything
-// else is an unknown human.
-func ClassifySender(addr string, drop []string) (Class, string) {
-	addr = strings.ToLower(addr)
-	if containsAny(addr, drop) {
-		return ClassBulk, "drop-sender"
-	}
-	if containsAny(addr, builtinBulkPatterns) {
-		return ClassBulk, "noreply-sender"
-	}
-	return ClassUnknownHuman, "no-signal"
-}
-
-func containsAny(addr string, patterns []string) bool {
-	for _, p := range patterns {
-		p = strings.ToLower(strings.TrimSpace(p))
-		if p != "" && strings.Contains(addr, p) {
 			return true
 		}
 	}
